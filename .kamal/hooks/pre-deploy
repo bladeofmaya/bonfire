@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Ensure the persistent storage directory exists before Kamal deploys the app.
+
+set -euo pipefail
+
+: "${DEPLOY_HOST:?Set DEPLOY_HOST before deploying}"
+
+deploy_ssh_user="${DEPLOY_SSH_USER:-root}"
+deploy_storage_path="${DEPLOY_STORAGE_PATH:-/var/lib/kamal/campfire/storage}"
+deploy_storage_uid="${DEPLOY_STORAGE_UID:-1000}"
+
+if [[ ! "$DEPLOY_HOST" =~ ^[A-Za-z0-9.-]+$ ]]; then
+  echo "DEPLOY_HOST contains unsupported characters" >&2
+  exit 1
+fi
+
+if [[ ! "$deploy_ssh_user" =~ ^[A-Za-z0-9._-]+$ ]]; then
+  echo "DEPLOY_SSH_USER contains unsupported characters" >&2
+  exit 1
+fi
+
+if [[ ! "$deploy_storage_path" =~ ^/[A-Za-z0-9_./-]+$ ]]; then
+  echo "DEPLOY_STORAGE_PATH must be an absolute path with safe characters" >&2
+  exit 1
+fi
+
+if [[ ! "$deploy_storage_uid" =~ ^[0-9]+$ ]]; then
+  echo "DEPLOY_STORAGE_UID must be numeric" >&2
+  exit 1
+fi
+
+echo "Preparing persistent storage on ${DEPLOY_HOST}..."
+ssh -- "${deploy_ssh_user}@${DEPLOY_HOST}" \
+  "mkdir -p -- '${deploy_storage_path}' && chown '${deploy_storage_uid}:${deploy_storage_uid}' -- '${deploy_storage_path}'"
+echo "Persistent storage is ready."
