@@ -18,7 +18,7 @@ registry:
 env:
   clear:
     RAILS_ENV: production
-    TLS_DOMAIN: <%= ENV.fetch("DEPLOY_HOST") %>
+    DISABLE_SSL: true
   secret:
     - SECRET_KEY_BASE
     - VAPID_PUBLIC_KEY

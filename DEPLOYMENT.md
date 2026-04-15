@@ -26,3 +26,7 @@ builder when a private encrypted credentials file is installed locally.
 The pre-deploy hook connects to `DEPLOY_HOST` and creates the persistent storage
 directory with ownership matching `DEPLOY_STORAGE_UID`. The deployment user
 must be allowed to create and change ownership of that directory.
+
+Kamal Proxy terminates TLS and forwards requests to the application on port 80.
+`DISABLE_SSL` prevents the application container from attempting to terminate
+TLS a second time; it does not disable HTTPS at the public proxy.
