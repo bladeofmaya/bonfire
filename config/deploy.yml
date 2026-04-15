@@ -1,0 +1,44 @@
+service: <%= ENV.fetch("KAMAL_SERVICE", "campfire") %>
+image: <%= ENV.fetch("KAMAL_IMAGE", "campfire") %>
+deploy_timeout: 120
+
+servers:
+  web:
+    hosts:
+      - <%= ENV.fetch("DEPLOY_HOST") %>
+
+proxy:
+  ssl: true
+  host: <%= ENV.fetch("DEPLOY_HOST") %>
+  app_port: 80
+
+registry:
+  server: <%= ENV.fetch("KAMAL_REGISTRY", "localhost:5555") %>
+
+env:
+  clear:
+    RAILS_ENV: production
+    TLS_DOMAIN: <%= ENV.fetch("DEPLOY_HOST") %>
+  secret:
+    - SECRET_KEY_BASE
+    - VAPID_PUBLIC_KEY
+    - VAPID_PRIVATE_KEY
+
+ssh:
+  user: <%= ENV.fetch("DEPLOY_SSH_USER", "root") %>
+
+builder:
+  arch: <%= ENV.fetch("KAMAL_BUILDER_ARCH", "amd64") %>
+  secrets:
+    - RAILS_MASTER_KEY
+
+volumes:
+  - <%= ENV.fetch("DEPLOY_STORAGE_PATH", "/var/lib/kamal/campfire/storage") %>:/rails/storage
+
+asset_path: /rails/public/assets
+
+aliases:
+  console: app exec --interactive --reuse "bin/rails console"
+  shell: app exec --interactive --reuse "bash"
+  logs: app logs -f
+  dbc: app exec --interactive --reuse "bin/rails dbconsole"

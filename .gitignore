@@ -42,3 +42,11 @@ app/assets/builds/*
 
 # Ignore our exported zipfiles
 /*.zip
+
+# Ignore local product and deployment configuration.
+/TODO.md
+/.kamal/secrets
+/config/credentials.yml.enc
+
+# Ignore key files for decrypting credentials and more.
+/config/*.key
