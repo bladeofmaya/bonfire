@@ -26,7 +26,7 @@ FROM base AS build
 
 # Install packages need to build gems
 RUN apt-get update -qq && \
-    apt-get install -y build-essential git pkg-config libyaml-dev  && \
+    apt-get install -y build-essential git pkg-config libyaml-dev libssl-dev && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install application gems
@@ -65,6 +65,9 @@ ENV HTTP_WRITE_TIMEOUT=300
 # Copy built artifacts: gems, application
 COPY --from=build --chown=rails:rails /usr/local/bundle /usr/local/bundle
 COPY --from=build --chown=rails:rails /rails /rails
+
+# Install ONCE backup/restore hooks
+COPY --chmod=755 hooks /hooks
 
 # Set version and revision
 ARG APP_VERSION

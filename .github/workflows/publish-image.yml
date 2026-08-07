@@ -67,6 +67,17 @@ jobs:
           CANONICAL_IMAGE="${REGISTRY}/${IMAGE_REF,,}"
           echo "canonical=${CANONICAL_IMAGE}" >> "$GITHUB_OUTPUT"
 
+      - name: Compute app version
+        id: version
+        shell: bash
+        run: |
+          set -eu
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Extract Docker metadata (tags, labels) with arch suffix
         id: meta
         uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f # v5.8.0
@@ -94,6 +105,8 @@ jobs:
           build-args: |
             OCI_SOURCE=${{ env.SOURCE_URL }}
             OCI_DESCRIPTION=${{ env.IMAGE_DESCRIPTION }}
+            APP_VERSION=${{ steps.version.outputs.version }}
+            GIT_REVISION=${{ github.sha }}
           platforms: ${{ matrix.platform }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}

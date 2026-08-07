@@ -57,9 +57,22 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "creating a message broadcasts unread room" do
-    assert_broadcasts "unread_rooms", 1 do
-      post room_messages_url(@room, format: :turbo_stream), params: { message: { body: "New one", client_message_id: 999 } }
+  test "creating a message broadcasts unread room to each member" do
+    @room.users.each do |member|
+      assert_broadcasts UnreadRoomsChannel.stream_name_for(member.id), 1 do
+        post room_messages_url(@room, format: :turbo_stream), params: { message: { body: "New one #{member.id}", client_message_id: member.id } }
+      end
+    end
+  end
+
+  test "creating a message doesn't broadcast unread room to non-members" do
+    outsiders = User.where.not(id: @room.users.map(&:id))
+    assert outsiders.any?, "need someone outside the room for this test to mean anything"
+
+    outsiders.each do |outsider|
+      assert_no_broadcasts UnreadRoomsChannel.stream_name_for(outsider.id) do
+        post room_messages_url(@room, format: :turbo_stream), params: { message: { body: "New one", client_message_id: 999 } }
+      end
     end
   end
 

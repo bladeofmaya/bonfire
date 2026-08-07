@@ -22,6 +22,8 @@ class Room < ApplicationRecord
 
   belongs_to :creator, class_name: "User", default: -> { Current.user }
 
+  validate :direct_rooms_keep_their_type, on: :update
+
   scope :opens,           -> { where(type: "Rooms::Open") }
   scope :closeds,         -> { where(type: "Rooms::Closed") }
   scope :directs,         -> { where(type: "Rooms::Direct") }
@@ -65,6 +67,15 @@ class Room < ApplicationRecord
   end
 
   private
+    # Open and closed rooms convert into each other freely. A direct room can't become
+    # either: its participants agreed to a private conversation, not to one whose
+    # audience someone else gets to widen afterwards.
+    def direct_rooms_keep_their_type
+      if type_changed? && type_was == "Rooms::Direct"
+        errors.add :type, "can't be changed for a direct room"
+      end
+    end
+
     def unread_memberships(message)
       memberships.visible.disconnected.where.not(user: message.creator).update_all(unread_at: message.created_at, updated_at: Time.current)
     end
