@@ -1,12 +1,8 @@
-<% @page_title = "Set up Bonfire" %>
+<% @page_title = "Set up your Bonfire" %>
 <% @body_class = "signup" %>
 
 <%= form_with model: @user, url: first_run_path, class: "center max-width" do |form| %>
   <section class="nametag u-relative">
-    <div class="flex justify-center align-center pad-block">
-      <%= image_tag "lanyard.svg", class: "nametag__lanyard", aria: { hidden: "true" } %>
-    </div>
-
     <div class="nametag__inner flex flex-column gap">
       <fieldset class="flex flex-column center-block">
         <legend class="txt-large txt-align-center"><strong><%= @page_title %></strong></legend>
