@@ -1,2 +1,5 @@
 #!/usr/bin/env ruby
-exec "./bin/rails", "server", *ARGV
+
+require_relative "../lib/bonfire/development"
+
+exit Bonfire::Development::CLI.new.run(ARGV)

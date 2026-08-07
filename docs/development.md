@@ -2,62 +2,85 @@
 
 ### Setting up
 
-First, get everything installed and configured with:
+Install and configure the development dependencies with:
 
 ```sh
 bin/setup
 ```
 
-This installs the system packages Campfire needs (SQLite, ffmpeg), the right Ruby version (via [mise](https://mise.jdx.dev)), and the app's gems; prepares the database; and starts Redis (in a Docker container called `campfire-redis`, if it isn't already running locally).
+This installs the system packages Bonfire needs, the correct Ruby version via
+[mise](https://mise.jdx.dev), application gems, and development tooling. Docker,
+Docker Compose, and Foreman must also be available locally.
 
-If you want to start over at any point, run:
+### Running the application
 
-```sh
-bin/setup --reset
-```
-
-### Running the server
-
-Start the development server with:
+Start Rails and the Redis development container with:
 
 ```sh
 bin/dev
 ```
 
-You'll be able to access the app at http://localhost:3000.
+Open [http://bonfire.localhost:3021](http://bonfire.localhost:3021). The Redis
+container binds only to `127.0.0.1:6321`; Bonfire uses SQLite and filesystem
+uploads, so it needs no Postgres or MinIO containers.
 
-On first run you'll be guided through creating your admin account, and you can sign in with that account from then on.
+Foreman reads `Procfile.dev` and supervises both processes. Stopping Foreman
+also stops the attached Redis Compose process.
 
-Note that Campfire needs Redis (for Action Cable, caching, and background jobs), so if you've restarted your machine or stopped the container, `docker start campfire-redis` will bring it back.
+On first run, Bonfire guides you through creating the administrator account.
+
+### Resetting local data
+
+To return to the initial administrator setup:
+
+```sh
+bin/dev reset
+```
+
+After confirmation, this removes only local development state: the development
+SQLite database, uploaded files, Redis container, logs, and temporary files. It
+then prepares an empty database and starts the normal development processes.
+
+For automation, use `bin/dev reset --yes`. To reset without starting Foreman,
+use `bin/dev reset --yes --no-start`.
+
+The reset command refuses to run when `RAILS_ENV` or `RACK_ENV` is production.
+It does not read deployment configuration or contact a deployment server.
+
+### Assigned local ports
+
+| Hostname & Port | Postgres Port | Redis Port | MINIO Port | Notes |
+|---|---|---|---|---|
+| `bonfire.localhost:3021` | none | `6321:6379` | none | Custom Campfire clone |
 
 ### Web Push notifications
 
-Campfire uses VAPID (Voluntary Application Server Identification) keys to send browser push notifications. For notifications to work in development you'll need to generate a key pair and set these environment variables:
-
-- `VAPID_PRIVATE_KEY`
-- `VAPID_PUBLIC_KEY`
-
-You can generate a fresh pair (along with a secret key base, which you can ignore in development) by running:
+Campfire uses VAPID keys to send browser push notifications. To test Web Push
+locally, generate a key pair with:
 
 ```sh
 script/admin/generate-secrets
 ```
 
+Export the generated `VAPID_PRIVATE_KEY` and `VAPID_PUBLIC_KEY` before starting
+the development processes. The generated secret key base is not needed in
+development.
+
 ### Running tests
 
-Run the unit tests with:
+Run unit and integration tests with:
 
 ```sh
 bin/rails test
 ```
 
-And the browser-based system tests with:
+Run browser tests with:
 
 ```sh
 bin/rails test:system
 ```
 
-Before pushing your changes, you can run the full CI suite locally - style checks, security audits, and all the tests - with a single command:
+Before pushing changes, run style, security, and test checks with:
 
 ```sh
 bin/ci
@@ -65,5 +88,6 @@ bin/ci
 
 ### Contributing
 
-You are welcome - and encouraged - to modify Campfire to your liking.
-If you'd like to contribute your changes back, please read our [contributing guide](../CONTRIBUTING.md) first.
+You are welcome and encouraged to modify Bonfire. Changes that also apply to
+Campfire can be prepared on a branch based on `upstream/main`; see
+`CONTRIBUTING.md` for the upstream contribution guidelines.

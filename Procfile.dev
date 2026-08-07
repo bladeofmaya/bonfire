@@ -1,0 +1,2 @@
+redis: docker compose -f compose.dev.yml up --remove-orphans redis
+web: env PORT=3021 WEB_CONCURRENCY=1 REDIS_URL=redis://127.0.0.1:6321 bin/rails server --binding 0.0.0.0
