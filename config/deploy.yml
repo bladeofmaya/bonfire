@@ -1,5 +1,5 @@
-service: <%= ENV.fetch("KAMAL_SERVICE", "campfire") %>
-image: <%= ENV.fetch("KAMAL_IMAGE", "campfire") %>
+service: <%= ENV.fetch("KAMAL_SERVICE", "bonfire") %>
+image: <%= ENV.fetch("KAMAL_IMAGE", "bonfire") %>
 deploy_timeout: 120
 
 servers:
@@ -29,11 +29,9 @@ ssh:
 
 builder:
   arch: <%= ENV.fetch("KAMAL_BUILDER_ARCH", "amd64") %>
-  secrets:
-    - RAILS_MASTER_KEY
 
 volumes:
-  - <%= ENV.fetch("DEPLOY_STORAGE_PATH", "/var/lib/kamal/campfire/storage") %>:/rails/storage
+  - <%= ENV.fetch("DEPLOY_STORAGE_PATH", "/var/lib/kamal/bonfire/storage") %>:/rails/storage
 
 asset_path: /rails/public/assets
 

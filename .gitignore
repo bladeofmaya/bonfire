@@ -45,6 +45,7 @@ app/assets/builds/*
 
 # Ignore local product and deployment configuration.
 /TODO.md
+/.kamal/deploy.env
 /.kamal/secrets
 /config/credentials.yml.enc
 

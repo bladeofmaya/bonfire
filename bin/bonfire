@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require_relative "../lib/bonfire/deployment"
+
+exit Bonfire::Deployment::CLI.new.run(ARGV)
