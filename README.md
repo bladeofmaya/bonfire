@@ -29,7 +29,7 @@ If you don't already have `once` installed, run this on the machine you want to 
 curl https://get.once.com | sh
 ```
 
-`once` will launch as soon as the install is finished. 
+`once` will launch as soon as the install is finished.
 
 Choose Campfire from the list of applications, follow the instructions, and ONCE will take care of the rest.
 
