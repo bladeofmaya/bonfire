@@ -8,10 +8,10 @@ FROM ruby:$RUBY_VERSION-slim as base
 RUN apt update && apt install -y zip
 
 # Export from this folder
-WORKDIR /campfire
+WORKDIR /bonfire
 
 # Copy application code
 COPY . .
 
 # Create the archive
-CMD ["zip", "-r", "/campfire.zip", "."]
+CMD ["zip", "-r", "/bonfire.zip", "."]

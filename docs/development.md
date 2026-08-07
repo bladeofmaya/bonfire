@@ -47,15 +47,9 @@ use `bin/dev reset --yes --no-start`.
 The reset command refuses to run when `RAILS_ENV` or `RACK_ENV` is production.
 It does not read deployment configuration or contact a deployment server.
 
-### Assigned local ports
-
-| Hostname & Port | Postgres Port | Redis Port | MINIO Port | Notes |
-|---|---|---|---|---|
-| `bonfire.localhost:3021` | none | `6321:6379` | none | Custom Campfire clone |
-
 ### Web Push notifications
 
-Campfire uses VAPID keys to send browser push notifications. To test Web Push
+Bonfire uses VAPID keys to send browser push notifications. To test Web Push
 locally, generate a key pair with:
 
 ```sh
@@ -89,5 +83,5 @@ bin/ci
 ### Contributing
 
 You are welcome and encouraged to modify Bonfire. Changes that also apply to
-Campfire can be prepared on a branch based on `upstream/main`; see
+Bonfire can be prepared on a branch based on `upstream/master`; see
 `CONTRIBUTING.md` for the upstream contribution guidelines.

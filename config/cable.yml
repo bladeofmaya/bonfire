@@ -4,15 +4,15 @@ default: &default
 
 development:
   <<: *default
-  channel_prefix: campfire_development
+  channel_prefix: bonfire_development
 
 test:
   adapter: test
 
 performance:
   <<: *default
-  channel_prefix: campfire_performance
+  channel_prefix: bonfire_performance
 
 production:
   <<: *default
-  channel_prefix: campfire_production
+  channel_prefix: bonfire_production
