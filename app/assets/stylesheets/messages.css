@@ -507,13 +507,9 @@ img.message__attachment {
 
 .message--mentioned {
   .message__body-content {
-    --message-background: oklch(var(--lch-red) / 0.1);
+    --message-background: var(--color-negative-subtle);
 
     animation: wiggle 0.4s both;
-
-    @media (prefers-color-scheme: dark) {
-      --message-background: oklch(var(--lch-red) / 0.2);
-    }
   }
 }
 

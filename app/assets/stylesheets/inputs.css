@@ -1,7 +1,7 @@
 /* Text inputs */
 .input {
   accent-color: var(--input-accent-color, var(--color-text));
-  background-color: var(--input-background, transparent);
+  background-color: var(--input-background, var(--color-input-bg));
   border-radius: var(--input-border-radius, 0.5em);
   border: var(--input-border-size, 1px) solid var(--input-border-color, var(--color-border-darker));
   color: var(--input-color, var(--color-text));
@@ -103,6 +103,7 @@
 .input--file {
   input[type="file"] {
     --hover-size: 0;
+    --input-background: transparent;
 
     block-size: 100%;
     border: 0;

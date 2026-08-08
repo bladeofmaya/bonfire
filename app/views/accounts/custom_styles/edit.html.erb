@@ -9,10 +9,6 @@
 <section class="panel panel--wide txt-align-center flex flex-column position-relative" style="view-transition-name: custom-styles">
   <%= form_with model: @account, url: account_custom_styles_url, class: "flex flex-column gap",
       data: { controller: "form", action: "keydown.ctrl+enter->form#submit keydown.meta+enter->form#submit" } do |form| %>
-    <div class="panel__button">
-      <%= translation_button(:custom_styles) %>
-    </div>
-
     <div class="pad-inline-double margin-inline">
       <h1 class="margin-none">Custom CSS</h1>
       <p class="flex flex-wrap align-center justify-center gap margin-none-block-start" style="--column-gap: 0.5ch; --row-gap: 0">

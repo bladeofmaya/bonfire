@@ -5,7 +5,20 @@
 
 
 :root {
-  /* Named color values */
+  --keyword: oklch(73.45% 0.163 25.78);
+  --entity: oklch(80.05% 0.127 305.86);
+  --constant: oklch(78.57% 0.115 246.66);
+  --string: oklch(78.57% 0.115 246.66);
+  --variable: oklch(79.91% 0.141 60.1);
+  --comment: oklch(66.25% 0.018 250.92);
+  --entity-tag: oklch(84.16% 0.164 145.75);
+  --markup-heading: oklch(56.86% 0.202 259.67);
+  --markup-list: oklch(85.74% 0.133 89.95);
+  --markup-inserted: oklch(90.72% 0.112 146.34);
+  --markup-deleted: oklch(92.23% 0.04 27.49);
+}
+
+html[data-theme="light"] {
   --keyword: oklch(58.79% 0.193 20.47);
   --entity: oklch(50.15% 0.188 294.99);
   --constant: oklch(49.49% 0.18 257.6);
@@ -17,21 +30,6 @@
   --markup-list: oklch(48.46% 0.093 90.48);
   --markup-inserted: oklch(54.64% 0.144 147.32);
   --markup-deleted: oklch(49.59% 0.183 24.19);
-
-  /* Redefine named color values for dark mode */
-  @media (prefers-color-scheme: dark) {
-    --keyword: oklch(73.45% 0.16260514269909043 25.78369140372489);
-    --entity: oklch(80.05% 0.127 305.86);
-    --constant: oklch(78.57% 0.115 246.66);
-    --string: oklch(78.57% 0.115 246.66);
-    --variable: oklch(79.91% 0.141 60.1);
-    --comment: oklch(66.25% 0.018 250.92);
-    --entity-tag: oklch(84.16% 0.164 145.75);
-    --markup-heading: oklch(56.86% 0.202 259.67);
-    --markup-list: oklch(85.74% 0.133 89.95);
-    --markup-inserted: oklch(90.72% 0.112 146.34);
-    --markup-deleted: oklch(92.23% 0.03967766015913856 27.493308249746637);
-  }
 }
 
 .hljs {

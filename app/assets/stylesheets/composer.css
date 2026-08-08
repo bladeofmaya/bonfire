@@ -67,12 +67,7 @@
     background: url("remove-circle.svg") no-repeat center;
     margin-inline: 0.5em -0.5em;
     flex-shrink: 0;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    &::after {
-      filter: invert(100%);
-    }
+    filter: var(--icon-filter);
   }
 }
 

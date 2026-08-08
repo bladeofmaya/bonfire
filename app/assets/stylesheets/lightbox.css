@@ -1,5 +1,5 @@
 .lightbox {
-  background-color: oklch(var(--lch-white) / 0.66);
+  background-color: var(--color-overlay);
   block-size: 100dvh;
   border: 0;
   inline-size: 100dvw;

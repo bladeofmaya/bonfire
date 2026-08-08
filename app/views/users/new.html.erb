@@ -12,10 +12,6 @@
 
 <%= form_with model: @user, url: join_path(params[:join_code]), class: "center" do |form| %>
   <section class="nametag u-relative">
-    <div class="flex justify-center align-center pad-block">
-      <%= image_tag "lanyard.svg", class: "nametag__lanyard", aria: { hidden: "true" } %>
-    </div>
-
     <div class="nametag__inner flex flex-column gap">
       <fieldset class="flex flex-column center-block">
         <legend class="txt-align-center flex gap">
@@ -39,7 +35,6 @@
       </fieldset>
 
       <div class="flex align-center gap">
-        <%= translation_button(:user_name) %>
         <label class="flex align-center gap flex-item-grow txt-large input input--actor">
           <%= form.text_field :name, class: "input", autocomplete: "name", placeholder: "Name", autofocus: true, required: true,
                 data: { "1p-ignore": true } %>
@@ -48,7 +43,6 @@
       </div>
 
       <div class="flex align-center gap">
-        <%= translation_button(:email_address) %>
         <label class="flex align-center gap flex-item-grow txt-large input input--actor">
           <%= form.email_field :email_address, class: "input", autocomplete: "username", placeholder: "Email address", required: true %>
           <%= image_tag "email.svg", aria: { hidden: "true" }, size: 24, class: "colorize--black" %>
@@ -56,7 +50,6 @@
       </div>
 
       <div class="flex align-center gap">
-        <%= translation_button(:password) %>
         <label class="flex align-center gap flex-item-grow txt-large input input--actor">
           <%= form.password_field :password, class: "input", autocomplete: "new-password", placeholder: "Password", required: true, maxlength: 72 %>
           <%= image_tag "password.svg", aria: { hidden: "true" }, size: 24, class: "colorize--black" %>

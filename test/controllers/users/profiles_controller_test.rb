@@ -9,6 +9,11 @@ class Users::ProfilesControllerTest < ActionDispatch::IntegrationTest
     get user_profile_url
 
     assert_response :success
+    assert_select "select[data-theme-target='select']" do
+      assert_select "option[value='system']", "Use system setting"
+      assert_select "option[value='light']", "Light"
+      assert_select "option[value='dark']", "Dark"
+    end
   end
 
   test "update" do

@@ -20,6 +20,7 @@
 <section class="panel flex flex-column gap" style="view-transition-name: avatar-<%= @user.id %>">
   <%= render partial: "pwa/install_instructions" %>
 
+
   <div class="align-center center avatar__form gap" data-controller="upload-preview">
     <%= profile_form_with @user, class:"txt-medium" do |form| %>
       <label class="btn input--file">
@@ -50,7 +51,6 @@
   <%= profile_form_with @user do |form| %>
     <div class="flex flex-column gap">
       <div class="flex align-center gap">
-        <%= translation_button(:user_name) %>
 
         <label class="flex align-center gap flex-item-grow input input--actor">
           <%= form.text_field :name, class: "input txt-large ", autocomplete: "name", placeholder: "Enter your name",
@@ -60,7 +60,6 @@
       </div>
 
       <div class="flex align-center gap">
-        <%= translation_button(:email_address) %>
 
         <label class="flex align-center gap flex-item-grow input input--actor">
           <%= form.email_field :email_address, class: "input txt-large", value: @user.email_address, autocomplete: "username",
@@ -70,7 +69,6 @@
       </div>
 
       <div class="flex align-center gap">
-        <%= translation_button(:update_password) %>
 
         <label class="flex align-center gap flex-item-grow input input--actor">
           <%= form.password_field :password, class: "input txt-large", autocomplete: "new-password", placeholder: "Change password",
@@ -80,7 +78,6 @@
       </div>
 
       <div class="flex align-start gap">
-        <%= translation_button(:bio) %>
 
         <label class="flex align--center gap flex-item--grow input input--actor">
           <%= form.text_area :bio, class: "input txt-large", placeholder: "A few words about yourself…", maxlength: 200,
@@ -93,17 +90,37 @@
     </div>
   <% end %>
 
-  <div class="margin-block pad-inline pad-block fill-shade border-radius">
-    <menu class="flex flex-column gap margin-none pad">
-      <%= render partial: "users/profiles/membership", collection: @shared_memberships %>
+  <fieldset class="appearance-settings">
+    <legend>Appearance</legend>
 
-      <% if @direct_memberships.any? && @shared_memberships.any? %>
-        <hr class="separator full-width" style="--border-style: solid">
-      <% end %>
+    <label class="flex align-center gap">
+      <span class="flex-item-grow">Theme</span>
+      <select class="input appearance-settings__select"
+          aria-label="Theme"
+          data-theme-target="select"
+          data-action="change->theme#change">
+        <option value="system">Use system setting</option>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </select>
+    </label>
+  </fieldset>
 
-      <%= render partial: "users/profiles/membership", collection: @direct_memberships %>
-    </menu>
-  </div>
+  <fieldset class="margin-block">
+    <legend>Your conversations</legend>
+
+    <div class="pad-inline pad-block fill-shade border-radius">
+      <menu class="flex flex-column gap margin-none pad">
+        <%= render partial: "users/profiles/membership", collection: @shared_memberships %>
+
+        <% if @direct_memberships.any? && @shared_memberships.any? %>
+          <hr class="separator full-width" style="--border-style: solid">
+        <% end %>
+
+        <%= render partial: "users/profiles/membership", collection: @direct_memberships %>
+      </menu>
+    </div>
+  </fieldset>
 
   <%= render "users/profiles/transfer", user: @user %>
 

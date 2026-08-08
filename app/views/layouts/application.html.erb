@@ -5,9 +5,8 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, interactive-widget=resizes-content">
     <meta name="view-transition" content="same-origin">
-    <meta name="color-scheme" content="light dark">
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+    <meta name="color-scheme" content="dark light">
+    <meta name="theme-color" content="#181510">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -21,6 +20,18 @@
     <%= tag.link rel: "icon", href: fresh_account_logo_path, type: "image/png" %>
     <%= tag.link rel: "apple-touch-icon", href: fresh_account_logo_path %>
 
+    <script nonce="<%= content_security_policy_nonce %>">
+      (() => {
+        try {
+          const preference = localStorage.getItem("bonfire-theme")
+          const theme = [ "light", "dark" ].includes(preference) ? preference :
+            (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark")
+          document.documentElement.dataset.theme = theme
+          document.querySelector('meta[name="theme-color"]').content = theme === "light" ? "#fdf8f0" : "#181510"
+        } catch (_error) {}
+      })()
+    </script>
+
     <%= stylesheet_link_tag :all, "data-turbo-track": "reload" %>
     <%= custom_styles_tag %>
 
@@ -29,7 +40,7 @@
     <%= yield :head %>
   </head>
 
-  <body class="<%= body_classes %>" data-controller="local-time lightbox">
+  <body class="<%= body_classes %>" data-controller="local-time lightbox theme">
     <a href="#main-content" class="skip-navigation btn">Skip to main content</a>
 
     <nav id="nav">
