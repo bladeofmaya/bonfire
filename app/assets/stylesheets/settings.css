@@ -1,0 +1,29 @@
+/*
+ * Semantic settings groups. The fallback selectors preserve current screens
+ * while fieldsets migrate to the explicit class incrementally.
+ */
+.settings-group,
+:where(fieldset:not(.settings-group)) {
+  border: 2px solid var(--fieldset-border-color, var(--color-border));
+  border-block-end: 0;
+  border-inline: 0;
+  display: flex;
+  flex-direction: column;
+  max-inline-size: 50ch;
+  padding: var(--block-space) 0;
+
+  &.border {
+    border-color: var(--color-border-darker);
+    border-style: solid;
+    border-width: 1px;
+  }
+}
+
+.settings-group > .settings-group__legend,
+:where(fieldset:not(.settings-group)) > legend {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  margin-inline: auto;
+  text-align: center;
+}

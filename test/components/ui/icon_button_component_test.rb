@@ -5,7 +5,7 @@ class Ui::IconButtonComponentTest < ComponentTestCase
     render_inline component
 
     assert_icon_button "Copy join link"
-    assert_component_root "button.btn[type='button']"
+    assert_component_root "button.btn.btn--icon[type='button']"
     assert_selector "img[aria-hidden='true'][src*='copy-paste']"
   end
 

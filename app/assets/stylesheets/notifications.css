@@ -1,0 +1,48 @@
+.notifications-help {
+  padding: var(--block-space) var(--inline-space);
+  background-color: var(--color-border);
+  border-radius: 0.5em;
+  border: 1px solid var(--color-border-dark);
+  margin-block-end: var(--block-space-half);
+
+  summary {
+    --column-gap: var(--inline-space-half);
+    --btn-background: transparent;
+    --btn-border-radius: 0.5em;
+    --btn-border-color: transparent;
+
+    display: flex;
+    justify-content: start;
+    padding: var(--block-space) var(--inline-space);
+    margin: calc(var(--block-space) * -1) calc(var(--inline-space) * -1);
+  }
+
+  .disclosure {
+    margin-inline-start: auto;
+    transition: transform 150ms ease;
+
+    .notifications-help[open] & {
+      transform: rotate(90deg);
+    }
+  }
+
+  img {
+    display: inline;
+    filter: var(--icon-filter);
+    vertical-align: text-top;
+  }
+
+  li {
+    margin-block: var(--block-space-half);
+  }
+
+  em {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border-darker);
+    padding: 0.2em 0.4em;
+    border-radius: 0.3em;
+    font-weight: 500;
+    font-style: normal;
+    font-size: 0.9em;
+  }
+}

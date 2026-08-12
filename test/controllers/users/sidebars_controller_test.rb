@@ -24,7 +24,7 @@ class Users::SidebarsControllerTest < ActionDispatch::IntegrationTest
 
     assert_select "turbo-frame#user_sidebar" do
       assert_select "turbo-cable-stream-source", count: 2
-      assert_select "button.sidebar__toggle[data-action='toggle-class#toggle']", text: "Open menu"
+      assert_select "button.btn--icon.sidebar__toggle[data-action='toggle-class#toggle']", text: "Open menu"
     end
 
     assert_select "a.sidebar__tool[href='#{user_profile_path}']", text: "My Settings"

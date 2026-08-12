@@ -1,5 +1,5 @@
 :root {
-  --btn-size: 2.65em;
+  --btn-size: var(--control-size);
 }
 
 .btn {
@@ -13,7 +13,7 @@
   font-weight: 600;
   gap: 0.5em;
   justify-content: center;
-  padding: var(--btn-padding, 0.5em 1.1em);
+  padding: var(--btn-padding, var(--control-padding));
   pointer-events: auto;
   text-align: center;
 
@@ -36,8 +36,11 @@
     }
   }
 
-  /* Circle buttons */
-  &:where(:has(.for-screen-reader):has(img, figure)) {
+  /*
+   * Circle buttons. `.btn--icon` is the explicit production contract. The
+   * zero-specificity descendant selector temporarily preserves legacy callers.
+   */
+  &:where(.btn--icon, :has(.for-screen-reader):has(img, figure)) {
     --btn-border-radius: 50%;
     --btn-padding: 0;
 

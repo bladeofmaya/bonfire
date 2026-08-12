@@ -1,19 +1,19 @@
 :root {
-  --inline-space: 1ch;
-  --inline-space-half: calc(var(--inline-space) / 2);
-  --inline-space-double: calc(var(--inline-space) * 2);
+  --inline-space: var(--space-inline);
+  --inline-space-half: var(--space-inline-half);
+  --inline-space-double: var(--space-inline-double);
 
-  --block-space: 1rem;
-  --block-space-half: calc(var(--block-space) / 2);
-  --block-space-double: calc(var(--block-space) * 2);
+  --block-space: var(--space-block);
+  --block-space-half: var(--space-block-half);
+  --block-space-double: var(--space-block-double);
 }
 
 /* Text */
-.txt-small { font-size: 0.8rem; }
-.txt-medium { font-size: 1rem; }
-.txt-large { font-size: 1.4rem; }
-.txt-x-large { font-size: 1.8rem; }
-.txt-xx-large { font-size: 2.4rem; }
+.txt-small { font-size: var(--font-size-small); }
+.txt-medium { font-size: var(--font-size-medium); }
+.txt-large { font-size: var(--font-size-large); }
+.txt-x-large { font-size: var(--font-size-x-large); }
+.txt-xx-large { font-size: var(--font-size-xx-large); }
 
 .txt-align-center { text-align: center; }
 .txt-align-start { text-align: start; }

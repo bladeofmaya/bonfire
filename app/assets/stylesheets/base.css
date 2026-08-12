@@ -1,5 +1,5 @@
 :root {
-  --font-family: "Inter", "Avenir Next", "Segoe UI", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-family: var(--font-family-sans);
   --hover-color: var(--color-border-darker);
   --hover-size: 0.15em;
   --hover-filter: brightness(1);
@@ -79,31 +79,6 @@ turbo-cable-stream-source {
   display: contents;
 }
 
-/* For settings */
-fieldset {
-  border: 2px solid var(--fieldset-border-color, var(--color-border));
-  border-block-end: 0;
-  border-inline: 0;
-  display: flex;
-  flex-direction: column;
-  max-inline-size: 50ch;
-  padding: var(--block-space) 0;
-
-  &.border {
-    border-color: var(--color-border-darker);
-    border-style: solid;
-    border-width: 1px;
-  }
-}
-
-legend {
-  align-items: center;
-  display: flex;
-  justify-content: center;
-  margin-inline: auto;
-  text-align: center;
-}
-
 .membership-item:has(.btn.invisible) {
   opacity: 0.5;
 }
@@ -161,71 +136,6 @@ pre {
   border-radius: 0.3em;
   color: var(--color-border-darker);
   padding: 0.1em var(--inline-space-half);
-}
-
-/* PWA install */
-.pwa__instructions {
-  @media (display-mode: standalone) {
-    display: none;
-  }
-}
-
-.pwa__installer {
-  display: none;
-
-  .pwa--can-install & {
-    display: block;
-  }
-}
-
-/* Notification settings */
-.notifications-help {
-  padding: var(--block-space) var(--inline-space);
-  background-color: var(--color-border);
-  border-radius: 0.5em;
-  border: 1px solid var(--color-border-dark);
-  margin-block-end: var(--block-space-half);
-
-  summary {
-    --column-gap: var(--inline-space-half);
-    --btn-background: transparent;
-    --btn-border-radius: 0.5em;
-    --btn-border-color: transparent;
-
-    display: flex;
-    justify-content: start;
-    padding: var(--block-space) var(--inline-space);
-    margin: calc(var(--block-space) * -1) calc(var(--inline-space) * -1);
-  }
-
-  .disclosure {
-    margin-inline-start: auto;
-    transition: transform 150ms ease;
-
-    .notifications-help[open] & {
-      transform: rotate(90deg);
-    }
-  }
-
-  img {
-    display: inline;
-    filter: var(--icon-filter);
-    vertical-align: text-top;
-  }
-
-  li {
-    margin-block: var(--block-space-half);
-  }
-
-  em {
-    background: var(--color-bg);
-    border: 1px solid var(--color-border-darker);
-    padding: 0.2em 0.4em;
-    border-radius: 0.3em;
-    font-weight: 500;
-    font-style: normal;
-    font-size: 0.9em;
-  }
 }
 
 /* Nicer scrollbars on Chrome 29+. This is intended for Windows machines, but */

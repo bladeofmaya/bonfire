@@ -4,7 +4,7 @@ class Rooms::NotificationBellComponentTest < ComponentTestCase
   test "renders the loading state with the notification Stimulus contract" do
     render_inline component
 
-    assert_component_root "button.btn[type='button'][aria-label='Notification settings for this room']"
+    assert_component_root "button.btn.btn--icon[type='button'][aria-label='Notification settings for this room']"
     assert_selector "[data-action='click->notifications#attemptToSubscribe'][data-notifications-target='bell']"
     assert_selector "img[src*='notification-bell-loading'][aria-hidden='true']:not([hidden])"
     assert_selector "img[src*='notification-bell-alert'][aria-hidden='true'][hidden]", visible: false

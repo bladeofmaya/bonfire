@@ -26,7 +26,7 @@ class Ui::IconButtonComponent < ApplicationComponent
   end
 
   def css_classes
-    [ "btn", VARIANT_CLASSES.fetch(@variant) ].compact
+    [ "btn", "btn--icon", VARIANT_CLASSES.fetch(@variant) ].compact
   end
 
   def disabled?

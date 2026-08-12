@@ -15,8 +15,8 @@
   </div>
 
   <% bot.rooms.without_directs.ordered.each do |room| %>
-    <fieldset class="gap max-width pad border border-radius">
-      <legend class="min-width txt-align-start pad-inline">
+    <fieldset class="settings-group gap max-width pad border border-radius">
+      <legend class="settings-group__legend min-width txt-align-start pad-inline">
         <strong class="overflow-ellipsis"><%= room_display_name(room) %></strong>
       </legend>
 

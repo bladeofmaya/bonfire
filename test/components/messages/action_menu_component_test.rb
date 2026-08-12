@@ -11,7 +11,7 @@ class Messages::ActionMenuComponentTest < ComponentTestCase
 
     assert_component_root ".message__actions[data-controller='soft-keyboard']"
     assert_selector "details[data-controller='popup'][data-popup-orientation-top-class='popup-orientation-top']" do
-      assert_selector "summary.message__options-btn", text: "Message options"
+      assert_selector "summary.btn--icon.message__options-btn", text: "Message options"
       assert_selector "[data-popup-target='menu'].message__actions-menu", visible: false
     end
     assert_selector ".quick-boosts form", count: EmojiHelper::REACTIONS.size, visible: false

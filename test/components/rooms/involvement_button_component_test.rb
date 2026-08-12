@@ -13,7 +13,7 @@ class Rooms::InvolvementButtonComponentTest < ComponentTestCase
       render_inline component(involvement: involvement, label: label)
 
       assert_component_root "form.button_to"
-      assert_selector "button.btn.#{involvement}[role='checkbox'][aria-checked='true'][aria-labelledby='room_involvement_label']"
+      assert_selector "button.btn.btn--icon.#{involvement}[role='checkbox'][aria-checked='true'][aria-labelledby='room_involvement_label']"
       assert_selector "input[type='hidden'][name='_method'][value='put']", visible: false
       assert_selector "input[type='hidden'][name='involvement'][value='nothing']", visible: false
       assert_selector "img[aria-hidden='true'][src*='notification-bell-#{involvement}']"

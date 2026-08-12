@@ -212,6 +212,20 @@ High-risk page compositions have element-scoped baselines under
 changes. Regenerate with `UPDATE_VISUAL_BASELINES=1` only after inspecting the
 result and commit the changed image with the intentional UI change.
 
+CSS ownership, known cascade hazards, stable token families, and the migration
+order are documented in `docs/css-architecture.md`. Read it before moving
+selectors, changing global custom properties, or altering stylesheet loading.
+Use `.settings-group` with a direct `.settings-group__legend` for settings
+fieldsets; the unclassed fieldset fallback exists only for unmigrated flows.
+Use `Ui::IconButtonComponent` for native icon-only buttons, or `.btn--icon`
+when a non-button element or established component owns the interaction. Do
+not rely on hidden text and image descendants to determine button geometry.
+
+Milestone 1 readiness and the extension contract for future channel pinning or
+reordering are recorded in `docs/feature-readiness.md`. Ordering changes must
+update the membership query, item sort data, broadcasts, and Stimulus
+comparator together.
+
 ### UI change map
 
 Start with the matching area below, then search for every listed DOM ID,

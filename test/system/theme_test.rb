@@ -7,7 +7,7 @@ class ThemeTest < ApplicationSystemTestCase
   end
 
   test "choosing and remembering a color theme" do
-    select "Light", from: "Color theme"
+    select "Light", from: "Theme"
 
     assert_selector "html[data-theme='light']", visible: false
     assert_equal "light", page.evaluate_script("localStorage.getItem('bonfire-theme')")
@@ -16,9 +16,9 @@ class ThemeTest < ApplicationSystemTestCase
     visit user_profile_url
 
     assert_selector "html[data-theme='light']", visible: false
-    assert_select "Color theme", selected: "Light"
+    assert_select "Theme", selected: "Light"
 
-    select "Dark", from: "Color theme"
+    select "Dark", from: "Theme"
 
     assert_selector "html[data-theme='dark']", visible: false
     assert_equal "dark", page.evaluate_script("localStorage.getItem('bonfire-theme')")
@@ -26,8 +26,8 @@ class ThemeTest < ApplicationSystemTestCase
   end
 
   test "returning to the system theme clears the override" do
-    select "Light", from: "Color theme"
-    select "Use system setting", from: "Color theme"
+    select "Light", from: "Theme"
+    select "Use system setting", from: "Theme"
 
     assert_nil page.evaluate_script("localStorage.getItem('bonfire-theme')")
     assert_selector "html[data-theme]", visible: false
@@ -35,7 +35,7 @@ class ThemeTest < ApplicationSystemTestCase
 
   test "avatar upload controls remain transparent in both themes" do
     [ "Light", "Dark" ].each do |theme|
-      select theme, from: "Color theme"
+      select theme, from: "Theme"
 
       all(".input--file input[type='file']", visible: false).each do |input|
         assert_equal "rgba(0, 0, 0, 0)", computed_style(input, "backgroundColor")

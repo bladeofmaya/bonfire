@@ -92,8 +92,8 @@
     </div>
   <% end %>
 
-  <fieldset class="appearance-settings">
-    <legend>Appearance</legend>
+  <fieldset class="settings-group appearance-settings">
+    <legend class="settings-group__legend">Appearance</legend>
 
     <label class="flex align-center gap">
       <span class="flex-item-grow">Theme</span>
@@ -108,8 +108,8 @@
     </label>
   </fieldset>
 
-  <fieldset class="margin-block min-width full-width conversations-settings">
-    <legend>Your conversations</legend>
+  <fieldset class="settings-group margin-block min-width full-width conversations-settings">
+    <legend class="settings-group__legend">Your conversations</legend>
 
     <div class="min-width full-width pad-inline pad-block fill-shade border-radius">
       <menu class="flex flex-column gap margin-none min-width full-width pad">
@@ -127,8 +127,8 @@
   <%= render "users/profiles/transfer", user: @user %>
 
   <% if Rails.env.development? %>
-    <fieldset>
-      <legend>
+    <fieldset class="settings-group">
+      <legend class="settings-group__legend">
         <%= image_tag "key.svg", aria: { hidden: "true" }, size: 36, class: "colorize--black" %>
       </legend>
       <%= link_to "Push Notifications Dev Mode", user_push_subscriptions_url, class: "btn txt-small center" %>

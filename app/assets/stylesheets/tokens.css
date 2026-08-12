@@ -1,0 +1,42 @@
+:root {
+  /* Typography */
+  --font-family-sans: "Inter", "Avenir Next", "Segoe UI", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-size-small: 0.8rem;
+  --font-size-medium: 1rem;
+  --font-size-large: 1.4rem;
+  --font-size-x-large: 1.8rem;
+  --font-size-xx-large: 2.4rem;
+
+  /* Spacing and density */
+  --space-inline: 1ch;
+  --space-inline-half: calc(var(--space-inline) / 2);
+  --space-inline-double: calc(var(--space-inline) * 2);
+  --space-block: 1rem;
+  --space-block-half: calc(var(--space-block) / 2);
+  --space-block-double: calc(var(--space-block) * 2);
+
+  /* Controls */
+  --control-size: 2.65em;
+  --control-padding: 0.5em 1.1em;
+  --control-input-padding: 0.5em 0.8em;
+
+  /* Surfaces and shape */
+  --surface-panel-width: 50ch;
+  --surface-panel-wide-width: 80ch;
+  --surface-panel-padding: 1em;
+  --surface-panel-padding-wide: 2em;
+  --radius-small: 0.3em;
+  --radius-medium: 0.5em;
+  --radius-large: 0.8em;
+  --radius-x-large: 1em;
+  --radius-pill: 2em;
+  --radius-round: 50%;
+
+  /*
+   * CSS custom properties cannot be interpolated into media conditions. Keep
+   * responsive queries at 100ch until an explicit build-time custom-media
+   * strategy is adopted. This value exposes the contract to JavaScript and
+   * documentation without pretending to drive those queries.
+   */
+  --layout-wide-breakpoint: 100ch;
+}

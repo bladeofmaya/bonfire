@@ -3,7 +3,7 @@
       role: "checkbox",
       aria: { checked: true, labelledby: label_id },
       tabindex: 0,
-      class: [ "btn", involvement ] do %>
+      class: [ "btn", "btn--icon", involvement ] do %>
   <%= helpers.image_tag icon, aria: { hidden: "true" }, size: 20 %>
   <span class="for-screen-reader" id="<%= label_id %>"><%= label %></span>
 <% end %>

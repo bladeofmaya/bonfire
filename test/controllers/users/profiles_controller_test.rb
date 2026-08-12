@@ -26,7 +26,8 @@ class Users::ProfilesControllerTest < ActionDispatch::IntegrationTest
 
     get user_profile_url
 
-    assert_select "fieldset.conversations-settings.min-width.full-width" do
+    assert_select "fieldset.settings-group.conversations-settings.min-width.full-width" do
+      assert_select "legend.settings-group__legend", text: "Your conversations"
       assert_select "div.min-width.full-width menu.min-width.full-width"
       assert_select ".membership-item" do
         assert_select "a.flex-item-grow.min-width.overflow-ellipsis[title='#{long_name}']", text: long_name
