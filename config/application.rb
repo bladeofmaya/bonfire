@@ -16,5 +16,12 @@ module Bonfire
 
     # Fallback to English if translation key is missing
     config.i18n.fallbacks = true
+
+    # ViewComponent is used selectively for reusable leaf UI. Keep generated
+    # components, previews, and their layout in predictable locations.
+    config.view_component.generate.path = "app/components"
+    config.view_component.generate.preview = true
+    config.view_component.generate.preview_path = "test/components/previews"
+    config.view_component.previews.default_layout = "component_preview"
   end
 end

@@ -1,0 +1,25 @@
+<div id="<%= helpers.dom_id(boost) %>"
+    class="boost boost-item flex-inline postion--relative max-width align-center fill-white gap"
+    data-controller="boost-delete"
+    data-boost-delete-perform-class="boost--deleting"
+    data-boost-delete-reveal-class="expanded"
+    data-boost-delete-booster-id-value="<%= boost.booster.id %>">
+  <figure class="avatar boost__avatar flex-item-no-shrink">
+    <%= helpers.link_to helpers.user_path(boost.booster), title: boost.booster.title,
+          class: "btn avatar", aria: { label: accessible_avatar_label }, data: { turbo_frame: "_top" } do %>
+      <%= helpers.image_tag avatar_source, aria: { hidden: "true" }, size: 48 %>
+    <% end %>
+  </figure>
+
+  <%= helpers.tag.span boost.content, role: "button",
+        class: [ "txt-small", { "txt-medium": emoji? } ],
+        data: { action: "click->boost-delete#reveal keydown.enter->boost-delete#reveal:prevent", boost_delete_target: "content" } %>
+
+  <%= helpers.button_to helpers.message_boost_path(boost.message, boost), method: :delete,
+        data: { action: "boost-delete#perform", boost_delete_target: "button" },
+        class: "btn btn--negative flex-item-justify-end boost__delete" do %>
+    <%= helpers.image_tag "minus.svg", size: 20, aria: { hidden: "true" } %>
+    <span class="for-screen-reader">Delete this boost</span>
+  <% end %>
+</div>
+<span id="delete_boost_accessible_label" class="for-screen-reader">Press enter to delete this boost</span>

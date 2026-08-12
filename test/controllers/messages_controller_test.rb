@@ -14,6 +14,7 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     ensure_messages_present @messages.last
+    assert_message_dom_contract @messages.last
   end
 
   test "index returns a page before the specified message" do
@@ -52,9 +53,26 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
     post room_messages_url(@room, format: :turbo_stream), params: { message: { body: "New one", client_message_id: 999 } }
 
     assert_rendered_turbo_stream_broadcast @room, :messages, action: "append", target: [ @room, :messages ] do
+      assert_message_dom_contract Message.last
       assert_select ".message__body", text: /New one/
       assert_copy_link_button room_at_message_url(@room, Message.last, host: "once.bonfire.test")
     end
+  end
+
+  test "initial and broadcast rendering use the client message id as the same outer identity" do
+    post room_messages_url(@room, format: :turbo_stream), params: {
+      message: { body: "Stable identity", client_message_id: "client-generated-42" }
+    }
+
+    message = Message.last
+    assert_equal "message_client-generated-42", dom_id(message)
+
+    assert_rendered_turbo_stream_broadcast @room, :messages, action: "append", target: [ @room, :messages ] do
+      assert_select "#message_client-generated-42[data-message-id='#{message.id}']"
+    end
+
+    get room_messages_url(@room)
+    assert_select "#message_client-generated-42[data-message-id='#{message.id}']"
   end
 
   test "creating a message broadcasts unread room to each member" do
@@ -76,14 +94,29 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "creating in a deleted or inaccessible room replaces the composer frame" do
+    post room_messages_url("missing-room", format: :turbo_stream), params: {
+      message: { body: "Cannot be delivered", client_message_id: "missing-room-message" }
+    }
+
+    assert_response :success
+    assert_select "turbo-frame#composer-frame" do
+      assert_select ".composer__input.txt-negative", text: "This room was deleted."
+    end
+    assert_no_turbo_stream_broadcasts "missing-room"
+  end
+
   test "update updates a message belonging to the user" do
     message = @room.messages.where(creator: users(:david)).first
 
-    Turbo::StreamsChannel.expects(:broadcast_replace_to).once
     put room_message_url(@room, message), params: { message: { body: "Updated body" } }
 
     assert_redirected_to room_message_url(@room, message)
     assert_equal "Updated body", message.reload.plain_text_body
+    assert_rendered_turbo_stream_broadcast @room, :messages,
+      action: "replace", target: [ message, :presentation ] do
+      assert_select "##{dom_id(message, :presentation)}[data-reply-target='body'][data-messages-target='body']", text: /Updated body/
+    end
   end
 
   test "admin updates a message belonging to another user" do
@@ -100,10 +133,11 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
     message = @room.messages.where(creator: users(:david)).first
 
     assert_difference -> { Message.count }, -1 do
-      Turbo::StreamsChannel.expects(:broadcast_remove_to).once
       delete room_message_url(@room, message, format: :turbo_stream)
       assert_response :success
     end
+
+    assert_rendered_turbo_stream_broadcast @room, :messages, action: "remove", target: message
   end
 
   test "admin destroy destroys a message belonging to another user" do
@@ -149,6 +183,21 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   private
+    def assert_message_dom_contract(message)
+      assert_select "##{dom_id(message)}.message[data-controller~='reply']" \
+                    "[data-user-id='#{message.creator_id}'][data-message-id='#{message.id}']" \
+                    "[data-message-timestamp][data-message-updated-at][data-sort-value]" \
+                    "[data-messages-target~='message'][data-search-results-target~='message']" \
+                    "[data-refresh-room-target~='message'][data-reply-composer-outlet='#composer']" do
+        assert_select "turbo-frame##{dom_id(message, :edit)}"
+        assert_select "##{dom_id(message, :presentation)}[data-reply-target='body'][data-messages-target='body']"
+        assert_select ".message__actions[data-controller~='soft-keyboard']"
+        assert_select "details[data-controller~='popup'] [data-popup-target='menu']"
+        assert_select "turbo-frame##{dom_id(message, :boosting)}"
+        assert_select "turbo-frame##{dom_id(message, :new_boost)}"
+      end
+    end
+
     def ensure_messages_present(*messages, count: 1)
       messages.each do |message|
         assert_select "#" + dom_id(message), count:

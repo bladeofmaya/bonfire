@@ -24,9 +24,20 @@ class Rooms::DirectsController < RoomsController
     end
 
     def broadcast_create_room(room)
-      room.memberships.each do |membership|
-        membership.broadcast_prepend_to membership.user, :rooms, target: :direct_rooms, partial: "users/sidebars/rooms/direct"
+      memberships = room.memberships.to_a
+      ActiveRecord::Associations::Preloader.new(
+        records: memberships, associations: [ :user, { room: :users } ]
+      ).call
+
+      memberships.each do |membership|
+        membership.broadcast_prepend_to membership.user, :rooms, target: :direct_rooms,
+          partial: "users/sidebars/rooms/direct",
+          locals: { participants: direct_participants_for(membership) }
       end
+    end
+
+    def direct_participants_for(membership)
+      membership.room.users.to_a.without(membership.user).presence || [ membership.user ]
     end
 
     # All users in a direct room can administer it. Only direct rooms, though: this

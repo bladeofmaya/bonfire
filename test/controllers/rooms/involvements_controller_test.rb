@@ -6,8 +6,25 @@ class Rooms::InvolvementsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "show" do
+    membership = memberships(:david_designers)
+
     get room_involvement_url(rooms(:designers))
     assert_response :success
+
+    assert_select "turbo-frame##{dom_id(rooms(:designers), :involvement)}" do
+      assert_select "form.button_to button.#{membership.involvement}[role='checkbox']"
+      assert_select "input[name='involvement'][value='everything']", visible: false
+    end
+  end
+
+  test "direct and shared rooms use their distinct involvement cycles" do
+    memberships(:david_david_and_jason).update! involvement: "nothing"
+    get room_involvement_url(rooms(:david_and_jason))
+    assert_select "input[name='involvement'][value='everything']", visible: false
+
+    memberships(:david_watercooler).update! involvement: "nothing"
+    get room_involvement_url(rooms(:watercooler))
+    assert_select "input[name='involvement'][value='invisible']", visible: false
   end
 
   test "update involvement sends turbo update when becoming visible and when going invisible" do
@@ -18,11 +35,19 @@ class Rooms::InvolvementsControllerTest < ActionDispatch::IntegrationTest
     end
     end
 
+    assert_rendered_turbo_stream_broadcast users(:david), :rooms,
+      action: "remove", target: [ rooms(:watercooler), :list ]
+
     assert_turbo_stream_broadcasts [ users(:david), :rooms ], count: 2 do
     assert_changes -> { memberships(:david_watercooler).reload.involvement }, from: "invisible", to: "everything" do
       put room_involvement_url(rooms(:watercooler)), params: { involvement: "everything" }
       assert_redirected_to room_involvement_url(rooms(:watercooler))
     end
+    end
+
+    assert_rendered_turbo_stream_broadcast users(:david), :rooms,
+      action: "prepend", target: :shared_rooms do
+      assert_select "##{dom_id(rooms(:watercooler), :list)}[data-room-id='#{rooms(:watercooler).id}']"
     end
   end
 

@@ -6,6 +6,9 @@ require "minitest/unit"
 require "mocha/minitest"
 require "webmock/minitest"
 require "turbo/broadcastable/test_helper"
+require_relative "test_helpers/component_test_helper"
+require_relative "test_helpers/component_test_case"
+require_relative "test_helpers/visual_regression_helper"
 
 WebMock.enable!
 

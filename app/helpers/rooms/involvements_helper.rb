@@ -6,13 +6,13 @@ module Rooms::InvolvementsHelper
   end
 
   def button_to_change_involvement(room, involvement)
-    button_to room_involvement_path(room, involvement: next_involvement_for(room, involvement: involvement)),
-      method: :put,
-      role: "checkbox", aria: { checked: true, labelledby: dom_id(room, :involvement_label) }, tabindex: 0,
-      class: "btn #{involvement}" do
-        image_tag("notification-bell-#{involvement}.svg", aria: { hidden: "true" }, size: 20) +
-        tag.span(HUMANIZE_INVOLVEMENT[involvement], class: "for-screen-reader", id: dom_id(room, :involvement_label))
-    end
+    render Rooms::InvolvementButtonComponent.new(
+      involvement: involvement,
+      next_involvement: next_involvement_for(room, involvement: involvement),
+      url: room_involvement_path(room),
+      label: HUMANIZE_INVOLVEMENT.fetch(involvement),
+      label_id: dom_id(room, :involvement_label)
+    )
   end
 
   private

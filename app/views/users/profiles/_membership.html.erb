@@ -1,11 +1,15 @@
 <li class="flex align-center gap margin-none min-width membership-item">
-  <%= link_to room_path(membership.room), class: "overflow-ellipsis fill-shade txt-primary txt-undecorated" do %>
-    <strong><%= room_display_name(membership.room) %></strong>
+  <% display_name = room_display_name(membership.room) %>
+
+  <%= link_to room_path(membership.room),
+        class: "flex-item-grow min-width overflow-ellipsis fill-shade txt-primary txt-undecorated",
+        title: display_name do %>
+    <strong><%= display_name %></strong>
   <% end %>
 
   <hr class="separator" aria-hidden="true">
 
-  <span class="txt-small">
+  <span class="txt-small flex-item-no-shrink">
     <%= turbo_frame_tag dom_id(membership.room, :involvement) do %>
       <%= button_to_change_involvement(membership.room, membership.involvement) %>
     <% end %>

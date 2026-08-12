@@ -20,12 +20,14 @@ class Rooms::RefreshesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     assert_select "turbo-stream[action='append']" do
-      assert_select "#" + dom_id(@new_message)
+      assert_select "##{dom_id(@new_message)}[data-message-id='#{@new_message.id}']"
+      assert_select "##{dom_id(@new_message, :presentation)}[data-messages-target='body']"
       assert_select "template", count: 1
     end
 
     assert_select "turbo-stream[action='replace']" do
-      assert_select "#" + dom_id(@old_message)
+      assert_select "##{dom_id(@old_message)}[data-message-id='#{@old_message.id}']"
+      assert_select "##{dom_id(@old_message, :presentation)}[data-messages-target='body']"
       assert_select "template", count: 1
     end
   end

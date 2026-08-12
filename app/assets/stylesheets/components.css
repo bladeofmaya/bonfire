@@ -1,0 +1,122 @@
+.settings-field {
+  inline-size: 100%;
+  max-inline-size: 50ch;
+}
+
+.component-preview {
+  inline-size: min(100%, 72rem);
+  margin-inline: auto;
+  min-block-size: 100dvh;
+
+  &[data-viewport="mobile"] {
+    inline-size: min(100%, 24rem);
+  }
+}
+
+.component-preview__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--inline-space);
+  padding-block-end: var(--block-space);
+  border-block-end: 1px solid var(--color-border-subtle);
+}
+
+.component-preview__home { font-weight: 700; }
+
+.component-preview__controls,
+.component-preview__control {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.component-preview__option {
+  padding: 0.35em 0.65em;
+  border-radius: 999px;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+
+  &:hover { background: var(--color-surface-hover); }
+
+  &.active {
+    background: var(--color-primary);
+    color: var(--color-primary-fg);
+  }
+}
+
+.component-gallery__intro {
+  display: grid;
+  gap: 0.35rem;
+  max-inline-size: 65ch;
+}
+
+.component-gallery__group { display: grid; gap: var(--block-space); }
+
+.component-gallery__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: var(--inline-space);
+}
+
+.component-gallery__card,
+.component-gallery__example-list {
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  background: var(--color-surface);
+}
+
+.component-gallery__card { padding: var(--block-space) var(--inline-space); }
+
+.component-gallery__states {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.75rem;
+  margin-block: 0.75rem 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9em;
+}
+
+.component-gallery__example-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow: hidden;
+
+  li + li { border-block-start: 1px solid var(--color-border-subtle); }
+}
+
+.component-gallery__example-link {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--block-space) var(--inline-space);
+  text-decoration: none;
+
+  &:hover { background: var(--color-surface-hover); }
+}
+
+.component-preview__breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  color: var(--color-text-secondary);
+  font-size: 0.9em;
+}
+
+.component-preview__stage {
+  min-inline-size: 0;
+  padding: clamp(1rem, 4vw, 3rem);
+  border: 1px dashed var(--color-border);
+  border-radius: 0.75rem;
+  background: var(--color-app-bg);
+}
+
+@media (max-width: 40rem) {
+  .component-preview__toolbar { align-items: flex-start; }
+
+  .component-preview__controls {
+    align-items: flex-end;
+    flex-direction: column;
+  }
+}

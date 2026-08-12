@@ -27,6 +27,12 @@ class Rooms::ClosedsControllerTest < ActionDispatch::IntegrationTest
     new_room = Room.last
     assert_equal new_room.memberships.count, 3
     assert_redirected_to room_url(Room.last)
+
+    [ users(:david), users(:kevin), users(:jason) ].each do |user|
+      assert_rendered_turbo_stream_broadcast user, :rooms, action: "prepend", target: :shared_rooms do
+        assert_select "##{dom_id(new_room, :list)}[data-room-id='#{new_room.id}'][data-sorted-list-name='My New Room']"
+      end
+    end
   end
 
   test "create forbidden by non-admin when account restricts creation to admins" do
@@ -48,6 +54,11 @@ class Rooms::ClosedsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to room_url(rooms(:designers))
     assert rooms(:designers).reload.name, "New Name"
+
+    assert_rendered_turbo_stream_broadcast users(:david), :rooms,
+      action: "replace", target: [ rooms(:designers), :list ] do
+      assert_select "##{dom_id(rooms(:designers), :list)}[data-sorted-list-name='New Name']", text: "New Name"
+    end
   end
 
   test "update an open room to be closed" do

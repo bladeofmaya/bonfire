@@ -1,0 +1,37 @@
+<header class="component-gallery__intro">
+  <p class="margin-none txt-small txt-subtle">Development workspace</p>
+  <h1 class="margin-none">Bonfire component gallery</h1>
+  <p class="margin-none txt-subtle">
+    Browse production UI in realistic states. Use the controls above to check every example in both themes and at a narrow viewport.
+  </p>
+</header>
+
+<div class="component-gallery flex flex-column gap">
+  <% component_preview_groups(@previews).each do |group, previews| %>
+    <% title, description = component_preview_group_details(group) %>
+    <section class="component-gallery__group" aria-labelledby="preview-group-<%= group %>">
+      <header>
+        <h2 id="preview-group-<%= group %>" class="margin-none"><%= title %></h2>
+        <% if description.present? %>
+          <p class="margin-none txt-small txt-subtle"><%= description %></p>
+        <% end %>
+      </header>
+
+      <div class="component-gallery__grid">
+        <% previews.each do |preview| %>
+          <article class="component-gallery__card">
+            <h3 class="margin-none">
+              <%= link_to preview.preview_name.split("/").last.titleize, component_preview_path(preview) %>
+            </h3>
+
+            <ul class="component-gallery__states" aria-label="Preview states">
+              <% preview.examples.each do |example| %>
+                <li><%= link_to example.titleize, component_preview_path(preview, example: example) %></li>
+              <% end %>
+            </ul>
+          </article>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+</div>

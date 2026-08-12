@@ -1,0 +1,9 @@
+<button type="button" class="btn"
+    aria-label="<%= label %>"
+    data-action="click->notifications#attemptToSubscribe"
+    data-notifications-target="bell">
+  <%= helpers.image_tag "notification-bell-loading.svg", size: 20,
+        aria: { hidden: "true" }, hidden: alert? %>
+  <%= helpers.image_tag "notification-bell-alert.svg", size: 20,
+        aria: { hidden: "true" }, hidden: !alert? %>
+</button>

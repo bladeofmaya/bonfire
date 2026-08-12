@@ -24,7 +24,7 @@ class MessagesController < ApplicationController
     @message.broadcast_create
     deliver_webhooks_to_bots
   rescue ActiveRecord::RecordNotFound
-    render action: :room_not_found
+    render action: :room_not_found, formats: :html
   end
 
   def show

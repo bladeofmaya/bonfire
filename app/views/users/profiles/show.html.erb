@@ -9,10 +9,12 @@
     <%= form_with url: session_path, method: :delete, data: { controller: "sessions" } do %>
       <%= hidden_field_tag :push_subscription_endpoint, nil, data: { sessions_target: "pushSubscriptionEndpoint" } %>
 
-      <button class="btn" data-action="sessions#logout:prevent">
-        <%= image_tag "logout.svg", aria: { hidden: "true" } %>
-        <span class="for-screen-reader">Log out</span>
-      </button>
+      <%= render Ui::IconButtonComponent.new(
+            label: "Log out",
+            icon: "logout.svg",
+            type: :submit,
+            data: { action: "sessions#logout:prevent" }
+          ) %>
     <% end %>
   </div>
 <% end %>
@@ -106,11 +108,11 @@
     </label>
   </fieldset>
 
-  <fieldset class="margin-block">
+  <fieldset class="margin-block min-width full-width conversations-settings">
     <legend>Your conversations</legend>
 
-    <div class="pad-inline pad-block fill-shade border-radius">
-      <menu class="flex flex-column gap margin-none pad">
+    <div class="min-width full-width pad-inline pad-block fill-shade border-radius">
+      <menu class="flex flex-column gap margin-none min-width full-width pad">
         <%= render partial: "users/profiles/membership", collection: @shared_memberships %>
 
         <% if @direct_memberships.any? && @shared_memberships.any? %>

@@ -1,3 +1,1 @@
-<div id="<%= dom_id(message, :presentation) %>" dir="auto" data-reply-target="body" data-messages-target="body">
-  <%= message_presentation(message) %>
-</div>
+<%= render Messages::PresentationComponent.new(message: message) %>

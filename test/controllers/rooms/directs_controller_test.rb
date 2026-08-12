@@ -12,6 +12,14 @@ class Rooms::DirectsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to room_url(room)
     assert room.users.include?(users(:david))
     assert room.users.include?(users(:jz))
+
+    room.memberships.each do |membership|
+      assert_rendered_turbo_stream_broadcast membership.user, :rooms,
+        action: "prepend", target: :direct_rooms do
+        assert_select "##{dom_id(room, :list)}.direct[data-room-id='#{room.id}'][data-sorted-list-number]"
+        assert_select ".for-screen-reader", text: /Ping with/
+      end
+    end
   end
 
   test "create only once per user set" do

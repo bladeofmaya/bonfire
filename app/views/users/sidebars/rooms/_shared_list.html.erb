@@ -1,0 +1,5 @@
+<div id="shared_rooms" contents data-controller="sorted-list">
+  <% memberships.each do |membership| %>
+    <%= render "users/sidebars/rooms/shared", room: membership.room, unread: membership.unread? %>
+  <% end %>
+</div>

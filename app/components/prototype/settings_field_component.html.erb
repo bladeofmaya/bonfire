@@ -1,0 +1,14 @@
+<div class="settings-field flex flex-column gap-half" data-prototype="view-component">
+  <label for="<%= id %>" class="txt-align-start"><%= label %></label>
+
+  <%= tag.textarea value, id: id, name: name, class: "input", disabled: disabled?,
+        aria: { describedby: described_by, invalid: error.present? ? "true" : nil } %>
+
+  <% if help.present? %>
+    <p id="<%= id %>_help" class="margin-none txt-small txt-subtle"><%= help %></p>
+  <% end %>
+
+  <% if error.present? %>
+    <p id="<%= id %>_error" class="margin-none txt-small txt-negative" role="alert"><%= error %></p>
+  <% end %>
+</div>

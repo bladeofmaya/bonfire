@@ -19,9 +19,9 @@
           </span>
         <% end %>
 
-        <div id="direct_rooms" contents data-controller="sorted-list" data-action="rooms-list:unread@window->sorted-list#updateItem">
-          <%= render partial: "users/sidebars/rooms/direct", collection: @direct_memberships, as: :membership, cached: true %>
-        </div>
+        <%= render "users/sidebars/rooms/direct_list",
+              memberships: @direct_memberships,
+              participants_by_membership: @direct_participants %>
 
         <div contents>
           <%= render partial: "users/sidebars/rooms/direct_placeholder", collection: @direct_placeholder_users, as: :user %>
@@ -30,11 +30,7 @@
     </turbo-frame>
 
     <div class="rooms position-relative flex flex-column gap">
-      <div id="shared_rooms" contents data-controller="sorted-list">
-        <% @other_memberships.each do |membership| %>
-          <%= render "users/sidebars/rooms/shared", room: membership.room, unread: membership.unread? %>
-        <% end %>
-      </div>
+      <%= render "users/sidebars/rooms/shared_list", memberships: @other_memberships %>
 
       <% if Current.user.administrator? || !Current.account.settings.restrict_room_creation_to_administrators? %>
         <%= link_to new_rooms_open_path, class: "rooms__new-btn btn room align-center gap txt-reversed", aria: { label: "New Chat Room" } do %>

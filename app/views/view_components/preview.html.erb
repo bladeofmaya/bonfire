@@ -1,0 +1,15 @@
+<nav class="component-preview__breadcrumb" aria-label="Component preview">
+  <%= link_to "All components", preview_view_components_path(**component_preview_options) %>
+  <span aria-hidden="true">/</span>
+  <%= link_to @preview.preview_name.split("/").last.titleize, component_preview_path(@preview) %>
+  <span aria-hidden="true">/</span>
+  <strong><%= @example_name.titleize %></strong>
+</nav>
+
+<section class="component-preview__stage" aria-label="Rendered component">
+  <% if @render_args[:component] %>
+    <%= render(@render_args[:component], @render_args[:args], &@render_args[:block]) %>
+  <% else %>
+    <%= render template: @render_args[:template], locals: @render_args[:locals] || {} %>
+  <% end %>
+</section>

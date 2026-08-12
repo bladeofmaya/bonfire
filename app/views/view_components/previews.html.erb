@@ -1,0 +1,18 @@
+<header class="component-gallery__intro">
+  <p class="margin-none txt-small">
+    <%= link_to "All components", preview_view_components_path(**component_preview_options) %>
+  </p>
+  <h1 class="margin-none"><%= @preview.preview_name.split("/").last.titleize %></h1>
+  <p class="margin-none txt-subtle">Choose a state to open it in the current theme and viewport.</p>
+</header>
+
+<ul class="component-gallery__example-list">
+  <% @preview.examples.each do |example| %>
+    <li>
+      <%= link_to component_preview_path(@preview, example: example), class: "component-gallery__example-link" do %>
+        <span><%= example.titleize %></span>
+        <span aria-hidden="true">→</span>
+      <% end %>
+    </li>
+  <% end %>
+</ul>

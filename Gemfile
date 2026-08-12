@@ -25,6 +25,7 @@ gem "importmap-rails", github: "rails/importmap-rails"
 # Hotwire
 gem "turbo-rails", github: "hotwired/turbo-rails"
 gem "stimulus-rails"
+gem "view_component"
 
 # Media handling
 gem "image_processing", ">= 1.2"

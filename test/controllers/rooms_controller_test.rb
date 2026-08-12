@@ -15,17 +15,86 @@ class RoomsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "notification bell preserves its frame and permission-controller contracts" do
+    get room_url(rooms(:watercooler))
+
+    assert_select "[data-controller~='notifications'][data-notifications-subscriptions-url-value]" do
+      assert_select "turbo-frame##{dom_id(rooms(:watercooler), :involvement)}[data-controller='turbo-frame']" do
+        assert_select "button[aria-label='Notification settings for this room'][data-notifications-target='bell']"
+      end
+      assert_select "dialog[data-notifications-target='notAllowedNotice']"
+    end
+
+    get room_url(rooms(:david_and_jason))
+    assert_select "button[aria-label='Notification settings for this Ping']"
+  end
+
+  test "optimistic message template preserves the confirmed message shell contract" do
+    get room_url(rooms(:watercooler))
+
+    assert_select "script[type='text/template'][data-messages-target='template']", count: 1
+    assert_includes response.body, 'id="message_$clientMessageId$"'
+    assert_includes response.body, 'class="message message--me $messageClasses$"'
+    assert_includes response.body, 'data-message-timestamp="$messageTimestamp$"'
+    assert_includes response.body, 'data-messages-target="message"'
+    assert_includes response.body, "$body$"
+    assert_includes response.body, "message__actions"
+    assert_includes response.body, "message__options-btn"
+  end
+
+  test "composer preserves its frame, form, Stimulus, attachment, and typing contracts" do
+    room = rooms(:watercooler)
+
+    get room_url(room)
+
+    assert_select "footer .composer[data-controller='typing-notifications']" do
+      assert_select "a.composer__context-btn[href='#{searches_path}']", text: "Search"
+      assert_select "turbo-frame#composer-frame" do
+        assert_select "form#composer[action='#{room_messages_path(room)}']" \
+                      "[data-controller='composer drop-target']" \
+                      "[data-composer-messages-outlet='#message-area']" \
+                      "[data-composer-room-id-value='#{room.id}']"
+        assert_select "fieldset[data-composer-target='fields']"
+        assert_select "[data-composer-target='fileList']"
+        assert_select "trix-editor[aria-label='Write a message'][data-composer-target='text']" \
+                      "[data-controller='rich-autocomplete']"
+        assert_select "input[type='file'][multiple][data-action='composer#filePicked']"
+        assert_select "button[type='button'][data-action='composer#toggleToolbar']", text: "Rich text"
+        assert_select "button[type='submit'][data-action='composer#submit']", text: "Send Message"
+        assert_select "input[type='hidden'][data-composer-target='clientid']", visible: false
+      end
+      assert_select "[data-typing-notifications-target='indicator'] [data-typing-notifications-target='author']"
+    end
+
+    composer = css_select("form#composer").sole
+    actions = composer["data-action"]
+    %w[
+      drop-target:drop@window->composer#dropFiles
+      trix-file-accept->composer#preventAttachment
+      paste->composer#pasteFiles
+      turbo:submit-end->composer#submitEnd
+      refresh-room:online@window->composer#online
+      refresh-room:offline@window->composer#offline
+      typing-notifications#stop
+    ].each { |action| assert_includes actions, action }
+  end
+
   test "shows records the last room visited in a cookie" do
     get room_url(users(:david).rooms.last)
     assert response.cookies[:last_room] = users(:david).rooms.last.id
   end
 
   test "destroy" do
+    room = rooms(:designers)
+
     assert_turbo_stream_broadcasts :rooms, count: 1 do
       assert_difference -> { Room.count }, -1 do
-        delete room_url(rooms(:designers))
+        delete room_url(room)
       end
     end
+
+    assert_rendered_turbo_stream_broadcast :rooms,
+      action: "remove", target: [ room, :list ]
   end
 
   test "destroy only allowed for creators or those who can administer" do

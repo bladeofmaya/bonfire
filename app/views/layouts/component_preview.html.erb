@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html data-theme="<%= component_preview_theme %>">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><%= @page_title || "Bonfire component gallery" %></title>
+    <%= stylesheet_link_tag :all, "data-turbo-track": "reload" %>
+  </head>
+
+  <body>
+    <main class="component-preview pad flex flex-column gap" data-viewport="<%= component_preview_viewport %>">
+      <nav class="component-preview__toolbar" aria-label="Preview display settings">
+        <%= link_to "Components", preview_view_components_path(**component_preview_options), class: "component-preview__home" %>
+
+        <div class="component-preview__controls">
+          <div class="component-preview__control" aria-label="Theme">
+            <% %w[ dark light ].each do |theme| %>
+              <%= link_to theme.titleize,
+                    "?#{request.query_parameters.merge(theme: theme).to_query}",
+                    class: class_names("component-preview__option", active: component_preview_theme == theme),
+                    "aria-current": ("true" if component_preview_theme == theme) %>
+            <% end %>
+          </div>
+
+          <div class="component-preview__control" aria-label="Viewport">
+            <% %w[ desktop mobile ].each do |viewport| %>
+              <%= link_to viewport.titleize,
+                    "?#{request.query_parameters.merge(viewport: viewport).to_query}",
+                    class: class_names("component-preview__option", active: component_preview_viewport == viewport),
+                    "aria-current": ("true" if component_preview_viewport == viewport) %>
+            <% end %>
+          </div>
+        </div>
+      </nav>
+
+      <%= yield %>
+    </main>
+  </body>
+</html>
