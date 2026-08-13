@@ -8,6 +8,13 @@ class AccountsControllerTest < ActionDispatch::IntegrationTest
   test "edit" do
     get edit_account_url
     assert_response :ok
+    assert_select "nav[role='tablist'][aria-label='Account settings']" do
+      assert_select "button[role='tab'][data-profile-tabs-name]", count: 2
+      assert_select "button[aria-selected='true'][data-profile-tabs-name='general']", text: "General"
+      assert_select "[data-lucide]", count: 2
+    end
+    assert_select "#account-panel-general:not([hidden])"
+    assert_select "#account-panel-members[hidden] turbo-frame#account_users"
   end
 
   test "edit groups administrators separately from members with a divider" do

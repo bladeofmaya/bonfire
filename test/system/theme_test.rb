@@ -2,8 +2,10 @@ require "application_system_test_case"
 
 class ThemeTest < ApplicationSystemTestCase
   setup do
+    page.current_window.resize_to(1400, 1400)
     sign_in "david@37signals.com"
     visit user_profile_url
+    click_on "Appearance"
   end
 
   test "choosing and remembering a color theme" do
@@ -14,6 +16,7 @@ class ThemeTest < ApplicationSystemTestCase
     assert_equal "#fdf8f0", css_variable("--color-app-bg")
 
     visit user_profile_url
+    click_on "Appearance"
 
     assert_selector "html[data-theme='light']", visible: false
     assert_select "Theme", selected: "Light"

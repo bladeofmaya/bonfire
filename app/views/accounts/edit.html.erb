@@ -20,95 +20,118 @@
   <% end %>
 <% end %>
 
-<section class="panel txt-align-center flex flex-column gap" style="view-transition-name: account-settings">
-  <% if Current.user.can_administer? %>
-    <div class="align-center center avatar__form gap" data-controller="upload-preview">
-      <%= form_with model: @account, method: :patch, class: "txt--medium", data: { controller: "form" } do |form| %>
-        <label class="btn input--file">
-          <%= image_tag "camera.svg", aria: { hidden: "true" }, size: 20 %>
-          <%= form.file_field :logo, class: "input", accept: "image/*",
-                data: { action: "upload-preview#previewImage change->form#submit" } %>
-          <span class="for-screen-reader">Upload logo</span>
-        </label>
-      <% end %>
-
-      <%= form_with model: @account, method: :patch, data: { controller: "form" } do |form| %>
-        <label class="btn avatar input--file account-logo txt-xx-large">
-          <%= image_tag fresh_account_logo_path, role: "presentation", size: 48, data: { upload_preview_target: "image" } %>
-          <%= form.file_field :logo, class: "input", accept: "image/*",
-                data: { action: "upload-preview#previewImage change->form#submit" } %>
-          <span class="for-screen-reader">Upload logo</span>
-        </label>
-      <% end %>
-
-      <% if @account.logo.attached? %>
-        <%= button_to fresh_account_logo_path, method: :delete, class: "btn btn--negative txt-small avatar__delete-btn" do %>
-          <%= image_tag "minus.svg", aria: { hidden: "true" }, size: 20 %>
-          <span class="for-screen-reader">Delete logo</span>
-        <% end %>
-      <% end %>
-    </div>
-
-    <%= form_with model: @account, data: { controller: "form" }, class: "flex flex-column gap" do |form| %>
-      <div class="flex align-center gap">
-
-        <label class="flex align-center gap flex-item-grow">
-          <%= form.text_field :name, class: "input txt-large", autocomplete: "off", placeholder: "Name this account", autofocus: true,
-                data: { action: "keydown.enter->form#submit" } %>
-        </label>
-
-        <%= form.button class: "btn btn--reversed center", type: "submit" do %>
-          <%= image_tag "check.svg", aria: { hidden: "true" }, size: 20 %>
-          <span class="for-screen-reader">Save changes</span>
-        <% end %>
-      </div>
+<section class="panel panel--wide profile-settings" style="view-transition-name: account-settings"
+    data-controller="profile-tabs" data-profile-tabs-default-tab-value="general">
+  <nav class="profile-settings__tabs" role="tablist" aria-label="Account settings">
+    <% [ [ "general", "settings", "General" ], [ "members", "users-round", "Members" ] ].each_with_index do |(name, icon, label), index| %>
+      <button type="button" class="profile-settings__tab" id="account-tab-<%= name %>"
+          role="tab" aria-controls="account-panel-<%= name %>" aria-selected="<%= index.zero? %>"
+          tabindex="<%= index.zero? ? 0 : -1 %>" data-profile-tabs-target="tab"
+          data-profile-tabs-name="<%= name %>"
+          data-action="click->profile-tabs#change keydown->profile-tabs#navigate">
+        <i data-lucide="<%= icon %>" aria-hidden="true"></i>
+        <span><%= label %></span>
+      </button>
     <% end %>
+  </nav>
 
-    <div class="margin-block-start pad-block pad-inline-double fill-shade border-radius">
-      <%= form_with model: @account, method: :put, data: { controller: "form" }, class: "flex align-center gap center" do |form| %>
-        <div class="flex-item-grow flex align-center gap txt-align-start">
-          <%= image_tag "crown.svg", class: "colorize--black", aria: { hidden: "true" }, size: 18 %> Must be admin to create new rooms
+  <div class="profile-settings__content">
+    <section class="profile-settings__panel" id="account-panel-general" role="tabpanel"
+        aria-labelledby="account-tab-general" data-profile-tabs-target="panel" data-profile-tabs-name="general">
+      <header class="profile-settings__heading">
+        <h1>General</h1>
+        <p class="txt-subtle">Update your community name, logo, and room permissions.</p>
+      </header>
+
+      <% if Current.user.can_administer? %>
+        <div class="align-center center avatar__form profile-settings__avatar gap" data-controller="upload-preview">
+          <%= form_with model: @account, method: :patch, class: "txt-medium", data: { controller: "form" } do |form| %>
+            <label class="btn input--file">
+              <%= image_tag "camera.svg", aria: { hidden: "true" }, size: 20 %>
+              <%= form.file_field :logo, class: "input", accept: "image/*",
+                    data: { action: "upload-preview#previewImage change->form#submit" } %>
+              <span class="for-screen-reader">Upload logo</span>
+            </label>
+          <% end %>
+
+          <%= form_with model: @account, method: :patch, data: { controller: "form" } do |form| %>
+            <label class="btn avatar input--file account-logo txt-xx-large">
+              <%= image_tag fresh_account_logo_path, role: "presentation", size: 48, data: { upload_preview_target: "image" } %>
+              <%= form.file_field :logo, class: "input", accept: "image/*",
+                    data: { action: "upload-preview#previewImage change->form#submit" } %>
+              <span class="for-screen-reader">Upload logo</span>
+            </label>
+          <% end %>
+
+          <% if @account.logo.attached? %>
+            <%= button_to fresh_account_logo_path, method: :delete, class: "btn btn--negative txt-small avatar__delete-btn" do %>
+              <%= image_tag "minus.svg", aria: { hidden: "true" }, size: 20 %>
+              <span class="for-screen-reader">Delete logo</span>
+            <% end %>
+          <% end %>
         </div>
-        <%= form.fields_for :settings, @account.settings do |settings_form| %>
-          <%= settings_form.hidden_field :restrict_room_creation_to_administrators,
-              value: !Current.account.settings.restrict_room_creation_to_administrators? %>
+
+        <%= form_with model: @account, data: { controller: "form" }, class: "profile-settings__fields flex flex-column gap" do |form| %>
+          <div class="flex align-center gap">
+            <label class="flex align-center gap flex-item-grow">
+              <%= form.text_field :name, class: "input txt-large", autocomplete: "off",
+                    placeholder: "Name this account", autofocus: true, data: { action: "keydown.enter->form#submit" } %>
+            </label>
+            <%= form.button class: "btn btn--reversed center", type: "submit" do %>
+              <%= image_tag "check.svg", aria: { hidden: "true" }, size: 20 %>
+              <span class="for-screen-reader">Save changes</span>
+            <% end %>
+          </div>
         <% end %>
 
-        <label class="switch">
-          <input type="checkbox"
-                class="switch__input"
-                <%= "checked" if Current.account.settings.restrict_room_creation_to_administrators? %>
-                data-action="change->form#submit">
-          <span class="switch__btn round"></span>
-          <span class="for-screen-reader">
-            Must be admin to create new rooms
-          </span>
-        </label>
-
+        <div class="profile-settings__fields margin-block-start pad-block pad-inline-double fill-shade border-radius">
+          <%= form_with model: @account, method: :put, data: { controller: "form" }, class: "flex align-center gap center" do |form| %>
+            <div class="flex-item-grow flex align-center gap txt-align-start">
+              <%= image_tag "crown.svg", class: "colorize--black", aria: { hidden: "true" }, size: 18 %>
+              Must be admin to create new rooms
+            </div>
+            <%= form.fields_for :settings, @account.settings do |settings_form| %>
+              <%= settings_form.hidden_field :restrict_room_creation_to_administrators,
+                    value: !Current.account.settings.restrict_room_creation_to_administrators? %>
+            <% end %>
+            <label class="switch">
+              <input type="checkbox" class="switch__input"
+                    <%= "checked" if Current.account.settings.restrict_room_creation_to_administrators? %>
+                    data-action="change->form#submit">
+              <span class="switch__btn round"></span>
+              <span class="for-screen-reader">Must be admin to create new rooms</span>
+            </label>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="txt-align-center">
+          <%= account_logo_tag style: "txt-xx-large center" %>
+          <h2 class="txt-x-large"><%= @account.name %></h2>
+        </div>
       <% end %>
-    </div>
-  <% else %>
-    <%= account_logo_tag style: "txt-xx-large center" %>
-    <h1 class="flex-item-grow txt-x-large"><%= @account.name %></h1>
-  <% end %>
+    </section>
 
-  <div class="margin-block pad-inline pad-block-start fill-shade border-radius">
-    <%= render "accounts/invite" %>
-
-    <hr class="margin-block separator full-width" style="--border-style: solid">
-
-    <menu class="flex flex-column gap margin-none pad">
-      <turbo-frame id="account_users">
-        <%= render partial: "accounts/users/user", collection: @administrators, as: :user %>
-
-        <% if @administrators.any? && @members.any? %>
-          <hr class="separator full-width" style="--border-style: solid">
-        <% end %>
-
-        <%= render partial: "accounts/users/user", collection: @members, as: :user %>
-        <%= render "accounts/users/next_page_container", page: @page.next_param unless @page.last? %>
-      </turbo-frame>
-    </menu>
+    <section class="profile-settings__panel" id="account-panel-members" role="tabpanel" hidden
+        aria-labelledby="account-tab-members" data-profile-tabs-target="panel" data-profile-tabs-name="members">
+      <header class="profile-settings__heading">
+        <h1>Members</h1>
+        <p class="txt-subtle">Invite people and manage who belongs to this Bonfire.</p>
+      </header>
+      <div class="pad-inline pad-block-start fill-shade border-radius">
+        <%= render "accounts/invite" %>
+        <hr class="margin-block separator full-width" style="--border-style: solid">
+        <menu class="flex flex-column gap margin-none pad">
+          <turbo-frame id="account_users">
+            <%= render partial: "accounts/users/user", collection: @administrators, as: :user %>
+            <% if @administrators.any? && @members.any? %>
+              <hr class="separator full-width" style="--border-style: solid">
+            <% end %>
+            <%= render partial: "accounts/users/user", collection: @members, as: :user %>
+            <%= render "accounts/users/next_page_container", page: @page.next_param unless @page.last? %>
+          </turbo-frame>
+        </menu>
+      </div>
+    </section>
   </div>
 </section>
 

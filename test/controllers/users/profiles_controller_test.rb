@@ -9,7 +9,13 @@ class Users::ProfilesControllerTest < ActionDispatch::IntegrationTest
     get user_profile_url
 
     assert_response :success
-    assert_select "select[data-theme-target='select']" do
+    assert_select "nav[role='tablist'][aria-label='Profile settings']" do
+      assert_select "button[role='tab'][aria-selected='true'][data-profile-tabs-name='profile']", text: "Profile"
+      assert_select "button[role='tab'][data-profile-tabs-name]", count: 4
+      assert_select "[data-lucide]", count: 4
+    end
+    assert_select "section[role='tabpanel'][data-profile-tabs-name]", count: 4
+    assert_select "#profile-panel-appearance[hidden] select[data-theme-target='select']" do
       assert_select "option[value='system']", "Use system setting"
       assert_select "option[value='light']", "Light"
       assert_select "option[value='dark']", "Dark"
@@ -26,8 +32,8 @@ class Users::ProfilesControllerTest < ActionDispatch::IntegrationTest
 
     get user_profile_url
 
-    assert_select "fieldset.settings-group.conversations-settings.min-width.full-width" do
-      assert_select "legend.settings-group__legend", text: "Your conversations"
+    assert_select "#profile-panel-conversations[hidden] fieldset.settings-group.conversations-settings.min-width.full-width" do
+      assert_select "legend.for-screen-reader", text: "Your conversations"
       assert_select "div.min-width.full-width menu.min-width.full-width"
       assert_select ".membership-item" do
         assert_select "a.flex-item-grow.min-width.overflow-ellipsis[title='#{long_name}']", text: long_name

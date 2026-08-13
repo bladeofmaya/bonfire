@@ -1,137 +1,164 @@
 <% @page_title = @user.name %>
 
 <% content_for :nav do %>
-  <div class="flex-item-justify-start">
-    <%= link_back %>
-  </div>
+  <div class="flex-item-justify-start"><%= link_back %></div>
 
   <div class="flex-item-justify-end">
     <%= form_with url: session_path, method: :delete, data: { controller: "sessions" } do %>
       <%= hidden_field_tag :push_subscription_endpoint, nil, data: { sessions_target: "pushSubscriptionEndpoint" } %>
-
       <%= render Ui::IconButtonComponent.new(
-            label: "Log out",
-            icon: "logout.svg",
-            type: :submit,
+            label: "Log out", icon: "logout.svg", type: :submit,
             data: { action: "sessions#logout:prevent" }
           ) %>
     <% end %>
   </div>
 <% end %>
 
-<section class="panel flex flex-column gap" style="view-transition-name: avatar-<%= @user.id %>">
-  <%= render partial: "pwa/install_instructions" %>
-
-
-  <div class="align-center center avatar__form gap" data-controller="upload-preview">
-    <%= profile_form_with @user, class:"txt-medium" do |form| %>
-      <label class="btn input--file">
-        <%= image_tag "camera.svg", aria: { hidden: "true" }, size: 20 %>
-        <%= form.file_field :avatar, id: "file", class: "input", accept: "image/*",
-            data: { upload_preview_target: "input", action: "upload-preview#previewImage change->form#submit" } %>
-        <span class="for-screen-reader">Upload avatar</span>
-      </label>
+<section class="panel panel--wide profile-settings"
+    style="view-transition-name: avatar-<%= @user.id %>"
+    data-controller="profile-tabs"
+    data-profile-tabs-default-tab-value="profile">
+  <nav class="profile-settings__tabs" role="tablist" aria-label="Profile settings">
+    <% [
+      [ "profile", "user-round", "Profile" ],
+      [ "appearance", "palette", "Appearance" ],
+      [ "conversations", "messages-square", "Conversations" ],
+      [ "devices", "monitor-smartphone", "Devices" ]
+    ].each_with_index do |(name, icon, label), index| %>
+      <button type="button" class="profile-settings__tab"
+          id="profile-tab-<%= name %>"
+          role="tab"
+          aria-controls="profile-panel-<%= name %>"
+          aria-selected="<%= index.zero? %>"
+          tabindex="<%= index.zero? ? 0 : -1 %>"
+          data-profile-tabs-target="tab"
+          data-profile-tabs-name="<%= name %>"
+          data-action="click->profile-tabs#change keydown->profile-tabs#navigate">
+        <i data-lucide="<%= icon %>" aria-hidden="true"></i>
+        <span><%= label %></span>
+      </button>
     <% end %>
+  </nav>
 
-    <%= profile_form_with @user do |form| %>
-      <label class="btn avatar input--file txt-xx-large">
-        <%= image_tag fresh_user_avatar_path(@user), aria: { hidden: "true" }, size: 300, data: { upload_preview_target: "image" } %>
-        <%= form.file_field :avatar, id: "file", class: "input", accept: "image/*",
-            data: { upload_preview_target: "input", action: "upload-preview#previewImage change->form#submit" } %>
-        <span class="for-screen-reader">Avatar</span>
-      </label>
-    <% end %>
+  <div class="profile-settings__content">
+    <section class="profile-settings__panel" id="profile-panel-profile" role="tabpanel"
+        aria-labelledby="profile-tab-profile" data-profile-tabs-target="panel" data-profile-tabs-name="profile">
+      <header class="profile-settings__heading">
+        <h1>Profile</h1>
+        <p class="txt-subtle">Update how you appear to everyone in Bonfire.</p>
+      </header>
 
-    <% if @user.avatar.attached? %>
-      <%= button_to user_avatar_path(@user), method: :delete, class: "btn btn--negative txt-small avatar__delete-btn" do %>
-        <%= image_tag "minus.svg", aria: { hidden: "true" }, size: 20 %>
-        <span class="for-screen-reader">Delete avatar</span>
-      <% end %>
-    <% end %>
-  </div>
-
-  <%= profile_form_with @user do |form| %>
-    <div class="flex flex-column gap">
-      <div class="flex align-center gap">
-
-        <label class="flex align-center gap flex-item-grow input input--actor">
-          <%= form.text_field :name, class: "input txt-large ", autocomplete: "name", placeholder: "Enter your name",
-                autofocus: true, required: true,  data: { "1p-ignore": true } %>
-          <%= image_tag "person.svg", aria: { hidden: "true" }, size: 24, class: "colorize--black" %>
-        </label>
-      </div>
-
-      <div class="flex align-center gap">
-
-        <label class="flex align-center gap flex-item-grow input input--actor">
-          <%= form.email_field :email_address, class: "input txt-large", value: @user.email_address, autocomplete: "username",
-                placeholder: "Enter your email address", required: false %>
-          <%= image_tag "email.svg", aria: { hidden: "true" }, size: 24, class: "colorize--black" %>
-        </label>
-      </div>
-
-      <div class="flex align-center gap">
-
-        <label class="flex align-center gap flex-item-grow input input--actor">
-          <%= form.password_field :password, class: "input txt-large", autocomplete: "new-password", placeholder: "Change password",
-                required: false, maxlength: 72 %>
-          <%= image_tag "password.svg", aria: { hidden: "true" }, size: 24, class: "colorize--black" %>
-        </label>
-      </div>
-
-      <div class="flex align-start gap">
-
-        <label class="flex align--center gap flex-item--grow input input--actor">
-          <%= form.text_area :bio, class: "input txt-large", placeholder: "A few words about yourself…", maxlength: 200,
-                rows: 3, required: false %>
-          <%= image_tag "bio.svg", aria: { hidden: "true" }, size: 24, class: "colorize--black" %>
-        </label>
-      </div>
-
-      <%= profile_form_submit_button %>
-    </div>
-  <% end %>
-
-  <fieldset class="settings-group appearance-settings">
-    <legend class="settings-group__legend">Appearance</legend>
-
-    <label class="flex align-center gap">
-      <span class="flex-item-grow">Theme</span>
-      <select class="input appearance-settings__select"
-          aria-label="Theme"
-          data-theme-target="select"
-          data-action="change->theme#change">
-        <option value="system">Use system setting</option>
-        <option value="light">Light</option>
-        <option value="dark">Dark</option>
-      </select>
-    </label>
-  </fieldset>
-
-  <fieldset class="settings-group margin-block min-width full-width conversations-settings">
-    <legend class="settings-group__legend">Your conversations</legend>
-
-    <div class="min-width full-width pad-inline pad-block fill-shade border-radius">
-      <menu class="flex flex-column gap margin-none min-width full-width pad">
-        <%= render partial: "users/profiles/membership", collection: @shared_memberships %>
-
-        <% if @direct_memberships.any? && @shared_memberships.any? %>
-          <hr class="separator full-width" style="--border-style: solid">
+      <div class="align-center center avatar__form profile-settings__avatar gap" data-controller="upload-preview">
+        <%= profile_form_with @user, class: "txt-medium" do |form| %>
+          <label class="btn input--file">
+            <%= image_tag "camera.svg", aria: { hidden: "true" }, size: 20 %>
+            <%= form.file_field :avatar, id: "file", class: "input", accept: "image/*",
+                data: { upload_preview_target: "input", action: "upload-preview#previewImage change->form#submit" } %>
+            <span class="for-screen-reader">Upload avatar</span>
+          </label>
         <% end %>
 
-        <%= render partial: "users/profiles/membership", collection: @direct_memberships %>
-      </menu>
-    </div>
-  </fieldset>
+        <%= profile_form_with @user do |form| %>
+          <label class="btn avatar input--file txt-xx-large">
+            <%= image_tag fresh_user_avatar_path(@user), aria: { hidden: "true" }, size: 300, data: { upload_preview_target: "image" } %>
+            <%= form.file_field :avatar, id: "avatar_file", class: "input", accept: "image/*",
+                data: { upload_preview_target: "input", action: "upload-preview#previewImage change->form#submit" } %>
+            <span class="for-screen-reader">Avatar</span>
+          </label>
+        <% end %>
 
-  <%= render "users/profiles/transfer", user: @user %>
+        <% if @user.avatar.attached? %>
+          <%= button_to user_avatar_path(@user), method: :delete, class: "btn btn--negative txt-small avatar__delete-btn" do %>
+            <%= image_tag "minus.svg", aria: { hidden: "true" }, size: 20 %>
+            <span class="for-screen-reader">Delete avatar</span>
+          <% end %>
+        <% end %>
+      </div>
 
-  <% if Rails.env.development? %>
-    <fieldset class="settings-group">
-      <legend class="settings-group__legend">
-        <%= image_tag "key.svg", aria: { hidden: "true" }, size: 36, class: "colorize--black" %>
-      </legend>
-      <%= link_to "Push Notifications Dev Mode", user_push_subscriptions_url, class: "btn txt-small center" %>
-    </fieldset>
-  <% end %>
+      <%= profile_form_with @user, class: "profile-settings__fields" do |form| %>
+        <div class="flex flex-column gap">
+          <label class="flex align-center gap input input--actor">
+            <%= form.text_field :name, class: "input txt-large", autocomplete: "name", placeholder: "Enter your name",
+                  autofocus: true, required: true, data: { "1p-ignore": true } %>
+            <%= image_tag "person.svg", aria: { hidden: "true" }, size: 24, class: "colorize--black" %>
+          </label>
+          <label class="flex align-center gap input input--actor">
+            <%= form.email_field :email_address, class: "input txt-large", value: @user.email_address,
+                  autocomplete: "username", placeholder: "Enter your email address", required: false %>
+            <%= image_tag "email.svg", aria: { hidden: "true" }, size: 24, class: "colorize--black" %>
+          </label>
+          <label class="flex align-center gap input input--actor">
+            <%= form.password_field :password, class: "input txt-large", autocomplete: "new-password",
+                  placeholder: "Change password", required: false, maxlength: 72 %>
+            <%= image_tag "password.svg", aria: { hidden: "true" }, size: 24, class: "colorize--black" %>
+          </label>
+          <label class="flex align-start gap input input--actor">
+            <%= form.text_area :bio, class: "input txt-large", placeholder: "A few words about yourself…",
+                  maxlength: 200, rows: 3, required: false %>
+            <%= image_tag "bio.svg", aria: { hidden: "true" }, size: 24, class: "colorize--black" %>
+          </label>
+          <%= profile_form_submit_button %>
+        </div>
+      <% end %>
+    </section>
+
+    <section class="profile-settings__panel" id="profile-panel-appearance" role="tabpanel" hidden
+        aria-labelledby="profile-tab-appearance" data-profile-tabs-target="panel" data-profile-tabs-name="appearance">
+      <header class="profile-settings__heading">
+        <h1>Appearance</h1>
+        <p class="txt-subtle">Choose how Bonfire looks on this device.</p>
+      </header>
+      <fieldset class="settings-group appearance-settings">
+        <legend class="for-screen-reader">Appearance</legend>
+        <label class="flex align-center gap">
+          <span class="flex-item-grow">Theme</span>
+          <select class="input appearance-settings__select" aria-label="Theme"
+              data-theme-target="select" data-action="change->theme#change">
+            <option value="system">Use system setting</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </label>
+      </fieldset>
+    </section>
+
+    <section class="profile-settings__panel" id="profile-panel-conversations" role="tabpanel" hidden
+        aria-labelledby="profile-tab-conversations" data-profile-tabs-target="panel" data-profile-tabs-name="conversations">
+      <header class="profile-settings__heading">
+        <h1>Conversations</h1>
+        <p class="txt-subtle">Choose which conversations notify you.</p>
+      </header>
+      <fieldset class="settings-group min-width full-width conversations-settings">
+        <legend class="for-screen-reader">Your conversations</legend>
+        <div class="min-width full-width pad-inline pad-block fill-shade border-radius">
+          <menu class="flex flex-column gap margin-none min-width full-width pad">
+            <%= render partial: "users/profiles/membership", collection: @shared_memberships %>
+            <% if @direct_memberships.any? && @shared_memberships.any? %>
+              <hr class="separator full-width" style="--border-style: solid">
+            <% end %>
+            <%= render partial: "users/profiles/membership", collection: @direct_memberships %>
+          </menu>
+        </div>
+      </fieldset>
+    </section>
+
+    <section class="profile-settings__panel" id="profile-panel-devices" role="tabpanel" hidden
+        aria-labelledby="profile-tab-devices" data-profile-tabs-target="panel" data-profile-tabs-name="devices">
+      <header class="profile-settings__heading">
+        <h1>Devices</h1>
+        <p class="txt-subtle">Install Bonfire or sign in on another device.</p>
+      </header>
+      <%= render partial: "pwa/install_instructions" %>
+      <%= render "users/profiles/transfer", user: @user %>
+
+      <% if Rails.env.development? %>
+        <fieldset class="settings-group">
+          <legend class="settings-group__legend">
+            <%= image_tag "key.svg", aria: { hidden: "true" }, size: 36, class: "colorize--black" %>
+          </legend>
+          <%= link_to "Push Notifications Dev Mode", user_push_subscriptions_url, class: "btn txt-small center" %>
+        </fieldset>
+      <% end %>
+    </section>
+  </div>
 </section>

@@ -35,6 +35,11 @@ module VisualRegressionHelper
         document.documentElement.dataset.theme = "dark";
         document.documentElement.style.colorScheme = "dark";
         document.querySelectorAll("video, audio").forEach((element) => element.pause());
+        document.querySelectorAll("input").forEach((input) => {
+          if (input.value.includes("127.0.0.1:")) {
+            input.value = input.value.replace(/127\.0\.0\.1:\d+/, "bonfire.test")
+          }
+        });
 
         const style = document.createElement("style");
         style.dataset.visualRegression = "true";
