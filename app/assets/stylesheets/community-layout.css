@@ -117,11 +117,11 @@
   margin: 0 auto var(--block-space);
 }
 
-.user-dock {
+.sidebar__tools.user-dock {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding-block: 0.65rem;
+  padding-block: 0.35rem;
   border-block-start: 1px solid var(--color-border-subtle);
   background: color-mix(in srgb, var(--color-surface-secondary) 92%, transparent);
 }
@@ -155,6 +155,7 @@
   border: 2px solid var(--color-surface-secondary);
   border-radius: var(--radius-round);
   background: var(--color-success);
+  z-index: 1;
 }
 
 .user-dock__identity {

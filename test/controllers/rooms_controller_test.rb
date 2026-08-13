@@ -11,7 +11,8 @@ class RoomsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "show" do
-    get room_url(users(:david).rooms.last)
+    room = users(:david).rooms.last
+    get room_url(room)
     assert_response :success
 
     assert_select "aside#channels turbo-frame#user_sidebar[src='#{user_sidebar_path}']"
@@ -21,6 +22,18 @@ class RoomsControllerTest < ActionDispatch::IntegrationTest
       assert_select ".member-sidebar__role[aria-label='Administrator']", count: User.active.administrator.count
     end
     assert_select "#system_welcome", count: 0
+    assert_select "nav#nav figure.account-logo", count: 0
+    assert_select "nav#nav a[href='#{polymorphic_path([ :edit, room ])}']", text: "Settings for this #{room.direct? ? "Ping" : "room"}"
+  end
+
+  test "room settings control is only visible to administrators" do
+    sign_in :jz
+    room = users(:jz).rooms.last
+
+    get room_url(room)
+
+    assert_response :success
+    assert_select "nav#nav a[href='#{polymorphic_path([ :edit, room ])}']", count: 0
   end
 
   test "notification bell preserves its frame and permission-controller contracts" do
