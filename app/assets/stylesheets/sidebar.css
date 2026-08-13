@@ -19,8 +19,8 @@
   position: fixed;
 
   @media (min-width: 100ch) {
-    inline-size: calc(var(--sidebar-width));
-    inset-inline-start: auto;
+    inline-size: var(--channel-list-width);
+    inset-inline-start: 0;
   }
 }
 
@@ -34,7 +34,7 @@
     background-color 300ms ease;
   z-index: 5;
 
-  #sidebar:where(:not(.open):has(.unread)) & {
+  #channels:where(:not(.open):has(.unread)) & {
     &::after {
       --size: 1em;
 

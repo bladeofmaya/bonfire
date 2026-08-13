@@ -1,0 +1,46 @@
+<div class="member-sidebar overflow-y overflow-hide-scrollbar" aria-label="Community members">
+  <% groups = [
+    [ "Administrators", users.select(&:administrator?) ],
+    [ "Bots", users.select(&:bot?) ],
+    [ "Members", users.reject { |user| user.administrator? || user.bot? } ]
+  ] %>
+
+  <% groups.each do |label, group| %>
+    <% if group.any? %>
+      <section class="member-sidebar__group" aria-labelledby="member-group-<%= label.parameterize %>">
+        <h2 id="member-group-<%= label.parameterize %>" class="member-sidebar__heading">
+          <%= label %> — <%= group.size %>
+        </h2>
+
+        <ul class="member-sidebar__list">
+          <% group.sort_by { |user| [ user.memberships.none?(&:connected?) ? 1 : 0, user.name.downcase ] }.each do |user| %>
+            <% online = user.memberships.any?(&:connected?) %>
+            <li>
+              <%= link_to user_path(user), class: "member-sidebar__member", title: user.title do %>
+                <figure class="avatar member-sidebar__avatar">
+                  <%= image_tag fresh_user_avatar_path(user), size: 40, loading: :lazy, aria: { hidden: "true" } %>
+                  <span class="member-sidebar__status <%= "online" if online %>" aria-hidden="true"></span>
+                </figure>
+
+                <span class="member-sidebar__identity min-width">
+                  <strong class="overflow-ellipsis"><%= user.name %></strong>
+                  <% if user.bio.present? %>
+                    <span class="overflow-ellipsis"><%= user.bio %></span>
+                  <% elsif user.bot? %>
+                    <span>Bot</span>
+                  <% end %>
+                </span>
+
+                <% if user.administrator? %>
+                  <span class="member-sidebar__role" title="Administrator" aria-label="Administrator">
+                    <%= image_tag "crown.svg", size: 16, aria: { hidden: "true" }, class: "colorize--black" %>
+                  </span>
+                <% end %>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      </section>
+    <% end %>
+  <% end %>
+</div>

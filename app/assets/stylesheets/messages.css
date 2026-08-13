@@ -33,39 +33,6 @@
   position: absolute;
 }
 
-#system_welcome {
-  --avatar-size: 5ch;
-
-  display: block;
-  margin-block-start: calc(var(--avatar-size) * 2);
-  position: relative;
-  z-index: 1;
-
-  .avatar {
-    margin-block-start: calc(var(--avatar-size) * -0.5);
-  }
-
-  .message__body {
-    display: block;
-    max-inline-size: unset;
-  }
-
-  .message__body-content {
-    overflow: unset;
-  }
-
-  .system-welcome--translation {
-    inset-block-start: var(--block-space);
-    inset-inline-start: var(--block-space);
-    position: absolute;
-  }
-
-  .invite-label,
-  .btn--regenerate {
-    display: none;
-  }
-}
-
 .messages {
   --message-column-gap: 0.66ch;
   --message-row-gap: 0.1em;

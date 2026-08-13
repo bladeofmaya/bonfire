@@ -13,6 +13,14 @@ class RoomsControllerTest < ActionDispatch::IntegrationTest
   test "show" do
     get room_url(users(:david).rooms.last)
     assert_response :success
+
+    assert_select "aside#channels turbo-frame#user_sidebar[src='#{user_sidebar_path}']"
+    assert_select "aside#sidebar .member-sidebar[aria-label='Community members']" do
+      assert_select ".member-sidebar__group"
+      assert_select "a.member-sidebar__member", count: User.active.count
+      assert_select ".member-sidebar__role[aria-label='Administrator']", count: User.active.administrator.count
+    end
+    assert_select "#system_welcome", count: 0
   end
 
   test "notification bell preserves its frame and permission-controller contracts" do

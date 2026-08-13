@@ -118,8 +118,10 @@
         <p class="txt-subtle">Invite people and manage who belongs to this Bonfire.</p>
       </header>
       <div class="pad-inline pad-block-start fill-shade border-radius">
-        <%= render "accounts/invite" %>
-        <hr class="margin-block separator full-width" style="--border-style: solid">
+        <% if Current.user.administrator? %>
+          <%= render "accounts/invite" %>
+          <hr class="margin-block separator full-width" style="--border-style: solid">
+        <% end %>
         <menu class="flex flex-column gap margin-none pad">
           <turbo-frame id="account_users">
             <%= render partial: "accounts/users/user", collection: @administrators, as: :user %>

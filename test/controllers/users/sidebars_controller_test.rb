@@ -10,6 +10,16 @@ class Users::SidebarsControllerTest < ActionDispatch::IntegrationTest
 
     assert_select "turbo-frame#user_sidebar[data-turbo-permanent][target='_top']" \
                   "[data-controller='rooms-list read-rooms turbo-frame']"
+    assert_select ".sidebar__container.channel-list"
+    assert_select ".channel-list__header" do
+      assert_select "img.channel-list__logo[src*='account/logo']"
+      assert_select ".channel-list__account-name", text: accounts(:signal).name
+      assert_select "details.context-menu.channel-list__server-menu summary.context-menu__trigger", text: accounts(:signal).name
+      assert_select "a.context-menu__item[href='#{edit_account_path}']", text: "Server Settings"
+      assert_select "a.channel-list__invite[href='#{account_invitation_path}'][data-turbo-frame='account_invitation_dialog']" \
+                    "[aria-label='Invite people'] [data-lucide='user-round-plus']"
+    end
+    assert_select "turbo-frame#direct_rooms_control.channel-list__directs"
     assert_select "#shared_rooms[data-controller='sorted-list']"
     assert_select "#direct_rooms[data-controller='sorted-list']" \
                   "[data-action='rooms-list:unread@window->sorted-list#updateItem']"
@@ -27,8 +37,14 @@ class Users::SidebarsControllerTest < ActionDispatch::IntegrationTest
       assert_select "button.btn--icon.sidebar__toggle[data-action='toggle-class#toggle']", text: "Open menu"
     end
 
-    assert_select "a.sidebar__tool[href='#{user_profile_path}']", text: "My Settings"
-    assert_select "a.sidebar__tool[href='#{edit_account_path}']", text: "Account Settings"
+    assert_select ".user-dock" do
+      assert_select "a.user-dock__profile[href='#{user_path(users(:david))}'][aria-label='View my profile']" do
+        assert_select "strong", text: users(:david).name
+      end
+      assert_select ".user-dock__identity > span", text: "Online"
+      assert_select "a.user-dock__settings[href='#{user_profile_path}'][aria-label='User settings']"
+    end
+    assert_select ".sidebar__tools a[href='#{edit_account_path}']", count: 0
   end
 
   test "shows room creation to administrators when creation is restricted" do
@@ -46,6 +62,15 @@ class Users::SidebarsControllerTest < ActionDispatch::IntegrationTest
     get user_sidebar_url
 
     assert_select "a.rooms__new-btn", count: 0
+  end
+
+  test "hides invitation access from members" do
+    sign_in :jz
+
+    get user_sidebar_url
+
+    assert_select "a.channel-list__invite", count: 0
+    assert_select "turbo-frame#account_invitation_dialog", count: 1
   end
 
   test "shows unrestricted room creation to members" do

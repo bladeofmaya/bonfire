@@ -33,7 +33,7 @@
       <% unless @user.deactivated? %>
         <div class="flex flex-column gap" style="--row-gap: calc(var(--block-space) / 3)">
           <h1 class="txt-x-large txt-tight-lines margin-none"><%= @user.name %></h1>
-          <% if Current.user.can_administer? %>
+          <% if Current.user.administrator? %>
             <div><%= mail_to @user.email_address %></div>
           <% end %>
           <div><%= @user.bio %></div>
@@ -42,7 +42,8 @@
         <% if @user.active? %>
           <div class="pad-inline-double margin-inline margin-block-start">
             <%= button_to rooms_directs_path(user_ids: [ @user.id ]), class: "btn btn--reversed full-width txt-large" do %>
-              <%= image_tag "messages.svg", aria: { hidden: "true", label: "Ping #{@user.name}" } %>
+              <%= image_tag "messages.svg", aria: { hidden: "true" } %>
+              <span>Ping</span>
             <% end %>
           </div>
 

@@ -1,0 +1,16 @@
+<%= turbo_frame_tag "account_invitation_dialog" do %>
+  <dialog class="dialog invitation-dialog shadow" data-controller="invite-dialog" data-invite-dialog-target="dialog">
+    <%= button_tag type: "button",
+          class: "btn btn--icon dialog__close",
+          aria: { label: "Close invitation" },
+          data: { action: "invite-dialog#close" } do %>
+      <%= image_tag "remove.svg", size: 20, aria: { hidden: "true" }, class: "colorize--black" %>
+    <% end %>
+
+    <%= account_logo_tag style: "invitation-dialog__logo" %>
+    <h2 class="margin-none">Invite people to <%= Current.account.name %></h2>
+    <p>Share this private link with people you want to join.</p>
+
+    <%= render "accounts/invite" %>
+  </dialog>
+<% end %>

@@ -9,6 +9,7 @@ class RoomsController < ApplicationController
 
   def show
     @messages = find_messages
+    @sidebar_users = User.active.with_attached_avatar.includes(:memberships).ordered
   end
 
   def destroy

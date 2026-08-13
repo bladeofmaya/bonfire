@@ -20,6 +20,7 @@ Rails.application.routes.draw do
       end
 
       resource :join_code, only: :create
+      resource :invitation, only: :show
       resource :logo, only: %i[ show destroy ]
       resource :custom_styles, only: %i[ edit update ]
     end

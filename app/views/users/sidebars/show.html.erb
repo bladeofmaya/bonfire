@@ -2,11 +2,37 @@
   <%= turbo_stream_from :rooms %>
   <%= turbo_stream_from Current.user, :rooms %>
 
-  <div class="sidebar__container overflow-y overflow-hide-scrollbar"
+  <div class="sidebar__container channel-list overflow-y overflow-hide-scrollbar"
       data-controller="badge-dot"
       data-badge-dot-unread-class="unread"
       data-action="rooms-list:unread@window->badge-dot#update rooms-list:read@window->badge-dot#update turbo:submit-start->turbo-frame#unpermanize">
-    <turbo-frame id="direct_rooms_control" target="_top">
+    <header class="channel-list__header">
+      <%= render Ui::ContextMenuComponent.new(
+            label: "Server menu",
+            menu_class: "channel-list__server-menu",
+            items: [ { label: "Server Settings", url: edit_account_path, icon: "settings.svg" } ]
+          ) do %>
+        <%= image_tag fresh_account_logo_path(size: :small),
+              class: "channel-list__logo",
+              size: 36,
+              alt: "" %>
+        <strong class="channel-list__account-name overflow-ellipsis"><%= Current.account.name %></strong>
+      <% end %>
+
+      <% if Current.user.administrator? %>
+        <%= link_to account_invitation_path,
+              class: "btn btn--icon channel-list__invite",
+              aria: { label: "Invite people" },
+              title: "Invite people",
+              data: { turbo_frame: "account_invitation_dialog", controller: "lucide" } do %>
+          <i data-lucide="user-round-plus" aria-hidden="true"></i>
+        <% end %>
+      <% end %>
+    </header>
+
+    <%= turbo_frame_tag "account_invitation_dialog" %>
+
+    <turbo-frame id="direct_rooms_control" class="channel-list__directs" target="_top">
       <div class="directs gap overflow-x overflow-hide-scrollbar">
         <%= link_to new_rooms_direct_path, class: "direct direct__new", data: { turbo_frame: "_self" } do %>
           <span class="avatar avatar--icon">
@@ -45,15 +71,24 @@
     </button>
   </div>
 
-  <div class="flex align-end sidebar__tools gap justify-end">
-    <%= link_to user_profile_path, class: "btn avatar flex-item-no-shrink sidebar__tool" do %>
-      <%= image_tag fresh_user_avatar_path(Current.user), size: 48, aria: { hidden: "true" }, style: "view-transition-name: avatar-#{Current.user.id}" %>
-      <span class="for-screen-reader">My Settings</span>
+  <div class="sidebar__tools user-dock">
+    <%= link_to user_path(Current.user), class: "user-dock__profile", aria: { label: "View my profile" } do %>
+      <figure class="avatar user-dock__avatar">
+        <%= image_tag fresh_user_avatar_path(Current.user), size: 40, aria: { hidden: "true" }, style: "view-transition-name: avatar-#{Current.user.id}" %>
+        <span class="user-dock__status" aria-hidden="true"></span>
+      </figure>
+
+      <span class="user-dock__identity min-width">
+        <strong class="overflow-ellipsis"><%= Current.user.name %></strong>
+        <span>Online</span>
+      </span>
     <% end %>
 
-    <%= link_to edit_account_path, class: "btn align-center gap txt-reversed sidebar__tool" do %>
-      <%= image_tag "settings.svg", size: 20, aria: { hidden: "true" }, style: "view-transition-name: account-settings" %>
-      <span class="for-screen-reader">Account Settings</span>
+    <%= link_to user_profile_path,
+          class: "btn btn--icon user-dock__settings",
+          aria: { label: "User settings" },
+          title: "User settings" do %>
+      <%= image_tag "settings.svg", size: 20, aria: { hidden: "true" }, class: "colorize--black" %>
     <% end %>
   </div>
 <% end %>

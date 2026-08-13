@@ -7,8 +7,20 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   test "show" do
     sign_in :david
-    get user_url(users(:david))
+    get user_url(users(:jz))
     assert_response :ok
+    assert_select "a[href='mailto:#{users(:jz).email_address}']"
+    assert_select "form[action='#{rooms_directs_path(user_ids: [ users(:jz).id ])}'] button", text: "Ping"
+  end
+
+  test "member profiles hide email addresses from other members" do
+    sign_in :jz
+
+    get user_url(users(:kevin))
+
+    assert_response :ok
+    assert_select "a[href^='mailto:']", count: 0
+    assert_not_includes response.body, users(:kevin).email_address
   end
 
   test "new" do

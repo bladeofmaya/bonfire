@@ -1,0 +1,26 @@
+<%= tag.details class: [ "context-menu position-relative", menu_class ],
+      data: {
+        controller: "popup",
+        action: "keydown.esc->popup#close toggle->popup#toggle click@document->popup#closeOnClickOutside",
+        popup_orientation_top_class: "popup-orientation-top"
+      } do %>
+  <summary class="context-menu__trigger" aria-label="<%= label %>">
+    <span class="context-menu__trigger-content"><%= content %></span>
+    <span class="context-menu__chevron" aria-hidden="true"></span>
+  </summary>
+
+  <menu class="context-menu__menu border shadow" data-popup-target="menu" aria-label="<%= label %>">
+    <% items.each do |item| %>
+      <li>
+        <%= helpers.link_to item.url,
+              class: "context-menu__item",
+              data: item.data.merge(action: [ item.data[:action], "popup#close" ].compact.join(" ")) do %>
+          <% if item.icon %>
+            <%= helpers.image_tag item.icon, size: 20, class: "colorize--black", aria: { hidden: "true" } %>
+          <% end %>
+          <span><%= item.label %></span>
+        <% end %>
+      </li>
+    <% end %>
+  </menu>
+<% end %>

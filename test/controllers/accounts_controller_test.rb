@@ -65,4 +65,13 @@ class AccountsControllerTest < ActionDispatch::IntegrationTest
     put account_url, params: { account: { name: "Different" } }
     assert_response :forbidden
   end
+
+  test "non-admins cannot see join links in account settings" do
+    sign_in :kevin
+
+    get edit_account_url
+
+    assert_response :ok
+    assert_select "#invite_url", count: 0
+  end
 end

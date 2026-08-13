@@ -9,6 +9,7 @@ class VisualRegressionTest < ApplicationSystemTestCase
     join_room rooms(:watercooler)
 
     assert_visual_match "room-sidebar", selector: "#user_sidebar .sidebar__container"
+    assert_visual_match "room-members", selector: "#sidebar .member-sidebar"
     assert_visual_match "room-messages", selector: "##{dom_id(rooms(:watercooler), :messages)}"
     assert_visual_match "room-composer", selector: "footer .composer"
   end

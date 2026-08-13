@@ -68,8 +68,12 @@
       </footer>
     </main>
 
-    <aside id="sidebar" data-controller="toggle-class" data-toggle-class-toggle-class="open">
+    <aside id="channels" data-controller="toggle-class" data-toggle-class-toggle-class="open">
       <%= yield :sidebar %>
+    </aside>
+
+    <aside id="sidebar">
+      <%= yield :members %>
     </aside>
 
     <%= render "layouts/lightbox" %>
