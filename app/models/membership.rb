@@ -30,4 +30,14 @@ class Membership < ApplicationRecord
       partial: "users/sidebars/rooms/direct",
       locals: { participants: room.users.to_a.without(user).presence || [ user ] }
   end
+
+  def broadcast_replace_direct_list_item
+    association(:user).load_target
+    ActiveRecord::Associations::Preloader.new(records: [ self ], associations: { room: :users }).call
+
+    broadcast_replace_to user, :rooms,
+      target: ActionView::RecordIdentifier.dom_id(room, :list),
+      partial: "users/sidebars/rooms/direct",
+      locals: { participants: room.users.to_a.without(user).presence || [ user ] }
+  end
 end

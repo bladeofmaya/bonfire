@@ -42,6 +42,21 @@ class Users::ProfilesControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "show handles a direct conversation hidden from the sidebar" do
+    membership = memberships(:david_david_and_jason)
+    membership.update!(involvement: :invisible)
+
+    get user_profile_url
+
+    assert_response :success
+    assert_select "##{dom_id(membership.room, :involvement)}" do
+      assert_select "input[name='involvement'][value='everything']", visible: false
+      assert_select "[role='checkbox'][aria-labelledby='#{dom_id(membership.room, :involvement_label)}']"
+      assert_select "##{dom_id(membership.room, :involvement_label)}",
+        text: "Notifications are off and room invisible in sidebar"
+    end
+  end
+
   test "update" do
     put user_profile_url, params: { user: { name: "John Doe", bio: "Acrobat" } }
 

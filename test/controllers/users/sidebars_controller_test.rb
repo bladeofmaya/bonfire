@@ -23,8 +23,11 @@ class Users::SidebarsControllerTest < ActionDispatch::IntegrationTest
     assert_select "section.channel-list__section[aria-labelledby='channels-heading']", text: /Channels/
     assert_select "section.channel-list__directs[aria-labelledby='direct-messages-heading']" do
       assert_select "h2", text: "Direct Messages"
+      assert_select "a.channel-list__new-direct[href='#{new_rooms_direct_path}']" \
+                    "[data-turbo-frame='direct_conversation_dialog'][aria-label='Start a ping']"
       assert_select "turbo-frame#direct_rooms_control"
     end
+    assert_select "turbo-frame#direct_conversation_dialog"
     assert_select "#shared_rooms[data-controller='sorted-list']"
     assert_select "#direct_rooms[data-controller='sorted-list']" \
                   "[data-action='rooms-list:unread@window->sorted-list#updateItem']"

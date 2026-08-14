@@ -5,12 +5,13 @@ module RoomsHelper
     }.merge(attributes.delete(:data) || {}), &
   end
 
-  def link_to_edit_room(room, &)
+  def link_to_edit_room(room, **attributes, &)
     link_to \
       [ :edit, @room ],
-      class: "btn",
+      **attributes,
+      class: [ "btn", attributes[:class] ],
       style: "view-transition-name: edit-room-#{@room.id}",
-      data: { room_id: @room.id },
+      data: { room_id: @room.id }.merge(attributes[:data] || {}),
       &
   end
 
@@ -54,7 +55,7 @@ module RoomsHelper
 
   def room_display_name(room, for_user: Current.user)
     if room.direct?
-      room.users.without(for_user).pluck(:name).to_sentence.presence || for_user&.name
+      room.name.presence || room.users.without(for_user).pluck(:name).to_sentence.presence || for_user&.name
     else
       room.name
     end

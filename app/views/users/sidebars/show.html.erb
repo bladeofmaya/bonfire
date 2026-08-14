@@ -41,6 +41,7 @@
     </header>
 
     <%= turbo_frame_tag "account_invitation_dialog" %>
+    <%= turbo_frame_tag "direct_conversation_dialog" %>
 
     <section class="channel-list__section rooms position-relative flex flex-column gap" aria-labelledby="channels-heading">
       <h2 id="channels-heading" class="channel-list__section-title">Channels</h2>
@@ -54,7 +55,16 @@
     </section>
 
     <section class="channel-list__section channel-list__directs" aria-labelledby="direct-messages-heading">
-      <h2 id="direct-messages-heading" class="channel-list__section-title">Direct Messages</h2>
+      <div class="channel-list__section-header">
+        <h2 id="direct-messages-heading" class="channel-list__section-title">Direct Messages</h2>
+        <%= link_to new_rooms_direct_path,
+              class: "channel-list__new-direct btn btn--icon",
+              aria: { label: "Start a ping" },
+              title: "Start an individual or group ping",
+              data: { turbo_frame: "direct_conversation_dialog" } do %>
+          <%= image_tag "add.svg", size: 16, aria: { hidden: "true" } %>
+        <% end %>
+      </div>
 
       <turbo-frame id="direct_rooms_control" target="_top">
         <div class="directs gap">

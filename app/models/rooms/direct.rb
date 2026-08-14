@@ -2,8 +2,13 @@
 # always refer to the same direct room.
 class Rooms::Direct < Room
   class << self
-    def find_or_create_for(users)
-      find_for(users) || create_for({}, users: users)
+    def find_or_create_for(users, name: nil)
+      if room = find_for(users)
+        room.update!(name: name) if name.present? && room.name != name
+        room
+      else
+        create_for({ name: name.presence }, users: users)
+      end
     end
 
     private

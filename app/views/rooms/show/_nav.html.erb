@@ -10,7 +10,7 @@
   <% end %>
 
   <% if Current.user.administrator? %>
-    <%= link_to_edit_room(room) do %>
+    <%= link_to_edit_room(room, data: ({ turbo_frame: "direct_conversation_dialog" } if room.direct?)) do %>
       <%= image_tag "settings.svg", size: 20, aria: { hidden: "true" }, class: "colorize--black" %>
       <span class="for-screen-reader">Settings for this <%= room.direct? ? "Ping" : "room" %></span>
     <% end %>

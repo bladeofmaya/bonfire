@@ -23,7 +23,9 @@ class RoomsControllerTest < ActionDispatch::IntegrationTest
     end
     assert_select "#system_welcome", count: 0
     assert_select "nav#nav figure.account-logo", count: 0
-    assert_select "nav#nav a[href='#{polymorphic_path([ :edit, room ])}']", text: "Settings for this #{room.direct? ? "Ping" : "room"}"
+    assert_select "nav#nav a[href='#{polymorphic_path([ :edit, room ])}']", text: "Settings for this #{room.direct? ? "Ping" : "room"}" do |links|
+      assert_equal "direct_conversation_dialog", links.first["data-turbo-frame"] if room.direct?
+    end
   end
 
   test "direct room member sidebar only shows its participants" do

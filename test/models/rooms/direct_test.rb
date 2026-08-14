@@ -18,4 +18,10 @@ class Rooms::DirectTest < ActiveSupport::TestCase
     room = Rooms::Direct.find_or_create_for([ users(:david), users(:kevin) ])
     assert room.memberships.all? { |m| m.involved_in_everything? }
   end
+
+  test "creates a named direct room" do
+    room = Rooms::Direct.find_or_create_for([ users(:david), users(:kevin) ], name: "Stream team")
+
+    assert_equal "Stream team", room.name
+  end
 end

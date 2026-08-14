@@ -1,31 +1,53 @@
-<turbo-frame id="direct_rooms_control" target="_top">
-  <div class="directs directs--new flex flex-column gap">
-    <%= form_with model: @room, class: "flex gap flex-item-grow", data: {
-          controller: "form", action: "keydown.esc->form#cancel" } do |form| %>
-      <%= link_to user_sidebar_path, class: "btn flex-item-no-shrink", data: { turbo_frame: "user_sidebar", form_target: "cancel" } do %>
-        <%= image_tag "arrow-left.svg", aria: { hidden: "true" } %>
-        <span class="for-screen-reader">Cancel changes</span>
-      <% end %>
-
-      <section class="autocomplete__container unpad input input--actor">
-        <div class="autocomplete__input input flex flex-wrap position-relative flex-item-grow"
-            data-controller="autocomplete" data-autocomplete-url-value="<%= autocompletable_users_path %>">
-          <select name="user_ids[]" data-autocomplete-target="select" data-template-id="autocompletable-user" multiple="true" hidden required></select>
-
-          <%= render "users/autocompletables/template" %>
-
-          <%= form.text_field "user_ids_input",
-                autocomplete: "off", autocorrect: "off", "data-1p-ignore": "true", class: "autocomplete__input input flex flex-wrap position-relative",
-                data: { autocomplete_target: "input", action: "input->autocomplete#search keydown->autocomplete#didPressKey" } %>
-        </div>
-      </section>
-
-      <%= button_tag class: "btn btn--reversed flex-item-no-shrink", type: "submit" do %>
-        <%= image_tag "check.svg", aria: { hidden: "true" } %>
-        <span class="for-screen-reader">Start Ping</span>
-      <% end %>
+<%= turbo_frame_tag "direct_conversation_dialog", target: "_top" do %>
+  <dialog class="dialog direct-conversation-dialog shadow"
+      data-controller="dialog" data-dialog-target="dialog" data-action="close->dialog#clear">
+    <%= button_tag type: "button",
+          class: "btn btn--icon dialog__close",
+          aria: { label: "Close new ping dialog" },
+          data: { action: "dialog#close" } do %>
+      <%= image_tag "remove.svg", size: 20, aria: { hidden: "true" }, class: "colorize--black" %>
     <% end %>
 
-    <span class="txt-small translucent pad-inline-half center">Type names to ping someone…</span>
-  </div>
-</turbo-frame>
+    <header class="direct-conversation-dialog__header">
+      <h2 class="margin-none">Start a Ping</h2>
+      <p class="margin-none">Choose one or more people for a private conversation.</p>
+    </header>
+
+    <%= form_with model: @room, class: "direct-conversation-dialog__form",
+          data: { turbo_frame: "_top" } do |form| %>
+      <label>
+        <span class="direct-conversation-dialog__label">Conversation name <span>(optional)</span></span>
+        <%= form.text_field :name, name: "room[name]", class: "input full-width",
+              placeholder: "For example: Friday stream planning", data: { dialog_target: "autofocus" } %>
+      </label>
+
+      <fieldset class="direct-conversation-dialog__members">
+        <legend>Select people</legend>
+
+        <% if @selection_error %>
+          <p class="direct-conversation-dialog__error" role="alert"><%= @selection_error %></p>
+        <% end %>
+
+        <div class="direct-conversation-dialog__member-list overflow-y overflow-hide-scrollbar">
+          <% @users.each do |user| %>
+            <label class="direct-conversation-dialog__member">
+              <figure class="avatar flex-item-no-shrink" style="--avatar-size: 2.5rem;">
+                <%= avatar_tag user, loading: :lazy %>
+              </figure>
+              <strong class="overflow-ellipsis"><%= user.name %></strong>
+              <span class="switch flex-item-no-shrink">
+                <%= check_box_tag "user_ids[]", user.id, false, class: "switch__input" %>
+                <span class="switch__btn round" aria-hidden="true"></span>
+              </span>
+            </label>
+          <% end %>
+        </div>
+      </fieldset>
+
+      <%= button_tag class: "btn btn--reversed direct-conversation-dialog__submit", type: "submit" do %>
+        <%= image_tag "check.svg", size: 18, aria: { hidden: "true" } %>
+        <span>Start Ping</span>
+      <% end %>
+    <% end %>
+  </dialog>
+<% end %>

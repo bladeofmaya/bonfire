@@ -27,10 +27,11 @@ module Rooms::InvolvementsHelper
     DIRECT_INVOLVEMENT_ORDER = %w[ everything nothing ]
 
     def next_involvement_for(room, involvement:)
-      if room.direct?
-        DIRECT_INVOLVEMENT_ORDER[DIRECT_INVOLVEMENT_ORDER.index(involvement) + 1] || DIRECT_INVOLVEMENT_ORDER.first
-      else
-        SHARED_INVOLVEMENT_ORDER[SHARED_INVOLVEMENT_ORDER.index(involvement) + 1] || SHARED_INVOLVEMENT_ORDER.first
-      end
+      order = room.direct? ? DIRECT_INVOLVEMENT_ORDER : SHARED_INVOLVEMENT_ORDER
+      current_index = order.index(involvement)
+
+      return order.first unless current_index
+
+      order[current_index + 1] || order.first
     end
 end

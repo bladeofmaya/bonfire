@@ -24,7 +24,7 @@ class Rooms::DirectListItemComponent < ApplicationComponent
   end
 
   def display_names
-    participants.map(&:name).to_sentence
+    room.name.presence || participants.map(&:name).to_sentence
   end
 
   def avatar_source_for(participant)
