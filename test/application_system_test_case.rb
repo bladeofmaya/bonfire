@@ -7,4 +7,8 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 
   include SystemTestHelper
   include VisualRegressionHelper
+
+  setup do
+    page.current_window.resize_to(1400, 1400)
+  end
 end
