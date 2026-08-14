@@ -8,6 +8,8 @@
 > Bonfire is in active development and is not feature complete yet. It is
 > already usable, but you should expect rough edges and changes along the way.
 
+
+
 Bonfire is a self-hosted, Discord-like chat for communities. It is a place for
 announcements, conversations, rich media, custom emotes, notifications, and
 updates from streams, videos, and community bots. It's based on [once-campfire](https://github.com/basecamp/once-campfire) by 37signals.
@@ -20,6 +22,9 @@ for themselves how their space should work.
 Our goal is to make that as easy as possible—including a one-click path from a
 fresh server to a running community. Every Bonfire belongs to the people who
 run it: you own the data, choose the rules, and shape the experience.
+
+<img src="app/assets/images/bonfire-preview.png" alt="Bonfire Screenshot">
+
 
 ## What works today
 
