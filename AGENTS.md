@@ -308,14 +308,11 @@ before introducing a new UI class or variant.
 
 #### Direct-room list
 
-- **Views:** `app/views/users/sidebars/rooms/_direct.html.erb` and
-  `_direct_placeholder.html.erb`; creation starts in
-  `app/views/rooms/directs/new.html.erb`.
+- **View:** `app/views/users/sidebars/rooms/_direct.html.erb`; creation starts
+  in `app/views/rooms/directs/new.html.erb`.
 - **Component:** `Rooms::DirectListItemComponent` owns a rendered direct-room
   entry. The `_direct` partial owns its dependency-complete fragment cache and
-  remains the broadcast adapter. `Rooms::DirectPlaceholderComponent` owns a
-  suggested participant action behind `_direct_placeholder`; it remains
-  outside `direct_rooms` because it is not a sortable room.
+  remains the broadcast adapter.
 - **Server and helper:** `Rooms::DirectsController`,
   `Autocompletable::UsersController`, and `RoomsHelper#link_to_room`.
 - **Browser and styles:** `autocomplete_controller.js`,

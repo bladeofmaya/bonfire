@@ -20,7 +20,9 @@ class Rooms::DirectTest < ActiveSupport::TestCase
   end
 
   test "creates a named direct room" do
-    room = Rooms::Direct.find_or_create_for([ users(:david), users(:kevin) ], name: "Stream team")
+    room = Current.set(user: users(:david)) do
+      Rooms::Direct.find_or_create_for([ users(:david), users(:jz) ], name: "Stream team")
+    end
 
     assert_equal "Stream team", room.name
   end

@@ -15,7 +15,7 @@ class Account < ApplicationRecord
   end
 
   def publish_readme!(content)
-    next_digest = notice_digest(content)
+    next_digest = readme_content_digest(content)
     return if next_digest == readme_digest
 
     transaction do
@@ -34,7 +34,7 @@ class Account < ApplicationRecord
   end
 
   private
-    def notice_digest(content)
+    def readme_content_digest(content)
       action_text = ActionText::Content.new(content.to_s)
       Digest::SHA256.hexdigest(action_text.to_html) if action_text.to_plain_text.strip.present?
     end

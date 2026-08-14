@@ -20,7 +20,7 @@ class DataProtectionSignupTest < ApplicationSystemTestCase
     assert User.find_by!(email_address: "mobile@example.com").signup_rules_accepted_at.present?
   end
 
-  test "long READMErmation scrolls without changing entered signup fields" do
+  test "long README content scrolls without changing entered signup fields" do
     account = accounts(:signal)
     account.publish_readme!(([ "<h2>About this place</h2><p>Be thoughtful.</p>" ] * 20).join)
     visit join_path(account.join_code)

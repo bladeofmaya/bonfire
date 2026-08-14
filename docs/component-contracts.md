@@ -103,7 +103,6 @@ any extraction:
 - `current_user:` for profile/tool presentation only;
 - `direct_memberships:` already ordered and preloaded;
 - `shared_memberships:` already visible/ordered and preloaded;
-- `direct_placeholder_users:` already scoped/limited;
 - `can_create_rooms:` calculated by controller/domain authorization; and
 - optional tool/action slots only after repeated use proves they are needed.
 
@@ -266,11 +265,6 @@ the viewing user fallback for a self-only conversation.
 - long/multibyte names;
 - up to four displayed avatars with a deterministic overflow presentation; and
 - chronological/unread-promoted order.
-
-The direct-placeholder “Start a ping” action is the separate
-`Rooms::DirectPlaceholderComponent`, behind the existing
-`users/sidebars/rooms/direct_placeholder` adapter. It remains outside the
-sortable direct-room list and is not a fake room item.
 
 ### Stable output and cache contract
 

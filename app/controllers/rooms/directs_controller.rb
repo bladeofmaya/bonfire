@@ -1,6 +1,6 @@
 class Rooms::DirectsController < RoomsController
   before_action :set_room, only: %i[ edit update destroy ]
-  before_action :ensure_account_administrator, only: %i[ edit update ]
+  before_action :ensure_account_administrator, only: %i[ edit update destroy ]
   def new
     @room = Rooms::Direct.new
     @users = User.active.where.not(id: Current.user.id).ordered
@@ -65,12 +65,6 @@ class Rooms::DirectsController < RoomsController
 
     def ensure_account_administrator
       head :forbidden unless Current.user.administrator?
-    end
-
-    # All users in a direct room can administer it. Only direct rooms, though: this
-    # relaxation is why room_scope below has to keep every other type out of reach.
-    def ensure_can_administer
-      true
     end
 
     def room_scope

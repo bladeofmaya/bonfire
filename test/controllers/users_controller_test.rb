@@ -35,7 +35,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select ".signup-card__information" do
-      assert_select "h2#readme-title", text: "README"
+      assert_select "h2#readme-title", text: "READ FIRST"
       assert_select "a[href='https://example.com/privacy']", text: "privacy policy"
       assert_select "script", count: 0
     end
@@ -47,7 +47,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     get join_url(@join_code)
 
     assert_response :success
-    assert_select ".signup-card__information h2", text: "README"
+    assert_select ".signup-card__information h2", text: "READ FIRST"
     assert_select "input[name='user[signup_rules_acknowledgement]']", count: 0
   end
 

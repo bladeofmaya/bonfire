@@ -47,14 +47,14 @@ class Rooms::DirectsControllerTest < ActionDispatch::IntegrationTest
     assert_select "[role='alert']", text: "Choose at least one person to ping."
   end
 
-  test "creating for an existing participant set updates its optional name" do
+  test "creating for an existing participant set does not rename it" do
     room = rooms(:david_and_jason)
 
     assert_no_difference -> { Room.count } do
       post rooms_directs_url, params: { room: { name: "Boss fight" }, user_ids: [ users(:jason).id ] }
     end
 
-    assert_equal "Boss fight", room.reload.name
+    assert_nil room.reload.name
   end
 
   test "edit renders the reusable dialog with read-only participants" do
@@ -120,11 +120,18 @@ class Rooms::DirectsControllerTest < ActionDispatch::IntegrationTest
     assert membership.reload.involved_in_everything?
   end
 
-  test "destroy only allowed for all room users" do
+  test "members cannot destroy a direct room" do
     sign_in :kevin
 
-    assert_difference -> { Room.count }, -1 do
+    assert_no_difference -> { Room.count } do
       delete rooms_direct_url(rooms(:david_and_kevin))
+      assert_response :forbidden
+    end
+  end
+
+  test "administrators can destroy a direct room" do
+    assert_difference -> { Room.count }, -1 do
+      delete rooms_direct_url(rooms(:david_and_jason))
       assert_redirected_to root_url
     end
   end

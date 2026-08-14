@@ -10,8 +10,10 @@ class AccountsController < ApplicationController
 
   def update
     readme = account_params.delete(:readme)
-    @account.update!(account_params)
-    @account.publish_readme!(readme) unless readme.nil?
+    @account.transaction do
+      @account.update!(account_params)
+      @account.publish_readme!(readme) unless readme.nil?
+    end
     redirect_to edit_account_url, notice: "✓"
   end
 

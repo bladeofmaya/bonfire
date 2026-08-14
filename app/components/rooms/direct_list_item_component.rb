@@ -35,5 +35,4 @@ class Rooms::DirectListItemComponent < ApplicationComponent
   def avatar_source_for(participant)
     @avatar_source || helpers.fresh_user_avatar_path(participant)
   end
-
 end

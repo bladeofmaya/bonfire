@@ -45,7 +45,7 @@ class FirstRunsControllerTest < ActionDispatch::IntegrationTest
           user: {
             name: "Attacker#{i}",
             email_address: "attacker#{i}@example.com",
-            password: "password123"
+            password: "password1234"
           }
         }
       end
