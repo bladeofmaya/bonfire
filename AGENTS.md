@@ -241,7 +241,11 @@ as well as the ordinary request.
   `app/views/rooms/show/_nav.html.erb`.
 - **Server:** `ApplicationController` prepares global request context;
   `app/helpers/application_helper.rb` supplies shared layout helpers, while
-  individual screens fill the layout's `content_for` slots.
+individual screens fill the layout's `content_for` slots.
+
+UI tokens, supported primitive variants, interaction states, utility usage,
+and stylesheet ownership are documented in `docs/ui-style-guide.md`. Read it
+before introducing a new UI class or variant.
 - **Browser and styles:** `local_time_controller.js`,
   `lightbox_controller.js`, `theme_controller.js`, and
   `toggle_class_controller.js`; start with `layout.css`, `nav.css`, `base.css`,

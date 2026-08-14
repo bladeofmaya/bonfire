@@ -3,6 +3,13 @@
   max-inline-size: 50ch;
 }
 
+body.component-preview-layout {
+  display: block;
+  min-block-size: 100dvh;
+  max-block-size: none;
+  overflow: auto;
+}
+
 .component-preview {
   inline-size: min(100%, 72rem);
   margin-inline: auto;

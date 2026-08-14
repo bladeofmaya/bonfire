@@ -6,6 +6,7 @@ class ComponentGalleryTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "html[data-theme='light']"
+    assert_select "body.component-preview-layout"
     assert_select "main.component-preview[data-viewport='mobile']"
     assert_select "h1", text: "Bonfire component gallery"
     assert_select "#preview-group-messages", text: "Messages"

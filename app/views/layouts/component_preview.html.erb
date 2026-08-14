@@ -7,7 +7,7 @@
     <%= stylesheet_link_tag :all, "data-turbo-track": "reload" %>
   </head>
 
-  <body>
+  <body class="component-preview-layout">
     <main class="component-preview pad flex flex-column gap" data-viewport="<%= component_preview_viewport %>">
       <nav class="component-preview__toolbar" aria-label="Preview display settings">
         <%= link_to "Components", preview_view_components_path(**component_preview_options), class: "component-preview__home" %>
