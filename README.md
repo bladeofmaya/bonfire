@@ -10,7 +10,7 @@
 
 Bonfire is a self-hosted, Discord-like chat for communities. It is a place for
 announcements, conversations, rich media, custom emotes, notifications, and
-updates from streams, videos, and community bots.
+updates from streams, videos, and community bots. It's based on [once-campfire](https://github.com/basecamp/once-campfire) by 37signals.
 
 The idea is simple: instead of putting your community in the hands of a large
 platform, you run Bonfire on your own server. Streamers and other community
