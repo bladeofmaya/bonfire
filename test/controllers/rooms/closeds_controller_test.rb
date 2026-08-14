@@ -61,6 +61,17 @@ class Rooms::ClosedsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "updating general settings does not revise memberships" do
+    room = rooms(:watercooler)
+    member_ids = room.user_ids.sort
+
+    put rooms_closed_url(room), params: { room: { name: "Campfire" } }
+
+    assert_redirected_to room_url(room)
+    assert_equal "Campfire", room.reload.name
+    assert_equal member_ids, room.user_ids.sort
+  end
+
   test "update an open room to be closed" do
     put rooms_closed_url(rooms(:pets)), params: { room: { name: "Doesn't matter" }, user_ids: [ users(:david).id, users(:jason).id ] }
     assert_equal rooms(:pets).memberships.count, 2

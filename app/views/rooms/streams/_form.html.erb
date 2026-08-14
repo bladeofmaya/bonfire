@@ -1,0 +1,52 @@
+<div class="stream-settings">
+  <%= form_with model: room, scope: :room, url: room_stream_path(room), method: :patch,
+        class: "profile-settings__fields flex flex-column gap" do |form| %>
+
+    <% if room.errors.any? %>
+      <div class="flash flash--negative" role="alert"><%= room.errors.full_messages.to_sentence %></div>
+    <% end %>
+
+    <fieldset class="settings-group fill-shade border-radius pad-inline-double pad-block">
+      <legend class="for-screen-reader">Availability</legend>
+      <label class="flex align-center gap txt-align-start">
+        <span class="flex-item-grow"><strong>Enable stream player</strong><br>
+          <span class="txt-small txt-subtle">Show the embedded player above this room's messages.</span>
+        </span>
+        <span class="switch">
+          <%= form.checkbox :stream_enabled, class: "switch__input" %>
+          <span class="switch__btn round" aria-hidden="true"></span>
+        </span>
+      </label>
+    </fieldset>
+
+    <label class="txt-align-start">
+      <strong>Player URL</strong>
+      <%= form.url_field :stream_player_url, class: "input full-width", placeholder: "https://stream.example.com/player" %>
+      <span class="txt-small">Must use an allowed RTMP Homebrew origin and contain no credentials, query, or fragment.</span>
+    </label>
+
+    <label class="txt-align-start">
+      <strong>Stream path</strong>
+      <%= form.text_field :stream_path, class: "input full-width", placeholder: "live", autocomplete: "off" %>
+    </label>
+
+    <label class="txt-align-start">
+      <strong>Stream title</strong>
+      <%= form.text_field :stream_title, class: "input full-width", placeholder: room.name %>
+    </label>
+
+    <label class="txt-align-start">
+      <strong>Poster image</strong>
+      <%= form.file_field :stream_poster, class: "input input--file", accept: "image/*" %>
+    </label>
+
+    <% if room.stream_poster.attached? %>
+      <div class="stream-settings__poster">
+        <%= image_tag room.stream_poster, alt: "Current stream poster" %>
+        <label><%= check_box_tag "room[remove_stream_poster]", "1" %> Remove poster</label>
+      </div>
+    <% end %>
+
+    <%= form.submit "Save stream settings", class: "btn btn--reversed" %>
+  <% end %>
+</div>

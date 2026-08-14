@@ -2,6 +2,9 @@ class RoomsController < ApplicationController
   before_action :set_room, only: %i[ show destroy ]
   before_action :ensure_can_administer, only: %i[ destroy ]
   before_action :remember_last_room_visited, only: :show
+  content_security_policy only: :show do |policy|
+    policy.frame_src :self, @room.stream_player_origin if @room&.stream_configured?
+  end
 
   def index
     redirect_to room_url(Current.user.rooms.last)
@@ -75,4 +78,5 @@ class RoomsController < ApplicationController
         broadcast_replace_to user, :rooms, target: [ room, :list ], html: html
       end
     end
+
 end

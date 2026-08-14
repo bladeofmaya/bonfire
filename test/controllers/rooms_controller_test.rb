@@ -28,6 +28,40 @@ class RoomsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "configured closed stream renders above chat with a narrow frame CSP and no credentials" do
+    configure_streaming
+    room = rooms(:designers)
+    room.update!(stream_enabled: true, stream_player_url: "https://stream.example.test/player", stream_path: "live", stream_title: "Town Hall")
+    sign_in :jz
+
+    get room_url(room)
+
+    assert_response :success
+    assert_select "main > section.room-stream + #message-area"
+    assert_select "iframe[src='https://stream.example.test/player']"
+    assert_includes response.headers["Content-Security-Policy"], "frame-src 'self' https://stream.example.test"
+    assert_no_match(/eyJ[a-zA-Z0-9_-]+\./, response.body)
+    assert_no_match(/RTMP_HOMEBREW_PRIVATE_KEY/, response.body)
+  end
+
+  test "disabled streams do not render a player" do
+    configure_streaming
+    get room_url(rooms(:watercooler))
+    assert_select ".room-stream", count: 0
+
+  end
+
+  test "configured open stream renders for room members" do
+    configure_streaming
+    room = rooms(:pets)
+    room.update!(stream_enabled: true, stream_player_url: "https://stream.example.test/player", stream_path: "public/live")
+
+    get room_url(room)
+
+    assert_response :success
+    assert_select ".room-stream iframe[src='https://stream.example.test/player']"
+  end
+
   test "direct room member sidebar only shows its participants" do
     room = rooms(:david_and_jason)
 

@@ -1,5 +1,9 @@
 require "active_support/core_ext/integer/time"
 
+# Match the player origin exposed by the local RTMP Homebrew development server.
+# An explicit environment value can still override this default.
+ENV["RTMP_HOMEBREW_ALLOWED_PLAYER_ORIGINS"] ||= "https://stream.localhost:8443"
+
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 

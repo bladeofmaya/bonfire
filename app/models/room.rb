@@ -19,10 +19,12 @@ class Room < ApplicationRecord
 
   has_many :users, through: :memberships
   has_many :messages, dependent: :destroy
+  has_one_attached :stream_poster
 
   belongs_to :creator, class_name: "User", default: -> { Current.user }
 
   validate :direct_rooms_keep_their_type, on: :update
+  validate :stream_configuration_is_valid
   before_create :place_shared_room_last
 
   scope :opens,           -> { where(type: "Rooms::Open") }
@@ -67,7 +69,53 @@ class Room < ApplicationRecord
     "mentions"
   end
 
+  def stream_configured?
+    stream_enabled? && stream_player_uri.present? && stream_path.to_s.match?(STREAM_PATH_FORMAT) &&
+      !stream_path.include?("..") && !stream_path.start_with?("/") &&
+      Streaming::Configuration.allowed_player_origin?(stream_player_origin)
+  end
+
+  def stream_player_origin
+    uri = stream_player_uri
+    "#{uri.scheme}://#{uri.host}#{":#{uri.port}" unless uri.default_port == uri.port}" if uri
+  end
+
+  def stream_player_uri
+    URI.parse(stream_player_url) if stream_player_url.present?
+  rescue URI::InvalidURIError
+    nil
+  end
+
   private
+    STREAM_PATH_FORMAT = /\A[a-zA-Z0-9](?:[a-zA-Z0-9._\/-]*[a-zA-Z0-9])?\z/
+
+    def stream_configuration_is_valid
+      validate_stream_player_url if stream_player_url.present? || stream_enabled?
+      validate_stream_path if stream_path.present? || stream_enabled?
+      if stream_poster.attached? && !stream_poster.blob.content_type.to_s.start_with?("image/")
+        errors.add :stream_poster, "must be an image"
+      end
+    end
+
+    def validate_stream_player_url
+      uri = stream_player_uri
+      if uri.nil? || !uri.is_a?(URI::HTTP) || uri.host.blank?
+        errors.add :stream_player_url, "is invalid"
+      elsif !Rails.env.development? && uri.scheme != "https"
+        errors.add :stream_player_url, "must use HTTPS"
+      elsif uri.userinfo.present? || uri.query.present? || uri.fragment.present?
+        errors.add :stream_player_url, "must not contain credentials, a query, or a fragment"
+      elsif !Streaming::Configuration.allowed_player_origin?(stream_player_origin)
+        errors.add :stream_player_url, "origin is not allowed"
+      end
+    end
+
+    def validate_stream_path
+      unless stream_path.to_s.match?(STREAM_PATH_FORMAT) && !stream_path.include?("..") && !stream_path.start_with?("/")
+        errors.add :stream_path, "is invalid"
+      end
+    end
+
     def place_shared_room_last
       self.position ||= Room.without_directs.maximum(:position).to_i + 1 unless direct?
     end

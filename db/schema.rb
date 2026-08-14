@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_14_130000) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_14_140000) do
   create_table "accounts", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "custom_styles"
@@ -125,6 +125,10 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_14_130000) do
     t.bigint "creator_id", null: false
     t.string "name"
     t.integer "position"
+    t.boolean "stream_enabled", default: false, null: false
+    t.string "stream_path"
+    t.string "stream_player_url"
+    t.string "stream_title"
     t.string "type", null: false
     t.datetime "updated_at", null: false
     t.index ["position", "id"], name: "index_rooms_on_position_and_id"

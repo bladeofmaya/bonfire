@@ -53,7 +53,8 @@ export default class extends Controller {
         MonitorSmartphone: globalThis.lucide.MonitorSmartphone,
         Settings: globalThis.lucide.Settings,
         ShieldCheck: globalThis.lucide.ShieldCheck,
-        UsersRound: globalThis.lucide.UsersRound
+        UsersRound: globalThis.lucide.UsersRound,
+        Radio: globalThis.lucide.Radio
       },
       root: this.element
     })

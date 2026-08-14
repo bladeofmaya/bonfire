@@ -12,6 +12,8 @@
   <%= render "rooms/show/members", users: @sidebar_users %>
 <% end %>
 
+<%= render Rooms::StreamPlayerComponent.new(room: @room) if @room.stream_configured? %>
+
 <%= message_area_tag(@room) do %>
   <%= render "messages/template" %>
 

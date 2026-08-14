@@ -99,6 +99,9 @@ You can see every available option with `bin/bonfire help`. The private setup
 files live under `.kamal/` and are not committed to Git. Keep a secure backup
 of the generated secrets.
 
+Private-room RTMP Homebrew playback configuration and its production smoke
+checklist are documented in [docs/streaming.md](docs/streaming.md).
+
 ### Using Docker yourself
 
 If you already have your own way of running containers, you can use

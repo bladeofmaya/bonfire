@@ -1,3 +1,54 @@
-<%= render layout: "rooms/layouts/edit", locals: { room: @room } do %>
-  <%= render "rooms/opens/form", room: @room, users: @users, type_change_path: edit_rooms_closed_path(@room) %>
-<% end %>
+<% @page_title = "Edit settings for #{@room.name}" %>
+<% content_for :nav do %><div class="flex-item-justify-start"><%= link_back_to_last_room_visited %></div><% end %>
+
+<section class="panel panel--wide profile-settings room-settings" style="view-transition-name: edit-room-<%= @room.id %>"
+    data-controller="profile-tabs" data-profile-tabs-default-tab-value="general">
+  <nav class="profile-settings__tabs" role="tablist" aria-label="Room settings">
+    <% tabs = [[ "general", "settings", "General" ], [ "permissions", "shield-check", "Permissions" ]] %>
+    <% tabs << [ "streaming", "radio", "Streaming" ] if Current.user.administrator? %>
+    <% tabs.each_with_index do |(name, icon, label), index| %>
+      <button type="button" class="profile-settings__tab" id="room-tab-<%= name %>" role="tab"
+          aria-controls="room-panel-<%= name %>" aria-selected="<%= index.zero? %>" tabindex="<%= index.zero? ? 0 : -1 %>"
+          data-profile-tabs-target="tab" data-profile-tabs-name="<%= name %>"
+          data-action="click->profile-tabs#change keydown->profile-tabs#navigate">
+        <i data-lucide="<%= icon %>" aria-hidden="true"></i><span><%= label %></span>
+      </button>
+    <% end %>
+  </nav>
+
+  <div class="profile-settings__content">
+    <section class="profile-settings__panel" id="room-panel-general" role="tabpanel"
+        aria-labelledby="room-tab-general" data-profile-tabs-target="panel" data-profile-tabs-name="general">
+      <header class="profile-settings__heading"><h1>General</h1><p class="txt-subtle">Update this room's name or remove the room.</p></header>
+      <%= form_with model: @room, scope: :room, class: "profile-settings__fields flex flex-column gap" do |form| %>
+        <label class="txt-align-start"><strong>Room name</strong>
+          <%= form.text_field :name, class: "input full-width txt-large", required: true, autofocus: true, autocomplete: "off" %>
+        </label>
+        <%= form.submit "Save general settings", class: "btn btn--reversed" %>
+      <% end %>
+      <hr class="margin-block-double separator full-width" style="--border-style: solid">
+      <div class="profile-settings__fields txt-align-center"><%= button_to_delete_room @room %></div>
+    </section>
+
+    <section class="profile-settings__panel" id="room-panel-permissions" role="tabpanel" hidden
+        aria-labelledby="room-tab-permissions" data-profile-tabs-target="panel" data-profile-tabs-name="permissions">
+      <header class="profile-settings__heading"><h1>Permissions</h1><p class="txt-subtle">Everyone currently has access to this room.</p></header>
+      <%= form_with model: @room, scope: :room, class: "flex flex-column gap" do |form| %>
+        <%= form.hidden_field :name %>
+        <section class="room-access pad-inline fill-shade border-radius">
+          <%= render "rooms/opens/permissions_fields", room: @room, users: @users,
+                type_change_path: edit_rooms_closed_path(@room, anchor: "permissions") %>
+        </section>
+        <%= form.submit "Save permissions", class: "btn btn--reversed" %>
+      <% end %>
+    </section>
+
+    <% if Current.user.administrator? %>
+      <section class="profile-settings__panel" id="room-panel-streaming" role="tabpanel" hidden
+          aria-labelledby="room-tab-streaming" data-profile-tabs-target="panel" data-profile-tabs-name="streaming">
+        <header class="profile-settings__heading"><h1>Streaming</h1><p class="txt-subtle">Embed an authorized RTMP Homebrew player for room members.</p></header>
+        <%= render "rooms/streams/form", room: @room %>
+      </section>
+    <% end %>
+  </div>
+</section>

@@ -71,10 +71,15 @@ Rails.application.routes.draw do
       resource :refresh, only: :show
       resource :settings, only: :show
       resource :involvement, only: %i[ show update ]
+      resource :stream, only: :update do
+        resource :playback_grant, only: :create, controller: "streams/playback_grants"
+      end
     end
 
     get "@:message_id", to: "rooms#show", as: :at_message
   end
+
+  get "/.well-known/rtmp-homebrew-jwks.json", to: "streaming/jwks#show", as: :rtmp_homebrew_jwks
 
   namespace :rooms do
     resources :opens

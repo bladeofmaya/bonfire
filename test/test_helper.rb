@@ -22,6 +22,23 @@ class ActiveSupport::TestCase
 
   include SessionTestHelper, MentionTestHelper, TurboTestHelper
 
+  def configure_streaming(previous_jwks: [])
+    key = OpenSSL::PKey::EC.generate("prime256v1")
+    Streaming::Configuration.stubs(
+      configured?: true,
+      validate!: true,
+      private_key: key,
+      key_id: "test-current-key",
+      issuer: "https://bonfire.example.test",
+      audience: "rtmp-homebrew",
+      allowed_player_origins: [ "https://stream.example.test" ],
+      previous_jwks: previous_jwks
+    )
+    Streaming::Configuration.stubs(:allowed_player_origin?).returns(false)
+    Streaming::Configuration.stubs(:allowed_player_origin?).with("https://stream.example.test").returns(true)
+    key
+  end
+
   setup do
     ActionCable.server.pubsub.clear
 

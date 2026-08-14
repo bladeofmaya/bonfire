@@ -15,6 +15,17 @@ class Rooms::OpensControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "edit uses the tabbed room settings layout" do
+    get edit_rooms_open_url(rooms(:pets))
+
+    assert_response :success
+    assert_select ".room-settings button[role='tab']", count: 3
+    assert_select "button[data-profile-tabs-name='general']", text: "General"
+    assert_select "button[data-profile-tabs-name='permissions']", text: "Permissions"
+    assert_select "button[data-profile-tabs-name='streaming']", text: "Streaming"
+    assert_select "#room-panel-streaming form[action='#{room_stream_path(rooms(:pets))}']"
+  end
+
   test "create" do
     assert_turbo_stream_broadcasts [ users(:david), :rooms ], count: 2 do
       post rooms_opens_url, params: { room: { name: "My New Room" } }

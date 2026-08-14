@@ -30,7 +30,7 @@ class Rooms::ClosedsController < RoomsController
 
   def update
     @room.update! room_params
-    @room.memberships.revise(granted: grantees, revoked: revokees)
+    @room.memberships.revise(granted: grantees, revoked: revokees) if params.key?(:user_ids)
 
     broadcast_update_room
     redirect_to room_url(@room)
