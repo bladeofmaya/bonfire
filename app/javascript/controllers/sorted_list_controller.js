@@ -21,13 +21,16 @@ export default class extends Controller {
   }
 
   sort() {
-    const sortedItemTargets = this.itemTargets.sort((a, b) => {
+    const currentItemTargets = this.itemTargets
+    const sortedItemTargets = [ ...currentItemTargets ].sort((a, b) => {
       if (a.dataset.sortedListNumber) {
         return b.dataset.sortedListNumber - a.dataset.sortedListNumber
       } else {
         return a.dataset.sortedListName.toLowerCase().localeCompare(b.dataset.sortedListName.toLowerCase())
       }
     })
+
+    if (sortedItemTargets.every((item, index) => item === currentItemTargets[index])) return
 
     sortedItemTargets.forEach(item => this.element.appendChild(item))
   }

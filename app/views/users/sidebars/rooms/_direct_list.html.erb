@@ -1,4 +1,4 @@
-<div id="direct_rooms" contents data-controller="sorted-list" data-action="rooms-list:unread@window->sorted-list#updateItem">
+<div id="direct_rooms" class="contents" data-controller="sorted-list" data-action="rooms-list:unread@window->sorted-list#updateItem">
   <% memberships.each do |membership| %>
     <%= render "users/sidebars/rooms/direct",
           membership: membership,

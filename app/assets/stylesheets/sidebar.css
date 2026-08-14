@@ -69,7 +69,7 @@
   }
 }
 
-/* Direct messsages */
+/* Legacy direct-message layout outside the community sidebar. */
 .directs {
   --btn-border-color: var(--color-border-darker);
   --column-gap: calc(var(--inline-space) / 1.5);
@@ -96,94 +96,6 @@
     }
   }
 
-  &.directs--new {
-    --column-gap: var(--inline-space);
-    --row-gap: 2px;
-
-    -webkit-mask-image: none;
-    mask-image: none;
-    padding-inline-end: var(--sidebar-inline-space);
-  }
-}
-
-.directs--edit  {
-  display: grid;
-  gap: var(--inline-space);
-  grid-template-columns: repeat(auto-fit, minmax(33%, 1fr));
-  grid-template-rows: min-content;
-  place-items: center;
-
-  .member {
-    aspect-ratio: 1;
-    block-size: auto;
-    inline-size: 100%;
-    margin-inline: auto;
-    place-content: center;
-  }
-}
-
-.direct {
-  border-radius: 0.3em;
-  box-shadow: none;
-  color: var(--color-text);
-  display: grid;
-  justify-items: center;
-  position: relative;
-  text-decoration: none;
-
-  .avatar,
-  .avatar__group {
-    margin-inline: calc(var(--inline-space) / 1.5);
-
-    .avatar {
-      margin-inline: 0;
-    }
-  }
-
-  @media (any-hover: hover) {
-    &:where(:not(:active):hover) .avatar:not(.avatar--icon) {
-      filter: brightness(0.7);
-    }
-  }
-
-  &:focus-within,
-  &:where(:not(:active)):focus-visible {
-    outline: 0;
-  }
-}
-
-.direct__new {
-  margin-inline-end: var(--inline-space-half);
-
-  .avatar {
-    margin-inline: 0;
-  }
-}
-
-.direct__author {
-  --column-gap: 0.3ch;
-
-  margin-block-start: 0.1em;
-
-  .unread & {
-    font-weight: 800;
-    position: relative;
-
-    &::after {
-      --size: 0.6em;
-
-      aspect-ratio: 1;
-      background-color: var(--color-text);
-      block-size: var(--size);
-      border-radius: calc(var(--size) * 2);
-      content: "";
-      flex-shrink: 0;
-      inline-size: var(--size);
-      position: absolute;
-      inset: 1.3em auto auto 50%;
-      transform: translate(-50%);
-    }
-  }
 }
 
 /* Rooms */
@@ -200,7 +112,7 @@
   z-index: 4;
 }
 
-.room {
+.room:not(.sidebar-list-item) {
   background-color: var(--color-text-reversed);
   color: var(--color-text);
   font-weight: normal;
@@ -212,7 +124,7 @@
     border-radius: 0.5em;
   }
 
-  &.unread {
+  &:not(.sidebar-list-item).unread {
     --btn-border-color: var(--color-text);
     --hover-color: var(--color-text);
 

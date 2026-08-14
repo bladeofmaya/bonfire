@@ -1,11 +1,12 @@
 class Rooms::DirectListItemComponent < ApplicationComponent
   attr_reader :room, :participants, :sort_timestamp
 
-  def initialize(room:, participants:, sort_timestamp:, unread_count: 0, avatar_source: nil)
+  def initialize(room:, participants:, sort_timestamp:, unread_count: 0, selected: false, avatar_source: nil)
     @room = room
     @participants = participants
     @sort_timestamp = sort_timestamp
     @unread_count = unread_count
+    @selected = selected
     @avatar_source = avatar_source
   end
 
@@ -14,6 +15,10 @@ class Rooms::DirectListItemComponent < ApplicationComponent
   end
 
   attr_reader :unread_count
+
+  def selected?
+    @selected
+  end
 
   def grouped?
     participants.many?

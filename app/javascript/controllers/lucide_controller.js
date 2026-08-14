@@ -4,7 +4,10 @@ import "lucide"
 export default class extends Controller {
   connect() {
     globalThis.lucide?.createIcons({
-      icons: { UserRoundPlus: globalThis.lucide.UserRoundPlus },
+      icons: {
+        UserRoundPlus: globalThis.lucide.UserRoundPlus,
+        X: globalThis.lucide.X
+      },
       root: this.element
     })
   }

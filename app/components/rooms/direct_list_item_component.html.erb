@@ -1,4 +1,5 @@
-<div id="<%= helpers.dom_id(room, :list) %>" class="direct-message-row"
+<div id="<%= helpers.dom_id(room, :list) %>"
+    class="sidebar-list-item sidebar-list-item--direct direct-message-row <%= "sidebar-list-item--unread" if unread? %> <%= "room-list--current" if selected? %>"
     data-sorted-list-target="item" data-sorted-list-number="<%= sort_timestamp.to_fs(:epoch) %>">
   <%= helpers.link_to_room room, class: [ "direct", "unread": unread? ],
         data: { sorted_list_target: nil } do %>
@@ -16,7 +17,7 @@
       </span>
     <% end %>
 
-    <span class="direct__author flex align-center gap max-width min-width border-radius txt-small">
+    <span class="direct__author flex align-center gap max-width min-width border-radius">
       <span class="for-screen-reader"><%= accessible_name %></span>
       <span class="direct__name txt-nowrap overflow-ellipsis" aria-hidden="true"><%= display_names %></span>
     </span>
@@ -26,9 +27,11 @@
   <% end %>
 
   <%= helpers.button_to helpers.rooms_direct_closure_path(room),
-        class: "direct__close btn btn--icon",
+        class: "direct__close btn btn--plain",
         aria: { label: "Close #{accessible_name}" },
-        title: "Close conversation" do %>
-    <%= helpers.image_tag "remove.svg", size: 16, aria: { hidden: "true" } %>
+        title: "Close conversation",
+        data: { controller: "lucide" },
+        form_class: "direct__close-form" do %>
+    <i data-lucide="x" aria-hidden="true"></i>
   <% end %>
 </div>

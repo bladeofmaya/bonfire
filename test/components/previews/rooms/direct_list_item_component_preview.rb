@@ -7,6 +7,10 @@ class Rooms::DirectListItemComponentPreview < ViewComponent::Preview
     render component([ preview_user(20_001, "Maya Rivera") ], unread_count: 3)
   end
 
+  def selected
+    render component([ preview_user(20_001, "Maya Rivera") ], selected: true)
+  end
+
   def group
     render component([
       preview_user(20_001, "Maya Rivera"),
@@ -25,13 +29,13 @@ class Rooms::DirectListItemComponentPreview < ViewComponent::Preview
   end
 
   private
-    def component(participants, unread_count: 0)
+    def component(participants, unread_count: 0, selected: false)
       room = Rooms::Direct.new(id: 20_001, updated_at: Time.current).tap do |record|
         record.define_singleton_method(:persisted?) { true }
       end
 
       Rooms::DirectListItemComponent.new(
-        room: room, participants: participants, unread_count: unread_count, sort_timestamp: room.updated_at,
+        room: room, participants: participants, unread_count: unread_count, selected: selected, sort_timestamp: room.updated_at,
         avatar_source: "default-avatar.svg"
       )
     end

@@ -179,7 +179,8 @@
 
 /* Visibility */
 [hidden] { display: none; }
-[contents] { display: contents; }
+[contents],
+.contents { display: contents; }
 
 /* PWA */
 .hide-in-pwa {

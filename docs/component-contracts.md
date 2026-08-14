@@ -196,7 +196,8 @@ adapter.
 Rooms::SharedListItemComponent.new(
   room: room,
   unread: membership.unread?,
-  sort_key: room.name
+  sort_key: room.name,
+  selected: false
 )
 ```
 
@@ -216,7 +217,8 @@ The component may call routing/DOM helpers but performs no membership lookup.
 
 - root navigation link to `room_path(room)`;
 - root ID `[ room, :list ]`;
-- classes include `room`, `btn`, and conditional `unread`;
+- classes include `sidebar-list-item`, `sidebar-list-item--channel`, `room`,
+  `btn`, and named unread/selected modifiers;
 - `data-room-id`, `rooms-list` room target, `badge-dot` unread target, and
   `sorted-list` item target from `link_to_room`;
 - explicit sorting data (`data-sorted-list-name` now, a documented order value
@@ -228,8 +230,9 @@ Controllers retain that responsibility.
 
 ### CSS and verification
 
-Owner: the room-item portion of `sidebar.css`; shared control primitives remain
-in `buttons.css`. Isolated tests cover the DOM/data contract and states. Keep
+Owner: shared interaction states in `community-layout.css`; shared control
+primitives remain in `buttons.css`, while `sidebar.css` retains legacy shell
+contracts. Isolated tests cover the DOM/data contract and states. Keep
 controller broadcast tests for open, closed, involvement, rename, and destroy;
 test the `renderable:` path before removing the partial adapter.
 
@@ -247,7 +250,8 @@ Rooms::DirectListItemComponent.new(
   room: membership.room,
   participants: preloaded_participants,
   unread: membership.unread?,
-  sort_timestamp: membership.room.updated_at
+  sort_timestamp: membership.room.updated_at,
+  selected: false
 )
 ```
 
@@ -271,8 +275,10 @@ sortable direct-room list and is not a fake room item.
 ### Stable output and cache contract
 
 - root ID `[ room, :list ]` and navigation through `link_to_room`;
-- conditional `unread`, `data-sorted-list-number`, and all room/unread/sort
-  targets added by the helper;
+- root classes include `sidebar-list-item` and
+  `sidebar-list-item--direct`; named unread/selected modifiers,
+  `data-sorted-list-number`, and all room/unread/sort targets are added by the
+  component and helper;
 - accessible name starts with “Ping with” and preserves full meaning even when
   visible names are abbreviated;
 - avatar URLs use the fresh avatar route and decorative images remain hidden;
@@ -284,6 +290,8 @@ sortable direct-room list and is not a fake room item.
 Tests prove participant, membership, and room timestamp changes invalidate the
 adapter key. Avatar delivery remains behind the versioned fresh-avatar route;
 avatar changes touch the user and therefore also change the participant key.
+Shared interaction states are owned by `community-layout.css`; direct row and
+dialog presentation is owned by `direct-conversations.css`.
 
 ## Chat message
 

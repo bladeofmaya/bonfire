@@ -28,8 +28,8 @@ class Users::SidebarsControllerTest < ActionDispatch::IntegrationTest
       assert_select "turbo-frame#direct_rooms_control"
     end
     assert_select "turbo-frame#direct_conversation_dialog"
-    assert_select "#shared_rooms[data-controller='sorted-list']"
-    assert_select "#direct_rooms[data-controller='sorted-list']" \
+    assert_select "#shared_rooms.contents[data-controller='sorted-list']"
+    assert_select "#direct_rooms.contents[data-controller='sorted-list']" \
                   "[data-action='rooms-list:unread@window->sorted-list#updateItem']"
 
     users(:david).rooms.opens.each do |room|
@@ -113,7 +113,7 @@ class Users::SidebarsControllerTest < ActionDispatch::IntegrationTest
 
     assert_select "turbo-frame#direct_rooms_control #direct_rooms[data-controller='sorted-list']"
     assert_select "#shared_rooms[data-controller='sorted-list']"
-    assert_select "#direct_rooms a.direct:not(.direct__new)", count: 0
+    assert_select "#direct_rooms a.direct", count: 0
     assert_select "#shared_rooms a.room", count: 0
   end
 

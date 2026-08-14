@@ -8,14 +8,24 @@ class Rooms::DirectListItemComponentTest < ComponentTestCase
     render_inline component(membership, participants: [ participant ], unread_count: 3)
 
     assert_component_root "div##{dom_id(membership.room, :list)}.direct-message-row"
+    assert_selector ".sidebar-list-item.sidebar-list-item--direct.sidebar-list-item--unread"
     assert_selector "[data-sorted-list-number='#{membership.room.updated_at.to_fs(:epoch)}']"
     assert_selector "[data-room-id='#{membership.room.id}']"
     assert_selector "a.direct.unread[data-rooms-list-target='room'][data-badge-dot-target='unread']"
     assert_selector ".direct__unread-count", text: "3"
     closure_path = Rails.application.routes.url_helpers.rooms_direct_closure_path(membership.room)
-    assert_selector "form[action='#{closure_path}'] button[aria-label='Close Ping with #{participant.name}']"
+    assert_selector "form.direct__close-form[action='#{closure_path}'] button.direct__close.btn--plain[aria-label='Close Ping with #{participant.name}']"
+    assert_selector ".direct__close[data-controller='lucide'] [data-lucide='x']"
     assert_selector ".avatar img[aria-hidden='true'][src='#{avatar_path(participant)}']"
     assert_selector ".for-screen-reader", text: "Ping with #{participant.name}"
+  end
+
+  test "renders the direct selected-state contract" do
+    membership = memberships(:david_david_and_jason)
+
+    render_inline component(membership, participants: [ users(:jason) ], selected: true)
+
+    assert_component_root ".sidebar-list-item.sidebar-list-item--direct.room-list--current"
   end
 
   test "renders grouped participants with full accessible and visible names" do
@@ -71,11 +81,12 @@ class Rooms::DirectListItemComponentTest < ComponentTestCase
   end
 
   private
-    def component(membership, participants:, unread_count: 0)
+    def component(membership, participants:, unread_count: 0, selected: false)
       Rooms::DirectListItemComponent.new(
         room: membership.room,
         participants: participants,
         unread_count: unread_count,
+        selected: selected,
         sort_timestamp: membership.room.updated_at
       )
     end

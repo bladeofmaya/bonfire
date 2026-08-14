@@ -127,7 +127,9 @@ row or dialog.
 Use `.avatar` and set `--avatar-size` at the owning component boundary. Current
 standard sizes:
 
-- Sidebar/direct/member avatar: `2.5rem` (40px at the default root size)
+- Member-list avatar: `2.5rem` (40px at the default root size)
+- Direct-message avatar: `1.5rem`, with grouped avatars contained inside the
+  same `1.5rem` footprint
 - Compact inline avatar: define a documented smaller size locally
 - Profile or upload avatar: owned by the profile/upload component
 
@@ -162,9 +164,18 @@ Room and direct-message entries should implement the same interaction states:
 5. Unread: stronger label plus a consistent unread indicator or count
 6. Disabled/hidden: muted presentation without removing its accessible name
 
-The shared contract will be represented by a common sidebar-list-item primitive.
-Until that migration is complete, do not add more independent `.room` or
-`.direct` hover/selected rules.
+Use `.sidebar-list-item` for the shared interaction contract, then add exactly
+one content modifier:
+
+- `.sidebar-list-item--channel` for a shared room;
+- `.sidebar-list-item--direct` for a direct conversation;
+- `.sidebar-list-item--unread` for unread emphasis; and
+- `.room-list--current` for the selected room, either on the root or its
+  navigation link.
+
+`community-layout.css` owns default, hover, focus, selected, and unread states.
+`direct-conversations.css` may define the direct row's columns, avatars, unread
+count, and close action, but must not redefine those shared interaction states.
 
 ### Badges
 
@@ -212,7 +223,10 @@ For every interactive primitive, verify:
 - `buttons.css`, `inputs.css`, `avatars.css`, `panels.css`,
   `context-menu.css`: reusable primitives
 - `layout.css` and `nav.css`: application shell
-- `sidebar.css`: sidebar structure and stable legacy contracts
+- `sidebar.css`: stable legacy sidebar structure and non-community fallbacks
+- `community-layout.css`: community rail shell and shared sidebar-list-item
+  interaction states
+- `direct-conversations.css`: direct-message rows and create/edit dialog
 - feature files such as `messages.css`, `composer.css`, `signup.css`, and
   `profile-settings.css`: feature-owned presentation
 - `components.css`: component gallery and preview workspace only

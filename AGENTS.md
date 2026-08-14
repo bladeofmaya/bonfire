@@ -291,7 +291,7 @@ before introducing a new UI class or variant.
   `RoomsHelper#link_to_room` builds each entry's shared data contract.
 - **Browser and styles:** `rooms_list_controller.js`,
   `badge_dot_controller.js`, and `sorted_list_controller.js`; use
-  `sidebar.css` and `buttons.css`. Shared entries currently expose
+  `community-layout.css`, `sidebar.css`, and `buttons.css`. Shared entries currently expose
   `data-sorted-list-name` and are alphabetized by the Stimulus controller;
   numeric descending sorting is used by direct rooms instead.
 - **Live contracts:** the collection target is `shared_rooms`; each entry uses
@@ -320,7 +320,8 @@ before introducing a new UI class or variant.
   `Autocompletable::UsersController`, and `RoomsHelper#link_to_room`.
 - **Browser and styles:** `autocomplete_controller.js`,
   `rooms_list_controller.js`, `badge_dot_controller.js`, and
-  `sorted_list_controller.js`; use `sidebar.css` and `autocomplete.css`.
+  `sorted_list_controller.js`; use `community-layout.css`,
+  `direct-conversations.css`, `sidebar.css`, and `autocomplete.css`.
 - **Live contracts:** `direct_rooms_control` wraps the creation control and
   `direct_rooms`; successful creation prepends the `direct` partial to
   `direct_rooms`. Preserve room membership scoping and the Direct STI type.

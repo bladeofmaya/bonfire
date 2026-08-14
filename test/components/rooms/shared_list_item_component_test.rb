@@ -9,9 +9,16 @@ class Rooms::SharedListItemComponentTest < ComponentTestCase
     room_path = Rails.application.routes.url_helpers.room_path(room)
 
     assert_component_root "a##{dom_id(room, :list)}.room.unread"
+    assert_selector ".sidebar-list-item.sidebar-list-item--channel.sidebar-list-item--unread"
     assert_selector "a[href='#{room_path}'][data-room-id='#{room.id}'][data-sorted-list-name='#{room.name}']"
     assert_selector "[data-rooms-list-target='room'][data-badge-dot-target='unread'][data-sorted-list-target='item']"
     assert_selector ".overflow-ellipsis", text: room.name
+  end
+
+  test "renders the shared selected-state contract" do
+    render_inline component(rooms(:watercooler), selected: true)
+
+    assert_component_root ".sidebar-list-item.sidebar-list-item--channel.room-list--current"
   end
 
   test "uses the explicit sort key without changing the visible name" do
@@ -48,7 +55,7 @@ class Rooms::SharedListItemComponentTest < ComponentTestCase
   end
 
   private
-    def component(room, unread: false, sort_key: room.name)
-      Rooms::SharedListItemComponent.new(room: room, unread: unread, sort_key: sort_key)
+    def component(room, unread: false, selected: false, sort_key: room.name)
+      Rooms::SharedListItemComponent.new(room: room, unread: unread, selected: selected, sort_key: sort_key)
     end
 end

@@ -25,7 +25,7 @@ period.
 | Foundation | `base.css`, `layout.css`, `animation.css`, `colorize.css` | Document defaults, focus behavior, application grid, and globally named animation/icon behavior. |
 | Utilities | `utilities.css` | Single-purpose layout, spacing, sizing, visibility, and text classes. Utilities must not know a product area. |
 | UI primitives | `buttons.css`, `inputs.css`, `panels.css`, `separators.css`, `spinner.css`, `flash.css`, `lightbox.css` | Reusable controls and surfaces with a narrow class-based API. |
-| Product components | `avatars.css`, `autocomplete.css`, `boosts.css`, `composer.css`, `embeds.css`, `messages.css`, `nav.css`, `notifications.css`, `sidebar.css` | One product UI boundary and its descendants. |
+| Product components | `avatars.css`, `autocomplete.css`, `boosts.css`, `community-layout.css`, `composer.css`, `direct-conversations.css`, `embeds.css`, `messages.css`, `nav.css`, `notifications.css`, `sidebar.css` | One product UI boundary and its descendants. |
 | Page/vendor adapters | `signup.css`, `pwa.css`, `filters.css`, `actiontext.css`, `code.css`, `components.css` | Page-specific composition, PWA display-mode behavior, third-party markup overrides, syntax presentation, and development-only component gallery styling. |
 
 New rules should go into the narrowest owning layer. Do not create a generic
@@ -109,6 +109,18 @@ flex, scrolling, button shape, and empty-state behavior without changing a
 class. Consult `docs/component-contracts.md` and run the visual regression test
 when touching these selectors.
 
+### Community sidebar list items
+
+`community-layout.css` owns the shared `.sidebar-list-item` interaction
+contract for channels and direct conversations. Its modifiers express content
+kind and state; the legacy `.room` and `.direct` classes remain DOM, Turbo, and
+helper compatibility hooks rather than competing visual primitives.
+
+`direct-conversations.css` owns direct-row layout, avatars, badges, close
+controls, and the direct-conversation dialog. `sidebar.css` retains the older
+sidebar shell and non-community fallbacks. Do not add room/direct hover or
+selected rules outside the shared contract.
+
 ## Incremental migration order
 
 1. Add shared tokens without changing computed values: density, spacing scale,
@@ -123,9 +135,10 @@ when touching these selectors.
 4. Move page-specific rules out of `base.css` only after all call sites are
    found. PWA and notification rules are the first clear candidates.
    **PWA and notification ownership complete.**
-5. Migrate one product area at a time. Keep sidebar/message/composer files
-   intact until their Turbo, Stimulus, cache, and responsive contracts are
-   covered.
+5. Migrate one product area at a time. The community sidebar now has an
+   explicit shared list-item contract and direct-conversation ownership split;
+   keep remaining message/composer boundaries intact until their Turbo,
+   Stimulus, cache, and responsive contracts are covered.
 6. Only then consider an explicit cascade manifest/layers. Import-order changes
    are visual changes and require the full component plus visual test suites.
 
