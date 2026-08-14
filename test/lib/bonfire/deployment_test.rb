@@ -6,11 +6,12 @@ require "bonfire/deployment"
 class Bonfire::DeploymentTest < ActiveSupport::TestCase
   class FakeRunner
     attr_reader :runs
-    attr_accessor :git_dirty
+    attr_accessor :git_dirty, :fail_commands
 
     def initialize
       @runs = []
       @git_dirty = false
+      @fail_commands = []
     end
 
     def available?(_command)
@@ -33,6 +34,11 @@ class Bonfire::DeploymentTest < ActiveSupport::TestCase
 
     def run(*command, env: {})
       runs << [ command, env ]
+      !fail_commands.include?(command)
+    end
+
+    def pipe(source_command, target_command)
+      runs << [ [ "pipe", source_command, target_command ], {} ]
       true
     end
   end
@@ -113,6 +119,70 @@ class Bonfire::DeploymentTest < ActiveSupport::TestCase
     command, environment = @runner.runs.first
     assert_equal %w[kamal deploy], command
     assert_equal "chat.example.com", environment.fetch("DEPLOY_HOST")
+    assert_equal "chat.example.com", environment.fetch("DEPLOY_SERVER")
+  end
+
+  test "setup can configure a separate deployment server" do
+    assert_equal 0, cli.run(%w[setup --host chat.example.com --server 203.0.113.10 --configure-only])
+
+    configuration = File.read(File.join(@root, ".kamal/deploy.env"))
+    assert_includes configuration, "DEPLOY_HOST=chat.example.com"
+    assert_includes configuration, "DEPLOY_SERVER=203.0.113.10"
+  end
+
+  test "migration dry run checks both servers without changing them" do
+    configure
+    configure_secrets
+
+    assert_equal 0, cli.run(%w[migrate root@203.0.113.10 --dry-run])
+    assert_includes @output.string, "Source:      root@chat.example.com"
+    assert_includes @output.string, "Target:      root@203.0.113.10"
+    assert_includes @output.string, "Neither server was changed"
+    assert_empty @runner.runs
+    refute File.exist?(File.join(@root, ".kamal/migration.json"))
+  end
+
+  test "migration rejects the current server as its target" do
+    configure
+    configure_secrets
+
+    assert_equal 1, cli.run(%w[migrate root@chat.example.com --dry-run])
+    assert_includes @error.string, "current deployment server"
+  end
+
+  test "migration stops the source, copies storage, deploys the target, and saves it" do
+    configure
+    configure_secrets
+    Resolv.stubs(:getaddresses).returns([ "203.0.113.10" ])
+
+    assert_equal 0, cli.run(%w[migrate root@203.0.113.10 --yes])
+
+    commands = @runner.runs.map(&:first)
+    assert_includes commands, %w[kamal server bootstrap]
+    assert_includes commands, %w[kamal app stop]
+    assert_includes commands, %w[kamal setup]
+    assert_includes commands, %w[kamal deploy]
+    assert commands.any? { |command| command.first == "pipe" }
+
+    configuration = File.read(File.join(@root, ".kamal/deploy.env"))
+    assert_includes configuration, "DEPLOY_HOST=chat.example.com"
+    assert_includes configuration, "DEPLOY_SERVER=203.0.113.10"
+    refute File.exist?(File.join(@root, ".kamal/migration.json"))
+  end
+
+  test "migration restarts the source when the first target deployment fails" do
+    configure
+    configure_secrets
+    @runner.fail_commands = [ %w[kamal setup] ]
+
+    assert_equal 1, cli.run(%w[migrate root@203.0.113.10 --yes])
+
+    starts = @runner.runs.select { |command, _| command == %w[kamal app start] }
+    assert_equal 1, starts.size
+    assert_equal "chat.example.com", starts.first.last.fetch("DEPLOY_SERVER")
+
+    state = JSON.parse(File.read(File.join(@root, ".kamal/migration.json")))
+    assert_equal "bootstrapped", state.fetch("stage")
   end
 
   test "environment files reject unknown settings" do
@@ -135,5 +205,14 @@ class Bonfire::DeploymentTest < ActiveSupport::TestCase
         DEPLOY_HOST=chat.example.com
         DEPLOY_SSH_USER=root
       CONFIG
+    end
+
+
+    def configure_secrets
+      File.write(File.join(@root, ".kamal/secrets"), <<~SECRETS)
+        SECRET_KEY_BASE=secret
+        VAPID_PRIVATE_KEY=private
+        VAPID_PUBLIC_KEY=public
+      SECRETS
     end
 end

@@ -5,10 +5,10 @@ deploy_timeout: 120
 servers:
   web:
     hosts:
-      - <%= ENV.fetch("DEPLOY_HOST") %>
+      - <%= ENV.fetch("DEPLOY_SERVER", ENV.fetch("DEPLOY_HOST")) %>
 
 proxy:
-  ssl: true
+  ssl: <%= ENV.fetch("DEPLOY_PROXY_SSL", "true") == "true" %>
   host: <%= ENV.fetch("DEPLOY_HOST") %>
   app_port: 80
 

@@ -3,6 +3,49 @@
 Bonfire's Docker image contains everything needed for a fully-functional, single-machine deployment.
 This includes the web app, background jobs, caching, file serving, and SSL.
 
+### Migrating to another server
+
+Installations managed by `bin/bonfire` can be moved with:
+
+```sh
+bin/bonfire migrate root@203.0.113.10 --dry-run
+bin/bonfire migrate root@203.0.113.10
+```
+
+The dry run checks both SSH connections, the target server, and its storage
+filesystem without changing either machine. The real migration:
+
+1. bootstraps the new server;
+2. stops the old application so SQLite and uploaded files cannot diverge;
+3. streams the complete persistent storage directory between the servers;
+4. verifies ownership and the production database;
+5. deploys and health-checks the current source over HTTP on the new server;
+6. waits for the public hostname to resolve to the new address; and
+7. enables HTTPS and records the new SSH server locally.
+
+The public hostname remains unchanged. `DEPLOY_HOST` identifies that hostname,
+while `DEPLOY_SERVER` records the IP address or hostname used by SSH and Kamal.
+Existing configurations without `DEPLOY_SERVER` continue to use `DEPLOY_HOST`
+for both roles.
+
+Before the migration, reduce the DNS record's TTL to about 300 seconds and wait
+for its previous TTL to expire. When prompted, update the public `A` and/or
+`AAAA` record to the new server. DNS is deliberately not changed automatically
+because Bonfire does not store credentials for a particular DNS provider.
+
+If the terminal is interrupted or DNS takes longer than expected, resume using
+the same destination:
+
+```sh
+bin/bonfire migrate root@203.0.113.10 --resume
+```
+
+The old server is never deleted. If migration fails before the new application
+passes its direct health check, Bonfire attempts to stop the target and restart
+the old application. Keep the old server until the new installation has been
+verified. Once the new server accepts messages or uploads, rolling back also
+requires copying its newer storage back to the old server.
+
 > [!TIP]
 > The easiest way to self-host Bonfire is with [ONCE](https://github.com/basecamp/once), which handles installation, updates, and backups for you. See the [README](../README.md#deploying-with-once) for details. This guide covers running the Docker image by hand.
 

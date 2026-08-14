@@ -47,6 +47,7 @@ app/assets/builds/*
 /TODO.md
 /.kamal/deploy.env
 /.kamal/secrets
+/.kamal/migration.json
 /config/credentials.yml.enc
 
 # Ignore key files for decrypting credentials and more.

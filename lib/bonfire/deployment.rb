@@ -1,16 +1,20 @@
 require "fileutils"
+require "json"
 require "open3"
 require "optparse"
 require "resolv"
 require "shellwords"
+require "time"
 
 module Bonfire
   module Deployment
     CONFIG_PATH = ".kamal/deploy.env"
     SECRETS_PATH = ".kamal/secrets"
+    MIGRATION_PATH = ".kamal/migration.json"
 
     CONFIG_KEYS = %w[
       DEPLOY_HOST
+      DEPLOY_SERVER
       DEPLOY_SSH_USER
       DEPLOY_STORAGE_PATH
       DEPLOY_STORAGE_UID
@@ -94,6 +98,21 @@ module Bonfire
       def run(*command, env: {})
         system(env, *command, chdir: @root)
       end
+
+      def pipe(source_command, target_command)
+        reader, writer = IO.pipe
+        source_pid = Process.spawn(*source_command, chdir: @root, out: writer)
+        target_pid = Process.spawn(*target_command, chdir: @root, in: reader)
+        reader.close
+        writer.close
+
+        _, source_status = Process.wait2(source_pid)
+        _, target_status = Process.wait2(target_pid)
+        source_status.success? && target_status.success?
+      ensure
+        reader&.close unless reader&.closed?
+        writer&.close unless writer&.closed?
+      end
     end
 
     class CLI
@@ -117,6 +136,7 @@ module Bonfire
         when "status" then status(arguments)
         when "setup" then setup(arguments)
         when "deploy" then deploy(arguments)
+        when "migrate" then migrate(arguments)
         else
           @error.puts "Unknown command: #{command}"
           @error.puts "Run bin/bonfire help for usage."
@@ -139,6 +159,7 @@ module Bonfire
               status   Report local configuration and remote deployment status
               setup    Configure and optionally bootstrap a new deployment
               deploy   Deploy the current Git commit with Kamal
+              migrate  Move an existing deployment to a new server
               help     Show this help
 
             Start a new installation with:
@@ -179,6 +200,7 @@ module Bonfire
           parser = OptionParser.new do |opts|
             opts.banner = "Usage: bin/bonfire setup [options]"
             opts.on("--host HOST", "Deployment host/domain") { |value| options["DEPLOY_HOST"] = value }
+            opts.on("--server HOST", "SSH/Kamal server (defaults to deployment host)") { |value| options["DEPLOY_SERVER"] = value }
             opts.on("--user USER", "SSH user (default: root)") { |value| options["DEPLOY_SSH_USER"] = value }
             opts.on("--storage PATH", "Persistent storage path") { |value| options["DEPLOY_STORAGE_PATH"] = value }
             opts.on("--service NAME", "Kamal service name") { |value| options["KAMAL_SERVICE"] = value }
@@ -197,6 +219,7 @@ module Bonfire
           existing = @config_file.read
           values = DEFAULTS.merge(existing).merge(options.slice(*CONFIG_KEYS)).compact
           values["DEPLOY_HOST"] ||= prompt("Deployment host/domain")
+          values["DEPLOY_SERVER"] ||= values.fetch("DEPLOY_HOST")
           validate_configuration!(values)
 
           @config_file.write(values)
@@ -220,7 +243,7 @@ module Bonfire
             @output.puts "  Architecture detected as #{values.fetch("KAMAL_BUILDER_ARCH")}."
           end
 
-          unless options[:yes] || confirm("Bootstrap and deploy to #{values.fetch("DEPLOY_HOST")}?", default: false)
+          unless options[:yes] || confirm("Bootstrap and deploy to #{deployment_server(values)}?", default: false)
             @output.puts "Server unchanged. Configuration is ready; run `bin/bonfire setup` when ready."
             return 0
           end
@@ -260,7 +283,7 @@ module Bonfire
 
           print_configuration(config)
           @output.puts "Source:     #{branch} at #{commit}#{" (dirty)" if dirty}"
-          unless options[:yes] || confirm("Deploy this source to #{config.fetch("DEPLOY_HOST")}?", default: false)
+          unless options[:yes] || confirm("Deploy this source to #{deployment_server(config)}?", default: false)
             @output.puts "Deployment cancelled."
             return 0
           end
@@ -273,8 +296,59 @@ module Bonfire
           0
         end
 
+        def migrate(arguments)
+          options = { yes: false, dry_run: false, resume: false, allow_dirty: false, dns_timeout: 600 }
+          parser = OptionParser.new do |option_parser|
+            option_parser.banner = "Usage: bin/bonfire migrate USER@HOST [options]"
+            option_parser.on("--dry-run", "Run preflight checks without changing either server") { options[:dry_run] = true }
+            option_parser.on("--resume", "Resume the migration recorded in #{MIGRATION_PATH}") { options[:resume] = true }
+            option_parser.on("--yes", "Accept server-change confirmations (DNS is still verified)") { options[:yes] = true }
+            option_parser.on("--allow-dirty", "Allow deployment with uncommitted changes") { options[:allow_dirty] = true }
+            option_parser.on("--dns-timeout SECONDS", Integer, "Seconds to wait for DNS (default: 600)") { |value| options[:dns_timeout] = value }
+            option_parser.on("-h", "--help", "Show this help") do
+              @output.puts option_parser
+              return 0
+            end
+          end
+          parser.parse!(arguments)
+
+          raise Error, "No deployment configuration. Run `bin/bonfire setup` first." unless @config_file.exist?
+          raise Error, "Missing #{SECRETS_PATH}. Run `bin/bonfire setup` first." unless secrets_complete?
+          raise Error, "Expected one target such as root@203.0.113.10" unless arguments.one?
+
+          target_user, target_server = parse_destination(arguments.first)
+          config = configured_values
+          validate_configuration!(config)
+          ensure_migration_tools!
+          ensure_clean_worktree!(allow_dirty: options[:allow_dirty])
+
+          source_user = config.fetch("DEPLOY_SSH_USER")
+          source_server = deployment_server(config)
+          raise Error, "The migration target is the current deployment server" if source_user == target_user && source_server == target_server
+
+          target_config = config.merge("DEPLOY_SERVER" => target_server, "DEPLOY_SSH_USER" => target_user)
+          validate_configuration!(target_config)
+          print_migration_plan(config, target_config)
+          preflight_migration!(config, target_config)
+          return dry_run_message if options[:dry_run]
+
+          state = migration_state(options, config, target_config)
+          unless options[:yes] || confirm("Move Bonfire to #{target_user}@#{target_server}? A maintenance window is required.", default: false)
+            @output.puts "Migration cancelled."
+            return 0
+          end
+
+          perform_migration(state, config, target_config, options)
+        end
+
         def configured_values
-          DEFAULTS.merge(@config_file.read)
+          DEFAULTS.merge(@config_file.read).tap do |values|
+            values["DEPLOY_SERVER"] ||= values["DEPLOY_HOST"]
+          end
+        end
+
+        def deployment_server(config)
+          config.fetch("DEPLOY_SERVER", config.fetch("DEPLOY_HOST"))
         end
 
         def ensure_secrets
@@ -314,7 +388,8 @@ module Bonfire
           @output.puts <<~REPORT
 
             Bonfire deployment
-              Server:      #{config.fetch("DEPLOY_HOST", "not configured")}
+              Public host: #{config.fetch("DEPLOY_HOST", "not configured")}
+              Server:      #{deployment_server(config)}
               SSH user:    #{config.fetch("DEPLOY_SSH_USER")}
               Service:     #{config.fetch("KAMAL_SERVICE")}
               Image:       #{config.fetch("KAMAL_IMAGE")}
@@ -364,7 +439,7 @@ module Bonfire
         end
 
         def remote_probe(config)
-          destination = "#{config.fetch("DEPLOY_SSH_USER")}@#{config.fetch("DEPLOY_HOST")}"
+          destination = "#{config.fetch("DEPLOY_SSH_USER")}@#{deployment_server(config)}"
           command = "printf 'BONFIRE_READY\\n'; uname -m; if command -v docker >/dev/null; then docker --version; else printf 'docker missing\\n'; fi"
           stdout, stderr, success = @runner.capture(
             "ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5", destination, command
@@ -394,6 +469,9 @@ module Bonfire
           raise Error, "DEPLOY_HOST is required" if host.empty?
           raise Error, "DEPLOY_HOST must be a hostname or IP address" unless host.match?(/\A[A-Za-z0-9.-]+\z/)
 
+          server = deployment_server(values).to_s
+          raise Error, "DEPLOY_SERVER must be a hostname or IP address" unless server.match?(/\A[A-Za-z0-9.-]+\z/)
+
           user = values.fetch("DEPLOY_SSH_USER")
           raise Error, "Invalid SSH user" unless user.match?(/\A[A-Za-z0-9._-]+\z/)
 
@@ -411,6 +489,243 @@ module Bonfire
         def ensure_local_tools!
           missing = %w[git docker ssh kamal].reject { |tool| @runner.available?(tool) }
           raise Error, "Install required local tools: #{missing.join(", ")}" if missing.any?
+        end
+
+        def ensure_migration_tools!
+          ensure_local_tools!
+          missing = %w[curl].reject { |tool| @runner.available?(tool) }
+          raise Error, "Install required local tools: #{missing.join(", ")}" if missing.any?
+        end
+
+        def ensure_clean_worktree!(allow_dirty:)
+          _, _, dirty = git_state
+          raise Error, "The Git worktree has uncommitted changes. Commit them or pass --allow-dirty." if dirty && !allow_dirty
+        end
+
+        def parse_destination(destination)
+          match = destination.match(/\A([A-Za-z0-9._-]+)@([A-Za-z0-9.-]+)\z/)
+          raise Error, "Target must use USER@HOST format" unless match
+
+          [ match[1], match[2] ]
+        end
+
+        def print_migration_plan(source, target)
+          @output.puts <<~PLAN
+
+            Bonfire server migration
+              Public host: #{source.fetch("DEPLOY_HOST")}
+              Source:      #{source.fetch("DEPLOY_SSH_USER")}@#{deployment_server(source)}
+              Target:      #{target.fetch("DEPLOY_SSH_USER")}@#{deployment_server(target)}
+              Storage:     #{source.fetch("DEPLOY_STORAGE_PATH")}
+              Source code: #{git_state.first(2).join(" at ")}
+
+            The old application will be stopped before storage is copied. It will
+            remain intact for rollback and will not be deleted automatically.
+          PLAN
+        end
+
+        def preflight_migration!(source, target)
+          [ [ "source", source ], [ "target", target ] ].each do |label, config|
+            probe = remote_probe(config)
+            print_remote_probe(probe)
+            raise Error, "Cannot connect to the #{label} server over SSH" unless probe[:reachable]
+          end
+
+          target_path = target.fetch("DEPLOY_STORAGE_PATH")
+          source_path = source.fetch("DEPLOY_STORAGE_PATH")
+          source_stdout, source_stderr, source_success = @runner.capture(
+            "ssh", "-o", "BatchMode=yes", ssh_destination(source),
+            "du -sk -- #{Shellwords.escape(source_path)}"
+          )
+          raise Error, "Could not measure source storage: #{source_stderr.lines.last.to_s.strip}" unless source_success
+
+          source_kb = source_stdout.split.first&.then { |value| Integer(value, exception: false) }
+          destination = ssh_destination(target)
+          command = "set -eu; test ! -e #{Shellwords.escape(target_path)} || test -d #{Shellwords.escape(target_path)}; " \
+            "df -Pk #{Shellwords.escape(File.dirname(target_path))} 2>/dev/null || df -Pk /"
+          stdout, stderr, success = @runner.capture("ssh", "-o", "BatchMode=yes", destination, command)
+          raise Error, "Could not inspect target storage: #{stderr.lines.last.to_s.strip}" unless success
+
+          available_kb = stdout.lines.reverse_each.lazy.map { |line| line.split }.find { |fields| fields.length >= 4 && fields[3].match?(/\A\d+\z/) }&.[](3)
+          if source_kb && available_kb && available_kb.to_i < (source_kb * 1.1).ceil
+            raise Error, "Target does not have enough free space for #{source_kb / 1024} MiB of storage"
+          end
+          @output.puts "  Source data:  #{source_kb ? "#{source_kb / 1024} MiB" : "size unavailable"}"
+          @output.puts "  Target disk:  #{available_kb ? "#{available_kb.to_i / 1024} MiB available" : "available"}"
+        end
+
+        def dry_run_message
+          @output.puts "Dry run complete. Neither server was changed."
+          0
+        end
+
+        def migration_state(options, source, target)
+          path = File.join(@root, MIGRATION_PATH)
+          if options[:resume]
+            raise Error, "No migration to resume at #{MIGRATION_PATH}" unless File.file?(path)
+            state = JSON.parse(File.read(path))
+            unless state.values_at("target_user", "target_server") == [ target.fetch("DEPLOY_SSH_USER"), deployment_server(target) ]
+              raise Error, "The recorded migration has a different target"
+            end
+            state
+          else
+            raise Error, "A migration is already in progress; pass --resume or remove #{MIGRATION_PATH}" if File.file?(path)
+            state = {
+              "stage" => "planned",
+              "source_user" => source.fetch("DEPLOY_SSH_USER"),
+              "source_server" => deployment_server(source),
+              "target_user" => target.fetch("DEPLOY_SSH_USER"),
+              "target_server" => deployment_server(target),
+              "public_host" => source.fetch("DEPLOY_HOST"),
+              "started_at" => Time.now.utc.iso8601
+            }
+            write_migration_state(state)
+            state
+          end
+        end
+
+        def perform_migration(state, source, target, options)
+          source_stopped = stage_at_least?(state, "source_stopped")
+          target_started = stage_at_least?(state, "http_deployed")
+          target_healthy = false
+
+          unless stage_at_least?(state, "bootstrapped")
+            return 1 unless run_step("Bootstrapping the new server", target, "kamal", "server", "bootstrap")
+            advance_migration!(state, "bootstrapped")
+          end
+
+          unless source_stopped
+            return 1 unless run_step("Stopping Bonfire on the old server", source, "kamal", "app", "stop")
+            source_stopped = true
+            advance_migration!(state, "source_stopped")
+          end
+
+          unless stage_at_least?(state, "storage_copied")
+            transfer_storage!(source, target)
+            advance_migration!(state, "storage_copied")
+          end
+
+          unless target_started
+            http_environment = target.merge("DEPLOY_PROXY_SSL" => "false")
+            unless run_step("Deploying Bonfire on the new server over HTTP", http_environment, "kamal", "setup")
+              restart_source_after_failure(source, state)
+              return 1
+            end
+            target_started = true
+            advance_migration!(state, "http_deployed")
+          end
+
+          verify_http_target!(target)
+          target_healthy = true
+          wait_for_dns!(target, options)
+          advance_migration!(state, "dns_ready")
+
+          return 1 unless run_step("Enabling HTTPS on the new server", target, "kamal", "deploy")
+          verify_https!(target.fetch("DEPLOY_HOST"))
+
+          saved = @config_file.read.merge(
+            "DEPLOY_SERVER" => deployment_server(target),
+            "DEPLOY_SSH_USER" => target.fetch("DEPLOY_SSH_USER")
+          )
+          @config_file.write(DEFAULTS.merge(saved).slice(*CONFIG_KEYS))
+          advance_migration!(state, "complete")
+          FileUtils.rm_f(File.join(@root, MIGRATION_PATH))
+
+          @output.puts <<~SUCCESS
+
+            Migration completed: https://#{target.fetch("DEPLOY_HOST")}
+            The old server is stopped but unchanged. Keep it until you are satisfied
+            with the new installation, then retire it manually.
+          SUCCESS
+          0
+        rescue Error
+          if source_stopped && !target_healthy
+            @runner.run("kamal", "app", "stop", env: target) if target_started
+            restart_source_after_failure(source, state)
+          end
+          raise
+        end
+
+        MIGRATION_STAGES = %w[planned bootstrapped source_stopped storage_copied http_deployed dns_ready complete].freeze
+
+        def stage_at_least?(state, stage)
+          MIGRATION_STAGES.index(state.fetch("stage")) >= MIGRATION_STAGES.index(stage)
+        end
+
+        def advance_migration!(state, stage)
+          state["stage"] = stage
+          write_migration_state(state)
+        end
+
+        def write_migration_state(state)
+          path = File.join(@root, MIGRATION_PATH)
+          FileUtils.mkdir_p(File.dirname(path))
+          File.write(path, JSON.pretty_generate(state) + "\n", mode: "w", perm: 0o600)
+          File.chmod(0o600, path)
+        end
+
+        def transfer_storage!(source, target)
+          source_path = source.fetch("DEPLOY_STORAGE_PATH")
+          target_path = target.fetch("DEPLOY_STORAGE_PATH")
+          uid = target.fetch("DEPLOY_STORAGE_UID")
+          source_command = [ "ssh", "-o", "BatchMode=yes", ssh_destination(source),
+            "tar -C #{Shellwords.escape(File.dirname(source_path))} -czf - #{Shellwords.escape(File.basename(source_path))}" ]
+          target_command = [ "ssh", "-o", "BatchMode=yes", ssh_destination(target),
+            "set -eu; rm -rf -- #{Shellwords.escape(target_path)}; mkdir -p -- #{Shellwords.escape(target_path)}; " \
+            "tar -C #{Shellwords.escape(target_path)} -xzf - --strip-components=1; " \
+            "chown -R #{uid}:#{uid} -- #{Shellwords.escape(target_path)}; " \
+            "test -r #{Shellwords.escape(File.join(target_path, "db", "production.sqlite3"))}" ]
+
+          @output.puts "\nCopying persistent storage to the new server..."
+          raise Error, "Storage transfer failed; the old server remains the source of truth" unless @runner.pipe(source_command, target_command)
+          @output.puts "Persistent storage copied and ownership verified."
+        end
+
+        def verify_http_target!(target)
+          url = "http://#{deployment_server(target)}/up"
+          stdout, stderr, success = @runner.capture("curl", "--fail", "--silent", "--show-error", "--max-time", "15",
+            "--header", "Host: #{target.fetch("DEPLOY_HOST")}", url)
+          raise Error, "New server health check failed: #{stderr.strip}" unless success
+          @output.puts "  HTTP health:  healthy on #{deployment_server(target)}"
+        end
+
+        def wait_for_dns!(target, options)
+          public_host = target.fetch("DEPLOY_HOST")
+          target_addresses = Resolv.getaddresses(deployment_server(target))
+          target_addresses = [ deployment_server(target) ] if target_addresses.empty?
+
+          unless options[:yes]
+            @output.puts "\nUpdate #{public_host} to point to #{target_addresses.join(", ")} now."
+            prompt("Press Enter after saving the DNS change")
+          end
+
+          deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + options[:dns_timeout]
+          loop do
+            resolved = Resolv.getaddresses(public_host)
+            if (resolved & target_addresses).any?
+              @output.puts "  DNS:          #{public_host} resolves to the new server"
+              return
+            end
+            raise Error, "DNS did not reach the new server within #{options[:dns_timeout]} seconds; rerun with --resume" if Process.clock_gettime(Process::CLOCK_MONOTONIC) >= deadline
+
+            sleep 10
+          end
+        end
+
+        def verify_https!(public_host)
+          _, stderr, success = @runner.capture("curl", "--fail", "--silent", "--show-error", "--max-time", "20", "https://#{public_host}/up")
+          raise Error, "HTTPS health check failed: #{stderr.strip}" unless success
+          @output.puts "  HTTPS health: healthy"
+        end
+
+        def restart_source_after_failure(source, state)
+          @error.puts "Migration failed before the new server was healthy; restarting the old application."
+          @runner.run("kamal", "app", "start", env: source)
+          advance_migration!(state, "bootstrapped")
+        end
+
+        def ssh_destination(config)
+          "#{config.fetch("DEPLOY_SSH_USER")}@#{deployment_server(config)}"
         end
 
         def prompt(label, default = nil)

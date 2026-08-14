@@ -77,6 +77,19 @@ bin/bonfire status
 bin/bonfire deploy
 ```
 
+To move an existing installation, lower the public hostname's DNS TTL first,
+then run the migration with the new SSH destination:
+
+```sh
+bin/bonfire migrate root@203.0.113.10 --dry-run
+bin/bonfire migrate root@203.0.113.10
+```
+
+The command stops the old application before copying its database and uploads,
+deploys and checks the new server, then pauses for the DNS change. See the
+[server migration guide](docs/self-hosting.md#migrating-to-another-server) for
+the cutover and rollback details.
+
 You can see every available option with `bin/bonfire help`. The private setup
 files live under `.kamal/` and are not committed to Git. Keep a secure backup
 of the generated secrets.
