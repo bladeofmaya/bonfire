@@ -1,42 +1,43 @@
 .channel-list {
   border-inline-end: 1px solid var(--color-border-subtle);
 
-  /* Direct conversations start from the member profile in this layout. Keep
-     the frame and stream target mounted for direct-room broadcasts. */
-  .channel-list__directs { display: none; }
-
   .directs {
     display: flex;
     flex-direction: column;
     position: static;
     overflow: visible;
-    padding: var(--space-block) var(--sidebar-inline-space);
+    padding: 0;
   }
 
   .direct {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
     justify-items: stretch;
     inline-size: 100%;
-    padding: 0.4rem;
+    gap: 0.55rem;
+    min-inline-size: 0;
+    padding: 0.45rem 0.25rem;
+    color: var(--color-text-secondary);
 
     .avatar,
     .avatar__group {
-      --avatar-size: 2rem;
+      --avatar-size: 2.25rem;
 
       margin-inline: 0;
     }
   }
 
   .direct__author {
+    display: block;
     margin-block-start: 0;
-    padding-inline: var(--space-inline-half);
+    min-inline-size: 0;
+    padding-inline: 0;
+
+    &::after { display: none; }
   }
 
   .rooms {
-    padding-block-end: var(--sidebar-tools-height);
-
     .room {
       inline-size: 100%;
       margin: 0;
@@ -51,7 +52,98 @@
       }
 
       &:hover { background: var(--color-surface-hover); }
+
+      &.room-list--current {
+        background: var(--color-surface-active);
+        color: var(--color-text-primary);
+        font-weight: 750;
+      }
     }
+  }
+}
+
+.channel-list__section {
+  padding: var(--space-block) var(--sidebar-inline-space) 0;
+}
+
+.channel-list__section:last-of-type {
+  padding-block-end: calc(var(--sidebar-tools-height) + var(--space-block));
+}
+
+.channel-list__directs {
+  margin: var(--space-block) var(--sidebar-inline-space) 0;
+  padding: var(--space-block) 0 calc(var(--sidebar-tools-height) + var(--space-block));
+  border-block-start: 1px solid var(--color-border-subtle);
+}
+
+.channel-list__section-title {
+  margin: 0 0 0.45rem;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-small);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.direct-message-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  border-radius: var(--radius-medium);
+
+  transition: background-color 120ms ease;
+
+  &:hover,
+  &:focus-within { background: var(--color-surface-hover); }
+
+  .direct:hover { background: transparent; }
+
+  &:has(.room-list--current) {
+    background: var(--color-surface-active);
+
+    .direct__name {
+      color: var(--color-text-primary);
+      font-weight: 750;
+    }
+  }
+}
+
+.direct__name {
+  display: block;
+  color: inherit;
+  font-size: 0.9rem;
+  font-weight: 550;
+}
+
+.direct.unread {
+  color: var(--color-text-primary);
+
+  .direct__name { font-weight: 750; }
+}
+
+.direct__unread-count {
+  min-inline-size: 1.25rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: var(--color-primary-fg);
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.direct__close {
+  --btn-size: 1.75rem;
+
+  opacity: 1;
+
+  img { opacity: 0.7; }
+
+  @media (any-hover: hover) {
+    opacity: 0;
+
+    .direct-message-row:hover &,
+    &:focus-visible { opacity: 1; }
   }
 }
 
@@ -69,6 +161,14 @@
 
   .context-menu__trigger { margin: -0.4rem; }
   .context-menu__menu { inline-size: 100%; }
+}
+
+.channel-list__server-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-inline-size: 0;
+  flex: 1;
 }
 
 .channel-list__logo {

@@ -12,7 +12,7 @@ class AccountSettingsLayoutTest < ApplicationSystemTestCase
     assert_selector "#account-panel-general:not([hidden])"
     assert_selector "#account-panel-members[hidden]", visible: false
     assert_selector "i[data-lucide]", count: 0
-    assert_selector ".profile-settings__tab svg", count: 2
+    assert_selector ".profile-settings__tab svg", count: 3
 
     click_on "Members"
 
@@ -20,6 +20,18 @@ class AccountSettingsLayoutTest < ApplicationSystemTestCase
     assert_selector "#account-panel-members:not([hidden])", text: "Share to invite more people"
     assert_selector "#account-panel-general[hidden]", visible: false
     assert_equal "members", URI.parse(current_url).fragment
+  end
+
+  test "previews and publishes README" do
+    click_on "README"
+
+    assert_selector "#account-panel-privacy:not([hidden])"
+    assert_selector ".readme-editor trix-toolbar", visible: true
+    fill_in_rich_text_area "account_readme", with: "We use your email to operate this community."
+    click_on "Publish README"
+
+    assert_current_path edit_account_path
+    assert_equal "We use your email to operate this community.", accounts(:signal).reload.readme.to_plain_text
   end
 
   test "arrow keys switch account tabs" do

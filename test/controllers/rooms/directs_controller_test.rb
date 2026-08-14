@@ -16,7 +16,7 @@ class Rooms::DirectsControllerTest < ActionDispatch::IntegrationTest
     room.memberships.each do |membership|
       assert_rendered_turbo_stream_broadcast membership.user, :rooms,
         action: "prepend", target: :direct_rooms do
-        assert_select "##{dom_id(room, :list)}.direct[data-room-id='#{room.id}'][data-sorted-list-number]"
+        assert_select "##{dom_id(room, :list)}.direct-message-row[data-sorted-list-number] a.direct[data-room-id='#{room.id}']"
         assert_select ".for-screen-reader", text: /Ping with/
       end
     end
@@ -27,6 +27,17 @@ class Rooms::DirectsControllerTest < ActionDispatch::IntegrationTest
       post rooms_directs_url, params: { user_ids: [ users(:jz).id ] }
       post rooms_directs_url, params: { user_ids: [ users(:jz).id ] }
     end
+  end
+
+  test "create restores a direct conversation hidden by the current user" do
+    room = rooms(:david_and_jason)
+    membership = memberships(:david_david_and_jason)
+    membership.update!(involvement: :invisible)
+
+    post rooms_directs_url, params: { user_ids: [ users(:jason).id ] }
+
+    assert_redirected_to room_url(room)
+    assert membership.reload.involved_in_everything?
   end
 
   test "destroy only allowed for all room users" do

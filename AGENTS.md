@@ -416,6 +416,11 @@ as well as the ordinary request.
   CSS variables and selectors available to installations that override them.
   Account updates use an ordinary redirect, not a feature-specific broadcast.
   When a setting is consumed elsewhere, inspect and test every consumer.
+  The READMErmation document is an `Account` Action Text association,
+  rather than a global record or undeclared JSON key, because an installation
+  has one singleton account and one currently published rules document. Publishing or
+  clearing it updates version, digest, and timestamp metadata; only
+  installation administrators may mutate it.
 - **Tests:** `test/controllers/accounts_controller_test.rb` and the focused
   tests under `test/controllers/accounts/`; add consumer tests as well when a
   setting changes another screen.
@@ -436,6 +441,10 @@ as well as the ordinary request.
   slot and `.signup`/`.nametag` layout. Treat administrator-provided public copy
   as untrusted content: render it escaped or deliberately sanitized and define
   the blank state so empty settings do not create empty UI chrome.
+  When READMErmation is published, signup requires server-validated
+  acceptance of the server rules and copies its version/digest, acceptance timestamp,
+  and request IP onto the new user. Keep user creation and that metadata in the
+  same database write; never rely on the browser's `required` attribute alone.
 - **Tests:** `test/controllers/users_controller_test.rb`; cover configured and
   blank optional content as well as the existing join/access rules.
 

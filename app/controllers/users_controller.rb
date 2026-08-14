@@ -9,9 +9,21 @@ class UsersController < ApplicationController
   end
 
   def create
-    @user = User.create!(user_params)
-    start_new_session_for @user
-    redirect_to root_url
+    @user = User.new(user_params)
+    account = Current.account
+
+    if account.readme? && @user.signup_rules_acknowledgement != "1"
+      @user.errors.add :signup_rules_acknowledgement, "must be accepted"
+      render :new, status: :unprocessable_entity
+    else
+      record_signup_rules_acceptance(account) if account.readme?
+      if @user.save
+        start_new_session_for @user
+        redirect_to root_url
+      else
+        render :new, status: :unprocessable_entity
+      end
+    end
   rescue ActiveRecord::RecordNotUnique
     redirect_to new_session_url(email_address: user_params[:email_address])
   end
@@ -29,6 +41,15 @@ class UsersController < ApplicationController
     end
 
     def user_params
-      params.require(:user).permit(:name, :avatar, :email_address, :password)
+      params.require(:user).permit(:name, :avatar, :email_address, :password, :signup_rules_acknowledgement)
+    end
+
+    def record_signup_rules_acceptance(account)
+      @user.assign_attributes(
+        readme_version: account.readme_version,
+        readme_digest: account.readme_digest,
+        signup_rules_accepted_at: Time.current,
+        signup_rules_accepted_ip: request.remote_ip
+      )
     end
 end

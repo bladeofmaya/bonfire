@@ -15,4 +15,8 @@ class Ui::ContextMenuComponent < ApplicationComponent
     end
     @menu_class = menu_class
   end
+
+  def render?
+    items.any?
+  end
 end

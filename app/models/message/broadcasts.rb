@@ -12,8 +12,9 @@ module Message::Broadcasts
     # Fanned out to the room's members rather than published on one global stream, so
     # that the timing of activity in a room only reaches people who are in it.
     def broadcast_unread_room
-      room.memberships.pluck(:user_id).each do |user_id|
-        ActionCable.server.broadcast UnreadRoomsChannel.stream_name_for(user_id), { roomId: room.id }
+      room.memberships.pluck(:user_id, :unread_count).each do |user_id, unread_count|
+        ActionCable.server.broadcast UnreadRoomsChannel.stream_name_for(user_id),
+          { roomId: room.id, unreadCount: unread_count }
       end
     end
 end

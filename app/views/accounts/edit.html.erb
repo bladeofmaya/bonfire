@@ -23,7 +23,9 @@
 <section class="panel panel--wide profile-settings" style="view-transition-name: account-settings"
     data-controller="profile-tabs" data-profile-tabs-default-tab-value="general">
   <nav class="profile-settings__tabs" role="tablist" aria-label="Account settings">
-    <% [ [ "general", "settings", "General" ], [ "members", "users-round", "Members" ] ].each_with_index do |(name, icon, label), index| %>
+    <% tabs = [ [ "general", "settings", "General" ], [ "members", "users-round", "Members" ] ] %>
+    <% tabs << [ "privacy", "shield-check", "README" ] if Current.user.administrator? %>
+    <% tabs.each_with_index do |(name, icon, label), index| %>
       <button type="button" class="profile-settings__tab" id="account-tab-<%= name %>"
           role="tab" aria-controls="account-panel-<%= name %>" aria-selected="<%= index.zero? %>"
           tabindex="<%= index.zero? ? 0 : -1 %>" data-profile-tabs-target="tab"
@@ -134,6 +136,42 @@
         </menu>
       </div>
     </section>
+
+    <% if Current.user.administrator? %>
+      <section class="profile-settings__panel" id="account-panel-privacy" role="tabpanel" hidden
+          aria-labelledby="account-tab-privacy" data-profile-tabs-target="panel" data-profile-tabs-name="privacy">
+        <header class="profile-settings__heading">
+          <h1>README</h1>
+          <p class="txt-subtle">Introduce your community and publish the rules people must accept before joining.</p>
+        </header>
+
+        <%= form_with model: @account, class: "profile-settings__fields readme-editor flex flex-column gap" do |form| %>
+          <label for="account_readme">
+            <strong>Information and server rules</strong>
+          </label>
+          <%= form.rich_text_area :readme, class: "input",
+                placeholder: "Use headings to organize information about the server, etiquette, privacy, or anything else people should know before joining." %>
+
+          <p class="txt-small txt-subtle margin-none">
+            New members must accept these server rules during signup. Include any relevant privacy information, but remember this tool does not replace jurisdiction-specific legal advice.
+          </p>
+
+          <% if @account.readme_published_at.present? %>
+            <p class="txt-small txt-subtle margin-none">
+              Published <%= tag.time @account.readme_published_at.to_fs(:long),
+                    datetime: @account.readme_published_at.iso8601,
+                    data: { local_time_target: "datetime" } %>
+              · Version <%= @account.readme_version %>
+            </p>
+          <% end %>
+
+          <%= form.button class: "btn btn--reversed center", type: "submit" do %>
+            <%= image_tag "check.svg", aria: { hidden: "true" }, size: 20 %>
+            <span>Publish README</span>
+          <% end %>
+        <% end %>
+      </section>
+    <% end %>
   </div>
 </section>
 

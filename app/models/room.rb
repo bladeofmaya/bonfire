@@ -77,7 +77,23 @@ class Room < ApplicationRecord
     end
 
     def unread_memberships(message)
-      memberships.visible.disconnected.where.not(user: message.creator).update_all(unread_at: message.created_at, updated_at: Time.current)
+      recipients = memberships.where.not(user: message.creator)
+
+      restored_memberships = direct? ? restore_hidden_direct_memberships(recipients) : []
+
+      recipients.visible.disconnected.update_all(
+        unread_at: message.created_at,
+        unread_count: Arel.sql("unread_count + 1"),
+        updated_at: Time.current
+      )
+
+      restored_memberships.each { |membership| membership.reload.broadcast_direct_list_item }
+    end
+
+    def restore_hidden_direct_memberships(recipients)
+      recipients.involved_in_invisible.to_a.each do |membership|
+        membership.update!(involvement: :everything)
+      end
     end
 
     def push_later(message)

@@ -1,6 +1,28 @@
 require "test_helper"
 
 class AccountTest < ActiveSupport::TestCase
+  test "publishing README versions changed content" do
+    account = accounts(:signal)
+
+    assert_changes -> { account.reload.readme_version }, from: 0, to: 1 do
+      account.publish_readme!("We store your profile data.")
+    end
+
+    assert account.readme?
+    assert account.readme_digest.present?
+    assert account.readme_published_at.present?
+
+    assert_no_changes -> { account.reload.readme_version } do
+      account.publish_readme!("We store your profile data.")
+    end
+
+    account.publish_readme!("")
+    assert_not account.reload.readme?
+    assert_nil account.readme_digest
+    assert_nil account.readme_published_at
+    assert_equal 2, account.readme_version
+  end
+
   test "settings" do
     accounts(:signal).settings.restrict_room_creation_to_administrators = true
     assert accounts(:signal).settings.restrict_room_creation_to_administrators?

@@ -10,12 +10,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2025_12_12_154340) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_14_120000) do
   create_table "accounts", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "custom_styles"
     t.string "join_code", null: false
     t.string "name", null: false
+    t.string "readme_digest"
+    t.datetime "readme_published_at"
+    t.integer "readme_version", default: 0, null: false
     t.json "settings"
     t.integer "singleton_guard", default: 0, null: false
     t.datetime "updated_at", null: false
@@ -86,6 +89,7 @@ ActiveRecord::Schema[8.2].define(version: 2025_12_12_154340) do
     t.string "involvement", default: "mentions"
     t.integer "room_id", null: false
     t.datetime "unread_at"
+    t.integer "unread_count", default: 0, null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
     t.index ["room_id", "created_at"], name: "index_memberships_on_room_id_and_created_at"
@@ -151,7 +155,11 @@ ActiveRecord::Schema[8.2].define(version: 2025_12_12_154340) do
     t.string "email_address"
     t.string "name", null: false
     t.string "password_digest"
+    t.string "readme_digest"
+    t.integer "readme_version"
     t.integer "role", default: 0, null: false
+    t.datetime "signup_rules_accepted_at"
+    t.string "signup_rules_accepted_ip"
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["bot_token"], name: "index_users_on_bot_token", unique: true

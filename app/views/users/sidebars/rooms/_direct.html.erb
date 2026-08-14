@@ -2,7 +2,7 @@
   <%= render Rooms::DirectListItemComponent.new(
         room: membership.room,
         participants: participants,
-        unread: membership.unread?,
+        unread_count: membership.unread_count,
         sort_timestamp: membership.room.updated_at
       ) %>
 <% end %>

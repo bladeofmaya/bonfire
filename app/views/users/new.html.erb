@@ -10,15 +10,28 @@
   </div>
 <% end %>
 
-<%= form_with model: @user, url: join_path(params[:join_code]), class: "center" do |form| %>
-  <section class="nametag u-relative">
-    <div class="nametag__inner flex flex-column gap">
-      <fieldset class="flex flex-column center-block">
-        <legend class="txt-align-center flex gap">
-          <%= account_logo_tag %>
-          <strong class="txt-large"><%= Current.account.name %></strong>
-        </legend>
+<%= form_with model: @user, url: join_path(params[:join_code]), class: "signup-form center" do |form| %>
+  <section class="signup-card">
+    <div class="signup-card__form flex flex-column gap">
+      <% if @user.errors.any? %>
+        <div class="signup-errors" role="alert">
+          <strong>We couldn’t create your account:</strong>
+          <ul>
+            <% @user.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
 
+      <header class="signup-card__heading">
+        <div class="flex align-center gap">
+          <%= account_logo_tag %>
+          <h1 class="txt-large margin-none">Join <%= Current.account.name %></h1>
+        </div>
+      </header>
+
+      <fieldset class="flex flex-column center-block">
         <label class="align-center center avatar__form gap" data-controller="upload-preview">
           <div class="btn input--file">
             <%= image_tag "camera.svg", aria: { hidden: "true" } %>
@@ -56,11 +69,30 @@
         </label>
       </div>
 
+      <% if Current.account.readme? %>
+        <label class="signup-rules input">
+          <%= form.check_box :signup_rules_acknowledgement, required: true %>
+          <span>I have read and accept the server rules.</span>
+        </label>
+      <% end %>
+
       <%= form.button class: "btn btn--reversed center txt-large", type: "submit" do %>
         <%= image_tag "check.svg", aria: { hidden: "true" } %>
         <span class="for-screen-reader">Save</span>
       <% end %>
     </div>
+
+    <aside class="signup-card__information" aria-labelledby="readme-title">
+      <h2 id="readme-title" class="txt-large margin-none">READ FIRST</h2>
+
+      <div class="signup-readme-content">
+        <% if Current.account.readme? %>
+          <%= Current.account.readme %>
+        <% else %>
+          <p class="txt-subtle">Welcome to <%= Current.account.name %>.</p>
+        <% end %>
+      </div>
+    </aside>
   </section>
 <% end %>
 

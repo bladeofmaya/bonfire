@@ -77,7 +77,11 @@ Rails.application.routes.draw do
   namespace :rooms do
     resources :opens
     resources :closeds
-    resources :directs
+    resources :directs do
+      scope module: :directs do
+        resource :closure, only: :create
+      end
+    end
   end
 
   resources :messages do

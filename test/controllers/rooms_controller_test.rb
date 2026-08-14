@@ -18,12 +18,23 @@ class RoomsControllerTest < ActionDispatch::IntegrationTest
     assert_select "aside#channels turbo-frame#user_sidebar[src='#{user_sidebar_path}']"
     assert_select "aside#sidebar .member-sidebar[aria-label='Community members']" do
       assert_select ".member-sidebar__group"
-      assert_select "a.member-sidebar__member", count: User.active.count
-      assert_select ".member-sidebar__role[aria-label='Administrator']", count: User.active.administrator.count
+      assert_select "a.member-sidebar__member", count: room.users.active.count
+      assert_select ".member-sidebar__role[aria-label='Administrator']", count: room.users.active.administrator.count
     end
     assert_select "#system_welcome", count: 0
     assert_select "nav#nav figure.account-logo", count: 0
     assert_select "nav#nav a[href='#{polymorphic_path([ :edit, room ])}']", text: "Settings for this #{room.direct? ? "Ping" : "room"}"
+  end
+
+  test "direct room member sidebar only shows its participants" do
+    room = rooms(:david_and_jason)
+
+    get room_url(room)
+
+    room.users.active.each do |user|
+      assert_select "aside#sidebar a.member-sidebar__member[href='#{user_path(user)}']", count: 1
+    end
+    assert_select "aside#sidebar a.member-sidebar__member", count: room.users.active.count
   end
 
   test "room settings control is only visible to administrators" do

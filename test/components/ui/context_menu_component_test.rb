@@ -17,4 +17,13 @@ class Ui::ContextMenuComponentTest < ComponentTestCase
       assert_selector "img[src*='settings']", count: 1, visible: false
     end
   end
+
+  test "does not render without menu items" do
+    render_inline Ui::ContextMenuComponent.new(label: "Empty menu", items: []) do
+      "Unused trigger"
+    end
+
+    assert_no_selector "details.context-menu"
+    assert_no_text "Unused trigger"
+  end
 end

@@ -1,6 +1,8 @@
 class User < ApplicationRecord
   include Avatar, Bannable, Bot, Mentionable, Role, Transferable
 
+  attr_accessor :signup_rules_acknowledgement
+
   has_many :memberships, dependent: :delete_all
   has_many :rooms, through: :memberships
 
@@ -18,6 +20,11 @@ class User < ApplicationRecord
   enum :status, %i[ active deactivated banned ], default: :active
 
   has_secure_password validations: false
+
+  validates :name, presence: true
+  validates :email_address, presence: true, unless: :bot?
+  validates :password, presence: true, on: :create, unless: :bot?
+  validates :password, length: { minimum: 12 }, allow_nil: true, unless: :bot?
 
   after_create_commit :grant_membership_to_open_rooms
 

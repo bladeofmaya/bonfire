@@ -52,6 +52,7 @@ export default class extends Controller {
         MessagesSquare: globalThis.lucide.MessagesSquare,
         MonitorSmartphone: globalThis.lucide.MonitorSmartphone,
         Settings: globalThis.lucide.Settings,
+        ShieldCheck: globalThis.lucide.ShieldCheck,
         UsersRound: globalThis.lucide.UsersRound
       },
       root: this.element

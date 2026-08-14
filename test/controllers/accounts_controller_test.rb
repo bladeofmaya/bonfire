@@ -9,12 +9,15 @@ class AccountsControllerTest < ActionDispatch::IntegrationTest
     get edit_account_url
     assert_response :ok
     assert_select "nav[role='tablist'][aria-label='Account settings']" do
-      assert_select "button[role='tab'][data-profile-tabs-name]", count: 2
+      assert_select "button[role='tab'][data-profile-tabs-name]", count: 3
       assert_select "button[aria-selected='true'][data-profile-tabs-name='general']", text: "General"
-      assert_select "[data-lucide]", count: 2
+      assert_select "[data-lucide]", count: 3
     end
     assert_select "#account-panel-general:not([hidden])"
     assert_select "#account-panel-members[hidden] turbo-frame#account_users"
+    assert_select "#account-panel-privacy[hidden] form.readme-editor" do
+      assert_select "trix-editor#account_readme.input"
+    end
   end
 
   test "edit groups administrators separately from members with a divider" do
@@ -58,12 +61,36 @@ class AccountsControllerTest < ActionDispatch::IntegrationTest
     assert_equal accounts(:signal).name, "Different"
   end
 
+  test "administrator publishes and clears README" do
+    account = accounts(:signal)
+
+    put account_url, params: { account: { readme: "We use your email to operate this community." } }
+
+    assert_redirected_to edit_account_url
+    assert_equal "We use your email to operate this community.", account.reload.readme.to_plain_text
+    assert_equal 1, account.readme_version
+
+    put account_url, params: { account: { readme: "" } }
+
+    assert_not account.reload.readme?
+    assert_equal 2, account.readme_version
+  end
+
   test "non-admins cannot update" do
     sign_in :kevin
     assert users(:kevin).member?
 
     put account_url, params: { account: { name: "Different" } }
     assert_response :forbidden
+  end
+
+  test "non-admins cannot publish README" do
+    sign_in :kevin
+
+    put account_url, params: { account: { readme: "Trust me." } }
+
+    assert_response :forbidden
+    assert_not accounts(:signal).reload.readme?
   end
 
   test "non-admins cannot see join links in account settings" do

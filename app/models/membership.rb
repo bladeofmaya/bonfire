@@ -15,10 +15,19 @@ class Membership < ApplicationRecord
   scope :unread,  -> { where.not(unread_at: nil) }
 
   def read
-    update!(unread_at: nil)
+    update!(unread_at: nil, unread_count: 0)
   end
 
   def unread?
     unread_at.present?
+  end
+
+  def broadcast_direct_list_item
+    association(:user).load_target
+    ActiveRecord::Associations::Preloader.new(records: [ self ], associations: { room: :users }).call
+
+    broadcast_prepend_to user, :rooms, target: :direct_rooms,
+      partial: "users/sidebars/rooms/direct",
+      locals: { participants: room.users.to_a.without(user).presence || [ user ] }
   end
 end

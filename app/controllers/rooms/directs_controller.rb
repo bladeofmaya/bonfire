@@ -6,6 +6,7 @@ class Rooms::DirectsController < RoomsController
 
   def create
     room = Rooms::Direct.find_or_create_for(selected_users)
+    room.memberships.where(user: Current.user, involvement: :invisible).update_all(involvement: :everything, updated_at: Time.current)
 
     broadcast_create_room(room)
     redirect_to room_url(room)
@@ -29,15 +30,7 @@ class Rooms::DirectsController < RoomsController
         records: memberships, associations: [ :user, { room: :users } ]
       ).call
 
-      memberships.each do |membership|
-        membership.broadcast_prepend_to membership.user, :rooms, target: :direct_rooms,
-          partial: "users/sidebars/rooms/direct",
-          locals: { participants: direct_participants_for(membership) }
-      end
-    end
-
-    def direct_participants_for(membership)
-      membership.room.users.to_a.without(membership.user).presence || [ membership.user ]
+      memberships.reject(&:involved_in_invisible?).each(&:broadcast_direct_list_item)
     end
 
     # All users in a direct room can administer it. Only direct rooms, though: this

@@ -1,21 +1,34 @@
-<%= helpers.link_to_room room, class: [ "direct", "unread": unread? ], id: helpers.dom_id(room, :list),
-      data: { sorted_list_number: sort_timestamp.to_fs(:epoch) } do %>
-  <% if grouped? %>
-    <div class="avatar__group">
-      <% participants.first(4).each do |participant| %>
-        <span class="avatar">
-          <%= helpers.image_tag avatar_source_for(participant), size: 20, aria: { hidden: "true" } %>
-        </span>
-      <% end %>
-    </div>
-  <% else %>
-    <span class="avatar">
-      <%= helpers.image_tag avatar_source_for(participants.first), size: 48, aria: { hidden: "true" } %>
+<div id="<%= helpers.dom_id(room, :list) %>" class="direct-message-row"
+    data-sorted-list-target="item" data-sorted-list-number="<%= sort_timestamp.to_fs(:epoch) %>">
+  <%= helpers.link_to_room room, class: [ "direct", "unread": unread? ],
+        data: { sorted_list_target: nil } do %>
+    <% if grouped? %>
+      <div class="avatar__group">
+        <% participants.first(4).each do |participant| %>
+          <span class="avatar">
+            <%= helpers.image_tag avatar_source_for(participant), size: 20, aria: { hidden: "true" } %>
+          </span>
+        <% end %>
+      </div>
+    <% else %>
+      <span class="avatar">
+        <%= helpers.image_tag avatar_source_for(participants.first), size: 48, aria: { hidden: "true" } %>
+      </span>
+    <% end %>
+
+    <span class="direct__author flex align-center gap max-width min-width border-radius txt-small">
+      <span class="for-screen-reader"><%= accessible_name %></span>
+      <span class="direct__name txt-nowrap overflow-ellipsis" aria-hidden="true"><%= display_names %></span>
     </span>
+
+    <span class="direct__unread-count" <%= "hidden" unless unread? %>
+        aria-label="<%= helpers.pluralize(unread_count, "unread message") %>"><%= unread_count %></span>
   <% end %>
 
-  <span class="direct__author flex align-center gap max-width min-width border-radius txt-small">
-    <span class="for-screen-reader"><%= accessible_name %></span>
-    <span class="txt-nowrap overflow-ellipsis" aria-hidden="true"><%= abbreviated_names %></span>
-  </span>
-<% end %>
+  <%= helpers.button_to helpers.rooms_direct_closure_path(room),
+        class: "direct__close btn btn--icon",
+        aria: { label: "Close #{accessible_name}" },
+        title: "Close conversation" do %>
+    <%= helpers.image_tag "remove.svg", size: 16, aria: { hidden: "true" } %>
+  <% end %>
+</div>

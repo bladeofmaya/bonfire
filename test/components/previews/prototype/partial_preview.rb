@@ -54,8 +54,8 @@ class Prototype::PartialPreview < ViewComponent::Preview
 
     def settings_field_options(**overrides)
       {
-        id: "account_data_protection_notice",
-        name: "account[data_protection_notice]",
+        id: "account_readme",
+        name: "account[readme]",
         label: "Data-protection notice",
         value: "We explain how community account data is used.",
         help: "Shown to people before they create an account.",

@@ -9,7 +9,8 @@ class Users::SidebarsControllerTest < ActionDispatch::IntegrationTest
     get user_sidebar_url
 
     assert_select "turbo-frame#user_sidebar[data-turbo-permanent][target='_top']" \
-                  "[data-controller='rooms-list read-rooms turbo-frame']"
+                  "[data-controller='rooms-list read-rooms turbo-frame']" \
+                  "[data-rooms-list-current-class='room-list--current']"
     assert_select ".sidebar__container.channel-list"
     assert_select ".channel-list__header" do
       assert_select "img.channel-list__logo[src*='account/logo']"
@@ -19,7 +20,11 @@ class Users::SidebarsControllerTest < ActionDispatch::IntegrationTest
       assert_select "a.channel-list__invite[href='#{account_invitation_path}'][data-turbo-frame='account_invitation_dialog']" \
                     "[aria-label='Invite people'] [data-lucide='user-round-plus']"
     end
-    assert_select "turbo-frame#direct_rooms_control.channel-list__directs"
+    assert_select "section.channel-list__section[aria-labelledby='channels-heading']", text: /Channels/
+    assert_select "section.channel-list__directs[aria-labelledby='direct-messages-heading']" do
+      assert_select "h2", text: "Direct Messages"
+      assert_select "turbo-frame#direct_rooms_control"
+    end
     assert_select "#shared_rooms[data-controller='sorted-list']"
     assert_select "#direct_rooms[data-controller='sorted-list']" \
                   "[data-action='rooms-list:unread@window->sorted-list#updateItem']"
@@ -64,12 +69,15 @@ class Users::SidebarsControllerTest < ActionDispatch::IntegrationTest
     assert_select "a.rooms__new-btn", count: 0
   end
 
-  test "hides invitation access from members" do
+  test "hides administrator server actions and dropdown from members" do
     sign_in :jz
 
     get user_sidebar_url
 
     assert_select "a.channel-list__invite", count: 0
+    assert_select "details.context-menu.channel-list__server-menu", count: 0
+    assert_select ".channel-list__server-identity", text: accounts(:signal).name
+    assert_select "a[href='#{edit_account_path}']", count: 0
     assert_select "turbo-frame#account_invitation_dialog", count: 1
   end
 
@@ -106,12 +114,12 @@ class Users::SidebarsControllerTest < ActionDispatch::IntegrationTest
     assert_select "#shared_rooms a.room", count: 0
   end
 
-  test "suggested direct participants remain actions outside the sortable room list" do
+  test "direct messages list contains conversations without the old ping suggestions" do
     get user_sidebar_url
 
     assert_select "#direct_rooms .direct", count: users(:david).rooms.directs.count
-    assert_select "#direct_rooms ~ div form.button_to button.direct[aria-label^='Start a ping with']"
-    assert_select "#direct_rooms ~ div [data-sorted-list-target='item']", count: 0
+    assert_select "form.button_to button.direct[aria-label^='Start a ping with']", count: 0
+    assert_select ".direct__close", count: users(:david).rooms.directs.count
   end
 
   test "unread directs" do
@@ -121,7 +129,7 @@ class Users::SidebarsControllerTest < ActionDispatch::IntegrationTest
     get user_sidebar_url
     assert_select ".unread", count: users(:david).memberships.select { |m| m.room.direct? && m.unread? }.count
     assert_select "#direct_rooms[data-action='rooms-list:unread@window->sorted-list#updateItem']" do
-      assert_select "##{dom_id(room, :list)}.direct.unread[data-sorted-list-number]"
+      assert_select "##{dom_id(room, :list)}[data-sorted-list-number] a.direct.unread"
     end
   end
   test "unread other" do

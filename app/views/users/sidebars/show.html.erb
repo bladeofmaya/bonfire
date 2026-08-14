@@ -7,16 +7,26 @@
       data-badge-dot-unread-class="unread"
       data-action="rooms-list:unread@window->badge-dot#update rooms-list:read@window->badge-dot#update turbo:submit-start->turbo-frame#unpermanize">
     <header class="channel-list__header">
-      <%= render Ui::ContextMenuComponent.new(
-            label: "Server menu",
-            menu_class: "channel-list__server-menu",
-            items: [ { label: "Server Settings", url: edit_account_path, icon: "settings.svg" } ]
-          ) do %>
-        <%= image_tag fresh_account_logo_path(size: :small),
-              class: "channel-list__logo",
-              size: 36,
-              alt: "" %>
-        <strong class="channel-list__account-name overflow-ellipsis"><%= Current.account.name %></strong>
+      <% if Current.user.administrator? %>
+        <%= render Ui::ContextMenuComponent.new(
+              label: "Server menu",
+              menu_class: "channel-list__server-menu",
+              items: [ { label: "Server Settings", url: edit_account_path, icon: "settings.svg" } ]
+            ) do %>
+          <%= image_tag fresh_account_logo_path(size: :small),
+                class: "channel-list__logo",
+                size: 36,
+                alt: "" %>
+          <strong class="channel-list__account-name overflow-ellipsis"><%= Current.account.name %></strong>
+        <% end %>
+      <% else %>
+        <div class="channel-list__server-identity">
+          <%= image_tag fresh_account_logo_path(size: :small),
+                class: "channel-list__logo",
+                size: 36,
+                alt: "" %>
+          <strong class="channel-list__account-name overflow-ellipsis"><%= Current.account.name %></strong>
+        </div>
       <% end %>
 
       <% if Current.user.administrator? %>
@@ -32,30 +42,8 @@
 
     <%= turbo_frame_tag "account_invitation_dialog" %>
 
-    <turbo-frame id="direct_rooms_control" class="channel-list__directs" target="_top">
-      <div class="directs gap overflow-x overflow-hide-scrollbar">
-        <%= link_to new_rooms_direct_path, class: "direct direct__new", data: { turbo_frame: "_self" } do %>
-          <span class="avatar avatar--icon">
-            <%= image_tag "messages-add.svg", size: 20, aria: { hidden: "true" }, class: "colorize--black" %>
-          </span>
-
-          <span class="direct__author flex max-width min-width border-radius pad-inline-half">
-            <span class="for-screen-reader">New</span>
-            <span class="txt-small overflow-clip">Ping</span>
-          </span>
-        <% end %>
-
-        <%= render "users/sidebars/rooms/direct_list",
-              memberships: @direct_memberships,
-              participants_by_membership: @direct_participants %>
-
-        <div contents>
-          <%= render partial: "users/sidebars/rooms/direct_placeholder", collection: @direct_placeholder_users, as: :user %>
-        </div>
-      </div>
-    </turbo-frame>
-
-    <div class="rooms position-relative flex flex-column gap">
+    <section class="channel-list__section rooms position-relative flex flex-column gap" aria-labelledby="channels-heading">
+      <h2 id="channels-heading" class="channel-list__section-title">Channels</h2>
       <%= render "users/sidebars/rooms/shared_list", memberships: @other_memberships %>
 
       <% if Current.user.administrator? || !Current.account.settings.restrict_room_creation_to_administrators? %>
@@ -63,7 +51,19 @@
           <%= image_tag "add.svg", size: 20, aria: { hidden: "true" }, style: "view-transition-name: new-room" %>
         <% end %>
       <% end %>
-    </div>
+    </section>
+
+    <section class="channel-list__section channel-list__directs" aria-labelledby="direct-messages-heading">
+      <h2 id="direct-messages-heading" class="channel-list__section-title">Direct Messages</h2>
+
+      <turbo-frame id="direct_rooms_control" target="_top">
+        <div class="directs gap">
+          <%= render "users/sidebars/rooms/direct_list",
+                memberships: @direct_memberships,
+                participants_by_membership: @direct_participants %>
+        </div>
+      </turbo-frame>
+    </section>
 
     <button class="btn btn--icon sidebar__toggle" data-action="toggle-class#toggle">
       <%= image_tag "menu.svg", size: 20, aria: { hidden: "true" } %>

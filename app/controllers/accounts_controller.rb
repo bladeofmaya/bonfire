@@ -9,7 +9,9 @@ class AccountsController < ApplicationController
   end
 
   def update
+    readme = account_params.delete(:readme)
     @account.update!(account_params)
+    @account.publish_readme!(readme) unless readme.nil?
     redirect_to edit_account_url, notice: "✓"
   end
 
@@ -19,7 +21,12 @@ class AccountsController < ApplicationController
     end
 
     def account_params
-      params.require(:account).permit(:name, :logo, settings: {})
+      params.require(:account).permit(
+        :name,
+        :logo,
+        :readme,
+        settings: [ :restrict_room_creation_to_administrators ]
+      )
     end
 
     def account_users
