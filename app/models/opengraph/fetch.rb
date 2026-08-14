@@ -1,8 +1,10 @@
 require "net/http"
+require "json"
 require "restricted_http/private_network_guard"
 
 class Opengraph::Fetch
   ALLOWED_DOCUMENT_CONTENT_TYPE = "text/html"
+  ALLOWED_JSON_CONTENT_TYPE = "application/json"
   MAX_BODY_SIZE = 5.megabytes
   MAX_REDIRECTS = 10
 
@@ -11,8 +13,18 @@ class Opengraph::Fetch
 
   def fetch_document(url, ip: RestrictedHTTP::PrivateNetworkGuard.resolve(url.host))
     request(url, Net::HTTP::Get, ip: ip) do |response|
-      return body_if_acceptable(response)
+      return body_if_acceptable(response, content_type: ALLOWED_DOCUMENT_CONTENT_TYPE)
     end
+  end
+
+  def fetch_json(url, ip: RestrictedHTTP::PrivateNetworkGuard.resolve(url.host))
+    request(url, Net::HTTP::Get, ip: ip) do |response|
+      body = body_if_acceptable(response, content_type: ALLOWED_JSON_CONTENT_TYPE)
+      return JSON.parse(body) if body
+      return nil
+    end
+  rescue JSON::ParserError
+    nil
   end
 
   def fetch_content_type(url, ip: RestrictedHTTP::PrivateNetworkGuard.resolve(url.host))
@@ -44,8 +56,8 @@ class Opengraph::Fetch
       [ url, RestrictedHTTP::PrivateNetworkGuard.resolve(url.host) ]
     end
 
-    def body_if_acceptable(response)
-      size_restricted_body(response) if response_valid?(response)
+    def body_if_acceptable(response, content_type:)
+      size_restricted_body(response) if response_valid?(response, content_type: content_type)
     end
 
     def size_restricted_body(response)
@@ -61,16 +73,16 @@ class Opengraph::Fetch
       end.string
     end
 
-    def response_valid?(response)
-      status_valid?(response) && content_type_valid?(response) && content_length_valid?(response)
+    def response_valid?(response, content_type:)
+      status_valid?(response) && content_type_valid?(response, content_type: content_type) && content_length_valid?(response)
     end
 
     def status_valid?(response)
       response.is_a?(Net::HTTPOK)
     end
 
-    def content_type_valid?(response)
-      response.content_type == ALLOWED_DOCUMENT_CONTENT_TYPE
+    def content_type_valid?(response, content_type:)
+      response.content_type == content_type
     end
 
     def content_length_valid?(response)

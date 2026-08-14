@@ -25,6 +25,41 @@ class Opengraph::MetadataTest < ActiveSupport::TestCase
     assert_equal "https://example.com/image.png", metadata.image
   end
 
+  test "YouTube URLs use oEmbed metadata instead of scraping the watch page" do
+    youtube_url = "https://www.youtube.com/watch?v=X_aDThX8puI"
+    oembed_url = "https://www.youtube.com/oembed?format=json&url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DX_aDThX8puI"
+    thumbnail_url = "https://i.ytimg.com/vi/X_aDThX8puI/hqdefault.jpg"
+
+    WebMock.stub_request(:get, oembed_url).to_return(
+      status: 200,
+      body: { title: "A video", author_name: "A channel", thumbnail_url: thumbnail_url }.to_json,
+      headers: { content_type: "application/json" }
+    )
+    WebMock.stub_request(:head, thumbnail_url).to_return(status: 200, headers: { content_type: "image/jpeg" })
+
+    metadata = Opengraph::Metadata.from_url(youtube_url)
+
+    assert metadata.valid?
+    assert_equal "A video", metadata.title
+    assert_equal "A channel", metadata.description
+    assert_equal thumbnail_url, metadata.image
+    assert_equal youtube_url, metadata.url
+    assert_not_requested :get, youtube_url
+  end
+
+  test "short YouTube URLs use oEmbed metadata" do
+    youtube_url = "https://youtu.be/X_aDThX8puI"
+    oembed_url = "https://www.youtube.com/oembed?format=json&url=https%3A%2F%2Fyoutu.be%2FX_aDThX8puI"
+
+    WebMock.stub_request(:get, oembed_url).to_return(
+      status: 200,
+      body: { title: "A video", author_name: "A channel" }.to_json,
+      headers: { content_type: "application/json" }
+    )
+
+    assert Opengraph::Metadata.from_url(youtube_url).valid?
+  end
+
   test "missing opengraph meta tags" do
     WebMock.stub_request(:get, "https://www.example.com/").to_return(status: 200, body: "<html><head></head></html>", headers: { content_type: "text/html" })
     opengraph = Opengraph::Metadata.from_url("https://www.example.com")

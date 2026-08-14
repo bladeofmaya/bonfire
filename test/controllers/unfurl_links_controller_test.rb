@@ -48,6 +48,30 @@ class UnfurlLinksControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Hey!", JSON.parse(response.body)["title"]
   end
 
+  test "create for YouTube uses oEmbed metadata" do
+    youtube_url = "https://www.youtube.com/watch?v=X_aDThX8puI"
+    thumbnail_url = "https://i.ytimg.com/vi/X_aDThX8puI/hqdefault.jpg"
+
+    WebMock.stub_request(:get, "https://www.youtube.com/oembed")
+      .with(query: { url: youtube_url, format: "json" })
+      .to_return(
+        status: 200,
+        body: { title: "A video", author_name: "A channel", thumbnail_url: thumbnail_url }.to_json,
+        headers: { content_type: "application/json" }
+      )
+    WebMock.stub_request(:head, thumbnail_url).to_return(status: 200, headers: { content_type: "image/jpeg" })
+
+    post unfurl_link_url, params: { url: youtube_url }
+
+    assert_response :success
+    assert_equal({
+      "title" => "A video",
+      "url" => youtube_url,
+      "image" => thumbnail_url,
+      "description" => "A channel"
+    }, JSON.parse(response.body).slice("title", "url", "image", "description"))
+  end
+
   private
     def stub_successful_request(url: "https://www.example.com/")
       WebMock.stub_request(:get, url).to_return(

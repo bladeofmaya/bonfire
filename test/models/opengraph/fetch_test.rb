@@ -111,6 +111,23 @@ class Opengraph::FetchTest < ActiveSupport::TestCase
     assert_equal "image/png", @fetch.fetch_content_type(url)
   end
 
+  test "fetch JSON" do
+    WebMock.stub_request(:get, "https://www.example.com/data.json")
+      .to_return(status: 200, body: '{"title":"Hello"}', headers: { content_type: "application/json" })
+
+    assert_equal({ "title" => "Hello" }, @fetch.fetch_json(URI.parse("https://www.example.com/data.json")))
+  end
+
+  test "fetch JSON rejects invalid JSON and other content types" do
+    WebMock.stub_request(:get, "https://www.example.com/invalid.json")
+      .to_return(status: 200, body: "not json", headers: { content_type: "application/json" })
+    WebMock.stub_request(:get, "https://www.example.com/data.txt")
+      .to_return(status: 200, body: '{"title":"Hello"}', headers: { content_type: "text/plain" })
+
+    assert_nil @fetch.fetch_json(URI.parse("https://www.example.com/invalid.json"))
+    assert_nil @fetch.fetch_json(URI.parse("https://www.example.com/data.txt"))
+  end
+
   private
     def large_body_content
       "x" * (Opengraph::Fetch::MAX_BODY_SIZE + 1)

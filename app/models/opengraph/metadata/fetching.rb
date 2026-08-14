@@ -3,15 +3,39 @@ module Opengraph::Metadata::Fetching
 
   module ClassMethods
     def from_url(url)
-      document = fetch_document(url)
-      attributes = document.opengraph_attributes
+      attributes = fetch_attributes(url)
       new attributes.merge(url: valid_canonical_url(attributes[:url], url), image: valid_image_content_type(attributes[:image]))
     end
 
     private
       TWITTER_HOSTS = %w[ twitter.com www.twitter.com x.com www.x.com ]
       FX_TWITTER_HOST = "fxtwitter.com"
+      YOUTUBE_HOSTS = %w[ youtube.com www.youtube.com m.youtube.com music.youtube.com youtu.be ]
+      YOUTUBE_OEMBED_URL = "https://www.youtube.com/oembed"
       ALLOWED_IMAGE_CONTENT_TYPES = %w[ image/jpeg image/png image/gif image/webp ]
+
+      def fetch_attributes(url)
+        youtube_attributes(url).presence || fetch_document(url).opengraph_attributes
+      end
+
+      def youtube_attributes(url)
+        return unless youtube_url?(url)
+
+        endpoint = URI.parse(YOUTUBE_OEMBED_URL)
+        endpoint.query = URI.encode_www_form(url: url, format: "json")
+        response = Opengraph::Fetch.new.fetch_json(endpoint)
+        return unless response
+
+        {
+          title: response["title"],
+          description: response["author_name"],
+          image: response["thumbnail_url"],
+          url: url
+        }
+      rescue => e
+        Rails.logger.warn "Failed to fetch YouTube oEmbed metadata for #{url} (#{e})"
+        nil
+      end
 
       def fetch_document(untrusted_url)
         tweet_url?(untrusted_url) ? fetch_fxtwitter_document(untrusted_url) : fetch_non_fxtwitter_document(untrusted_url)
@@ -63,6 +87,13 @@ module Opengraph::Metadata::Fetching
         uri.host.in?(TWITTER_HOSTS) && uri.path.present? && uri.path != "/"
       rescue URI::InvalidURIError
         nil
+      end
+
+      def youtube_url?(url)
+        uri = URI.parse(url)
+        uri.is_a?(URI::HTTP) && uri.host.in?(YOUTUBE_HOSTS)
+      rescue URI::InvalidURIError
+        false
       end
   end
 end
