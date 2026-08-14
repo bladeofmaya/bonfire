@@ -16,7 +16,7 @@ class Rooms::OpensControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "create" do
-    assert_turbo_stream_broadcasts :rooms, count: 1 do
+    assert_turbo_stream_broadcasts [ users(:david), :rooms ], count: 2 do
       post rooms_opens_url, params: { room: { name: "My New Room" } }
     end
 
@@ -24,7 +24,7 @@ class Rooms::OpensControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to room_url(Room.last)
 
     room = Room.last
-    assert_rendered_turbo_stream_broadcast :rooms, action: "prepend", target: :shared_rooms do
+    assert_rendered_turbo_stream_broadcast users(:david), :rooms, action: "prepend", target: :shared_rooms do
       assert_select "##{dom_id(room, :list)}[data-room-id='#{room.id}'][data-sorted-list-name='My New Room']"
     end
   end
@@ -50,14 +50,14 @@ class Rooms::OpensControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "update" do
-    assert_turbo_stream_broadcasts :rooms, count: 1 do
+    assert_turbo_stream_broadcasts [ users(:david), :rooms ], count: 1 do
       put rooms_open_url(rooms(:pets)), params: { room: { name: "New Name" } }
     end
 
     assert_redirected_to room_url(rooms(:pets))
     assert rooms(:pets).reload.name, "New Name"
 
-    assert_rendered_turbo_stream_broadcast :rooms,
+    assert_rendered_turbo_stream_broadcast users(:david), :rooms,
       action: "replace", target: [ rooms(:pets), :list ] do
       assert_select "##{dom_id(rooms(:pets), :list)}[data-sorted-list-name='New Name']", text: "New Name"
     end

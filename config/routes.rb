@@ -56,6 +56,8 @@ Rails.application.routes.draw do
     resources :users, only: :index
   end
 
+  patch "room_positions", to: "rooms/positions#update", as: :room_positions
+
   direct :fresh_user_avatar do |user, options|
     route_for :user_avatar, user.avatar_token, v: user.updated_at.to_fs(:number)
   end

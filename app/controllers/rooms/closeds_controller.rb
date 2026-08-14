@@ -64,18 +64,26 @@ class Rooms::ClosedsController < RoomsController
       each_user_and_html_for(room) do |user, html|
         broadcast_prepend_to user, :rooms, target: :shared_rooms, html: html
       end
+      broadcast_update_for(Room.without_directs.find_by(position: room.position - 1))
     end
 
     def broadcast_update_room
-      each_user_and_html_for(@room) do |user, html|
-        broadcast_replace_to user, :rooms, target: [ @room, :list ], html: html
+      broadcast_update_for(@room)
+    end
+
+    def broadcast_update_for(room)
+      return unless room
+
+      each_user_and_html_for(room) do |user, html|
+        broadcast_replace_to user, :rooms, target: [ room, :list ], html: html
       end
     end
 
     def each_user_and_html_for(room)
       # Optimization to avoid rendering the same partial for every user
-      html = render_to_string(partial: "users/sidebars/rooms/shared", locals: { room: room })
-
-      room.users.each { |user| yield user, html }
+      room.users.active.find_each do |user|
+        html = render_to_string(partial: "users/sidebars/rooms/shared", locals: { room: room, administrator: user.administrator? })
+        yield user, html
+      end
     end
 end

@@ -311,3 +311,43 @@
     inset-inline-start: calc(100% - var(--btn-size) - var(--space-inline));
   }
 }
+.channel-order-item {
+  display: flex;
+  min-inline-size: 0;
+
+  > .sidebar-list-item { flex: 1; }
+}
+
+.channel-order-item__handle {
+  --btn-size: 1.5rem;
+
+  display: grid;
+  flex: 0 0 auto;
+  inline-size: var(--btn-size);
+  block-size: var(--btn-size);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: grab;
+  opacity: 1;
+  place-items: center;
+
+  svg {
+    inline-size: 1rem;
+    block-size: 1rem;
+  }
+
+  &:hover { color: var(--color-text-primary); }
+  &:active { cursor: grabbing; }
+
+  @media (any-hover: hover) {
+    opacity: 0;
+
+    .channel-order-item:hover &,
+    &:focus-visible { opacity: 1; }
+  }
+}
+
+.channel-order-item--ghost { opacity: 0.45; }
+.channel-order-item--dragging { background: var(--color-surface-secondary); }

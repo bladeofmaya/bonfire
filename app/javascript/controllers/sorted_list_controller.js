@@ -25,6 +25,9 @@ export default class extends Controller {
     const sortedItemTargets = [ ...currentItemTargets ].sort((a, b) => {
       if (a.dataset.sortedListNumber) {
         return b.dataset.sortedListNumber - a.dataset.sortedListNumber
+      } else if (a.dataset.sortedListPosition) {
+        return (a.dataset.sortedListPosition - b.dataset.sortedListPosition) ||
+          (a.dataset.sortedListId - b.dataset.sortedListId)
       } else {
         return a.dataset.sortedListName.toLowerCase().localeCompare(b.dataset.sortedListName.toLowerCase())
       }

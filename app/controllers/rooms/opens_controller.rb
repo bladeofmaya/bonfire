@@ -47,10 +47,28 @@ class Rooms::OpensController < RoomsController
     end
 
     def broadcast_create_room(room)
-      broadcast_prepend_to :rooms, target: :shared_rooms, partial: "users/sidebars/rooms/shared", locals: { room: room }
+      each_user_and_html_for(room) do |user, html|
+        broadcast_prepend_to user, :rooms, target: :shared_rooms, html: html
+      end
+      broadcast_update_for(Room.without_directs.find_by(position: room.position - 1))
     end
 
     def broadcast_update_room
-      broadcast_replace_to :rooms, target: [ @room, :list ], partial: "users/sidebars/rooms/shared", locals: { room: @room }
+      broadcast_update_for(@room)
+    end
+
+    def broadcast_update_for(room)
+      return unless room
+
+      each_user_and_html_for(room) do |user, html|
+        broadcast_replace_to user, :rooms, target: [ room, :list ], html: html
+      end
+    end
+
+    def each_user_and_html_for(room)
+      room.users.active.find_each do |user|
+        html = render_to_string(partial: "users/sidebars/rooms/shared", locals: { room: room, administrator: user.administrator? })
+        yield user, html
+      end
     end
 end

@@ -34,4 +34,14 @@ class RoomTest < ActiveSupport::TestCase
     room = Rooms::Closed.create_for({ name: "Hello!", creator: users(:david) }, users: [ users(:kevin), users(:david) ])
     assert room.memberships.all? { |m| m.involved_in_mentions? }
   end
+
+  test "new shared rooms are placed last while direct rooms have no shared position" do
+    last_position = Room.without_directs.maximum(:position)
+
+    shared = Rooms::Open.create!(name: "Last", creator: users(:david))
+    direct = Rooms::Direct.create!(creator: users(:david))
+
+    assert_equal last_position + 1, shared.position
+    assert_nil direct.position
+  end
 end

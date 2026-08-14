@@ -28,12 +28,12 @@ class Users::SidebarsControllerTest < ActionDispatch::IntegrationTest
       assert_select "turbo-frame#direct_rooms_control"
     end
     assert_select "turbo-frame#direct_conversation_dialog"
-    assert_select "#shared_rooms.contents[data-controller='sorted-list']"
+    assert_select "#shared_rooms.contents[data-controller~='sorted-list'][data-controller~='channel-order']"
     assert_select "#direct_rooms.contents[data-controller='sorted-list']" \
                   "[data-action='rooms-list:unread@window->sorted-list#updateItem']"
 
     users(:david).rooms.opens.each do |room|
-      assert_select "a##{dom_id(room, :list)}.room[data-room-id='#{room.id}'][data-sorted-list-name='#{room.name}']", text: room.name
+      assert_select "##{dom_id(room, :list)}[data-room-id='#{room.id}'][data-sorted-list-position='#{room.position}'] a.room", text: room.name
     end
   end
 
@@ -82,6 +82,7 @@ class Users::SidebarsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".channel-list__server-identity", text: accounts(:signal).name
     assert_select "a[href='#{edit_account_path}']", count: 0
     assert_select "turbo-frame#account_invitation_dialog", count: 1
+    assert_select "#shared_rooms[data-controller='sorted-list'] .channel-order-item__handle", count: 0
   end
 
   test "shows unrestricted room creation to members" do
@@ -96,13 +97,13 @@ class Users::SidebarsControllerTest < ActionDispatch::IntegrationTest
   test "initial shared and direct items expose their distinct sorting contracts" do
     get user_sidebar_url
 
-    shared_names = css_select("#shared_rooms [data-sorted-list-name]").map { |item| item["data-sorted-list-name"] }
-    assert_equal shared_names.sort_by(&:downcase), shared_names
+    shared_positions = css_select("#shared_rooms [data-sorted-list-position]").map { |item| item["data-sorted-list-position"].to_i }
+    assert_equal shared_positions.sort, shared_positions
 
     direct_numbers = css_select("#direct_rooms [data-sorted-list-number]").map { |item| item["data-sorted-list-number"].to_i }
     assert_equal direct_numbers.sort.reverse, direct_numbers
 
-    assert_select "#shared_rooms [data-sorted-list-target='item'][data-sorted-list-name]"
+    assert_select "#shared_rooms [data-sorted-list-target='item'][data-sorted-list-position][data-sorted-list-id]"
     assert_select "#direct_rooms [data-sorted-list-target='item'][data-sorted-list-number]"
   end
 
@@ -112,7 +113,7 @@ class Users::SidebarsControllerTest < ActionDispatch::IntegrationTest
     get user_sidebar_url
 
     assert_select "turbo-frame#direct_rooms_control #direct_rooms[data-controller='sorted-list']"
-    assert_select "#shared_rooms[data-controller='sorted-list']"
+    assert_select "#shared_rooms[data-controller~='sorted-list']"
     assert_select "#direct_rooms a.direct", count: 0
     assert_select "#shared_rooms a.room", count: 0
   end

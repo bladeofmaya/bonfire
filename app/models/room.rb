@@ -23,6 +23,7 @@ class Room < ApplicationRecord
   belongs_to :creator, class_name: "User", default: -> { Current.user }
 
   validate :direct_rooms_keep_their_type, on: :update
+  before_create :place_shared_room_last
 
   scope :opens,           -> { where(type: "Rooms::Open") }
   scope :closeds,         -> { where(type: "Rooms::Closed") }
@@ -67,6 +68,10 @@ class Room < ApplicationRecord
   end
 
   private
+    def place_shared_room_last
+      self.position ||= Room.without_directs.maximum(:position).to_i + 1 unless direct?
+    end
+
     # Open and closed rooms convert into each other freely. A direct room can't become
     # either: its participants agreed to a private conversation, not to one whose
     # audience someone else gets to widen afterwards.

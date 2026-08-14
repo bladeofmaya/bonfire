@@ -1,5 +1,11 @@
-<div id="shared_rooms" class="contents" data-controller="sorted-list">
+<div id="shared_rooms" class="contents"
+    data-controller="sorted-list<%= " channel-order" if Current.user.administrator? %>"
+    <% if Current.user.administrator? %>
+      data-channel-order-url-value="<%= room_positions_path %>"
+    <% end %>>
   <% memberships.each do |membership| %>
-    <%= render "users/sidebars/rooms/shared", room: membership.room, unread: membership.unread? %>
+    <%= render "users/sidebars/rooms/shared", room: membership.room, unread: membership.unread?, administrator: Current.user.administrator? %>
   <% end %>
 </div>
+<p id="channel-order-instructions" class="for-screen-reader">Drag to reorder, or use the up and down arrow keys while the reorder handle is focused.</p>
+<p id="channel-order-status" class="for-screen-reader" aria-live="polite"></p>

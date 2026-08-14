@@ -13,9 +13,11 @@ class RoomsController < ApplicationController
   end
 
   def destroy
+    shared_room = !@room.direct?
     @room.destroy
 
     broadcast_remove_room
+    broadcast_new_last_room if shared_room
     redirect_to root_url
   end
 
@@ -60,5 +62,17 @@ class RoomsController < ApplicationController
 
     def broadcast_remove_room
       broadcast_remove_to :rooms, target: [ @room, :list ]
+    end
+
+    def broadcast_new_last_room
+      return unless room = Room.without_directs.order(:position, :id).last
+
+      room.users.active.find_each do |user|
+        html = render_to_string(
+          partial: "users/sidebars/rooms/shared",
+          locals: { room: room, administrator: user.administrator? }
+        )
+        broadcast_replace_to user, :rooms, target: [ room, :list ], html: html
+      end
     end
 end

@@ -17,3 +17,4 @@ pin_all_from "app/javascript/helpers", under: "helpers"
 pin_all_from "app/javascript/models", under: "models"
 pin_all_from "vendor/javascript/languages", under: "languages"
 pin "lucide" # @1.31.0
+pin "sortablejs" # @1.15.7

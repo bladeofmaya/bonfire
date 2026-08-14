@@ -195,13 +195,13 @@ adapter.
 Rooms::SharedListItemComponent.new(
   room: room,
   unread: membership.unread?,
-  sort_key: room.name,
+  position: room.position,
   selected: false
 )
 ```
 
-`room:` must be an authorized non-direct room. `unread:` and `sort_key:` are
-explicit because they can be per-user or change when persisted ordering lands.
+`room:` must be an authorized non-direct room. `unread:` and `position:` are
+explicit because unread state is per-user and ordering is persisted globally.
 The component may call routing/DOM helpers but performs no membership lookup.
 
 ### States

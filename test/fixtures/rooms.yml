@@ -2,21 +2,25 @@ pets:
   name: All Pets
   type: Rooms::Open
   creator: :david
+  position: 1
 
 hq:
   name: HQ
   type: Rooms::Open
   creator: :david
+  position: 2
 
 watercooler:
   name: All Talk
   type: Rooms::Closed
   creator: :david
+  position: 3
 
 designers:
   name: Designers
   type: Rooms::Closed
   creator: :david
+  position: 4
 
 david_and_jason:
   type: Rooms::Direct

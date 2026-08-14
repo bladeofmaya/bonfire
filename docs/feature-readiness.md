@@ -29,23 +29,23 @@ not bypass them.
   preloaded direct participants.
 - `_shared_list.html.erb` and `_direct_list.html.erb` own collection targets;
   they do not decide persistence or authorization.
-- `Rooms::SharedListItemComponent` accepts `room:`, explicit `sort_key:`, and
-  `unread:`. It emits stable `[ room, :list ]` identity plus
-  `data-sorted-list-name`.
+- `Rooms::SharedListItemComponent` accepts `room:`, explicit `position:`,
+  reorder bounds, and `unread:`. It emits stable `[ room, :list ]` identity
+  plus `data-sorted-list-position` and a room-ID tie-breaker.
 - `Rooms::DirectListItemComponent` accepts `room:`, `participants:`,
   `sort_timestamp:`, and `unread:`. It emits the same identity plus
   `data-sorted-list-number`.
-- `sorted_list_controller.js` sorts shared strings ascending and direct numeric
-  values descending. Direct unread events promote an item by updating its
-  numeric value in the browser.
+- `sorted_list_controller.js` sorts shared rooms by persisted position and room
+  ID, and direct numeric values descending. Direct unread events promote an
+  item by updating its numeric value in the browser.
 - `users/sidebars/rooms/shared` and `direct` remain executable Turbo broadcast
   adapter names. Create/visibility/type/destroy writers target `shared_rooms`,
   `direct_rooms`, or `[ room, :list ]`.
 
 ### Constraints for pinning and reordering
 
-The leaf API is stable enough to carry ordering state because sorting inputs
-are explicit. Persistence is not implemented yet. When it is added:
+The leaf API carries explicit persisted ordering state. Future pinning or
+ordering extensions must continue to observe these constraints:
 
 1. Store shared-room order at the correct scope. A global room position is
    appropriate only if every user sees the same order; per-user pins/order

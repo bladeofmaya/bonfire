@@ -1,5 +1,6 @@
 <%= render Rooms::SharedListItemComponent.new(
       room: room,
-      sort_key: room.name,
-      unread: local_assigns.fetch(:unread, false)
+      position: room.position,
+      unread: local_assigns.fetch(:unread, false),
+      reorderable: local_assigns.fetch(:administrator, Current.user&.administrator?)
     ) %>

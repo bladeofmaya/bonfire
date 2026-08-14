@@ -1,6 +1,20 @@
-<%= helpers.link_to_room room,
-      id: helpers.dom_id(room, :list), data: { sorted_list_name: sort_key },
-      class: [ "sidebar-list-item sidebar-list-item--channel align-center room btn txt-nowrap",
-        "unread sidebar-list-item--unread": unread?, "room-list--current": selected? ] do %>
-  <span class="overflow-ellipsis"><%= room.name %></span>
+<%= helpers.tag.div id: helpers.dom_id(room, :list),
+      class: "channel-order-item align-center",
+      data: { room_id: room.id, sorted_list_target: "item", sorted_list_position: position, sorted_list_id: room.id, sorted_list_name: sort_key } do %>
+  <%= helpers.link_to_room room,
+        data: { sorted_list_target: nil },
+        class: [ "sidebar-list-item sidebar-list-item--channel align-center room btn txt-nowrap",
+          "unread sidebar-list-item--unread": unread?, "room-list--current": selected? ] do %>
+    <span class="overflow-ellipsis"><%= room.name %></span>
+  <% end %>
+
+  <% if reorderable? %>
+    <%= helpers.tag.button type: "button",
+          class: "btn btn--plain channel-order-item__handle",
+          title: "Reorder #{room.name}",
+          aria: { label: "Reorder #{room.name}", describedby: "channel-order-instructions" },
+          data: { controller: "lucide", channel_order_target: "handle", action: "keydown->channel-order#moveWithKeyboard" } do %>
+      <i data-lucide="grip-vertical" aria-hidden="true"></i>
+    <% end %>
+  <% end %>
 <% end %>
