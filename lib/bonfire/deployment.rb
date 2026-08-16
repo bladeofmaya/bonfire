@@ -275,7 +275,7 @@ module Bonfire
           parser.parse!(arguments)
 
           raise Error, "No deployment configuration. Run `bin/bonfire setup` first." unless @config_file.exist?
-          raise Error, "Missing #{SECRETS_PATH}. Run `bin/bonfire setup` first." unless secrets_complete?
+          ensure_secrets_file!
 
           config = configured_values
           validate_configuration!(config)
@@ -302,7 +302,7 @@ module Bonfire
 
         def kamal(arguments)
           raise Error, "No deployment configuration. Run `bin/bonfire setup` first." unless @config_file.exist?
-          raise Error, "Missing #{SECRETS_PATH}. Run `bin/bonfire setup` first." unless @secrets_file.exist?
+          ensure_secrets_file!
           raise Error, "Install required local tools: kamal" unless @runner.available?("kamal")
           validate_safe_kamal_arguments!(arguments)
 
@@ -341,7 +341,7 @@ module Bonfire
           parser.parse!(arguments)
 
           raise Error, "No deployment configuration. Run `bin/bonfire setup` first." unless @config_file.exist?
-          raise Error, "Missing #{SECRETS_PATH}. Run `bin/bonfire setup` first." unless secrets_complete?
+          ensure_secrets_file!
           raise Error, "Expected one target such as root@203.0.113.10" unless arguments.one?
 
           target_user, target_server = parse_destination(arguments.first)
@@ -380,14 +380,10 @@ module Bonfire
         end
 
         def ensure_secrets
-          if secrets_complete?
+          if @secrets_file.exist?
             File.chmod(0o600, @secrets_file.path)
             @output.puts "Keeping existing secrets in #{SECRETS_PATH}."
             return
-          end
-
-          if @secrets_file.exist?
-            raise Error, "#{SECRETS_PATH} exists but is incomplete; it was not overwritten."
           end
 
           stdout, stderr, success = @runner.capture("script/admin/generate-secrets")
@@ -403,6 +399,10 @@ module Bonfire
 
           @secrets_file.write(generated)
           @output.puts "Generated #{SECRETS_PATH} with permissions 0600. Back it up securely."
+        end
+
+        def ensure_secrets_file!
+          raise Error, "Missing #{SECRETS_PATH}. Run `bin/bonfire setup` first." unless @secrets_file.exist?
         end
 
         def secrets_complete?
@@ -458,7 +458,7 @@ module Bonfire
           remote = remote_probe(config)
           print_remote_probe(remote)
 
-          return unless remote[:reachable] && @runner.available?("kamal") && secrets_complete?
+          return unless remote[:reachable] && @runner.available?("kamal") && @secrets_file.exist?
 
           @output.puts "\nKamal details"
           @runner.run("kamal", "details", env: config)

@@ -122,6 +122,17 @@ class Bonfire::DeploymentTest < ActiveSupport::TestCase
     assert_equal "chat.example.com", environment.fetch("DEPLOY_SERVER")
   end
 
+  test "deploy leaves dynamic Kamal secrets to Kamal" do
+    configure
+    File.write(File.join(@root, ".kamal/secrets"), <<~SECRETS)
+      SECRETS=$(secret-provider fetch)
+      SECRET_KEY_BASE=$(secret-provider extract SECRET_KEY_BASE $SECRETS)
+    SECRETS
+
+    assert_equal 0, cli.run(%w[deploy --yes])
+    assert_equal %w[kamal deploy], @runner.runs.sole.first
+  end
+
   test "kamal forwards arguments with configuration without reading secrets" do
     configure
     File.write(File.join(@root, ".kamal/secrets"), <<~SECRETS)
