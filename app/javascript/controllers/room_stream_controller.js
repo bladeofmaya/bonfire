@@ -14,7 +14,7 @@ const STATES = {
 }
 
 export default class extends Controller {
-  static targets = [ "frame", "player", "soundButton", "status", "viewport", "poster" ]
+  static targets = [ "frame", "player", "soundButton", "status", "viewport", "poster", "volumeInput" ]
   static values = { grantUrl: String, playerOrigin: String, mediaUrl: String, direct: Boolean }
 
   connect() {
@@ -205,13 +205,16 @@ export default class extends Controller {
   }
 
   volumeChanged() {
-    if (this.hasPlayerTarget && !this.playerTarget.muted) this.persistVolume()
+    if (!this.hasPlayerTarget) return
+    this.syncVolumeControl()
+    if (!this.playerTarget.muted) this.persistVolume()
   }
 
   setVolume(event) {
     if (!this.hasPlayerTarget) return
     this.playerTarget.volume = Number.parseFloat(event.currentTarget.value)
     this.playerTarget.muted = this.playerTarget.volume === 0
+    this.syncVolumeControl()
     this.persistVolume()
   }
 
@@ -220,6 +223,15 @@ export default class extends Controller {
     const volume = Number.parseFloat(localStorage.getItem(VOLUME_KEY))
     if (Number.isFinite(volume)) this.playerTarget.volume = Math.min(1, Math.max(0, volume))
     this.playerTarget.muted = true
+    this.syncVolumeControl()
+  }
+
+  syncVolumeControl() {
+    if (!this.hasVolumeInputTarget || !this.hasPlayerTarget) return
+    const currentVolume = Number(this.playerTarget.volume)
+    const volume = Number.isFinite(currentVolume) ? Math.min(1, Math.max(0, currentVolume)) : 1
+    this.volumeInputTarget.value = volume
+    this.volumeInputTarget.style.setProperty("--volume-percent", `${volume * 100}%`)
   }
 
   persistVolume() {

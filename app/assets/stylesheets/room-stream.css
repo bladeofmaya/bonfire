@@ -321,13 +321,69 @@ media-fullscreen-button[data-fullscreen] [slot="exit"] { display: inline; }
   display: flex;
   align-items: center;
   min-block-size: 3rem;
-  padding-inline: 0 0.4rem;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid rgb(255 255 255 / 0.28);
+  border-radius: var(--radius-pill);
+  background: rgb(255 255 255 / 0.1);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
 }
 
 .room-stream__volume {
+  --volume-percent: 100%;
+
+  appearance: none;
   inline-size: 8rem;
-  accent-color: var(--color-primary);
+  block-size: 1.8rem;
+  margin: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
   cursor: pointer;
+
+  &::-webkit-slider-runnable-track {
+    block-size: 0.45rem;
+    border-radius: var(--radius-pill);
+    background: linear-gradient(to right,
+      var(--color-primary) 0 var(--volume-percent),
+      rgb(255 255 255 / 0.24) var(--volume-percent) 100%);
+    box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.45);
+  }
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+    margin-block-start: -0.4rem;
+    border: 2px solid white;
+    border-radius: var(--radius-round);
+    background: var(--color-primary);
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.65);
+  }
+
+  &::-moz-range-track {
+    block-size: 0.45rem;
+    border-radius: var(--radius-pill);
+    background: rgb(255 255 255 / 0.24);
+    box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.45);
+  }
+
+  &::-moz-range-progress {
+    block-size: 0.45rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-primary);
+  }
+
+  &::-moz-range-thumb {
+    inline-size: 1.1rem;
+    block-size: 1.1rem;
+    border: 2px solid white;
+    border-radius: var(--radius-round);
+    background: var(--color-primary);
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.65);
+  }
+
+  &:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px rgb(255 255 255 / 0.35); }
+  &:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px rgb(255 255 255 / 0.35); }
 }
 
 .room-stream__sound {

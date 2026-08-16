@@ -38,7 +38,7 @@ class Rooms::StreamPlayerComponentTest < ComponentTestCase
       assert_selector "media-fullscreen-button[aria-label='Toggle fullscreen']"
       assert_selector "[data-controller='lucide'] [data-lucide='pause'][slot='pause']"
       assert_selector ".room-stream__volume-control .for-screen-reader", text: "Stream volume"
-      assert_selector ".room-stream__volume[aria-label='Stream volume']"
+      assert_selector ".room-stream__volume[aria-label='Stream volume'][data-room-stream-target='volumeInput']"
       assert_no_selector "media-live-indicator"
     end
     assert_selector "button[data-action='room-stream#watchWithSound']", text: "Watch with sound"

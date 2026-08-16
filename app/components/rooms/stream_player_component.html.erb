@@ -33,7 +33,8 @@
           <label class="room-stream__volume-control">
             <span class="for-screen-reader">Stream volume</span>
             <input class="room-stream__volume" type="range" min="0" max="1" step="0.05" value="1"
-                aria-label="Stream volume" data-action="input->room-stream#setVolume">
+                aria-label="Stream volume" data-room-stream-target="volumeInput"
+                data-action="input->room-stream#setVolume">
           </label>
           <media-pip-button class="room-stream__control" aria-label="Toggle picture in picture">
             <i data-lucide="picture-in-picture-2" slot="enter" aria-hidden="true"></i>
