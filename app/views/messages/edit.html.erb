@@ -24,7 +24,8 @@
                     data: {
                       controller: "rich-autocomplete",
                       action: rich_text_data_actions,
-                      rich_autocomplete_url_value: autocompletable_users_path(room_id: @room.id) } %>
+                      rich_autocomplete_url_value: autocompletable_users_path(room_id: @room.id),
+                      rich_autocomplete_rooms_url_value: autocompletable_rooms_path(room_id: @room.id) } %>
             </div>
 
             <%= link_to "Close editor and discard changes", room_message_path(@room, @message), data: { form_target: "cancel" }, hidden: true %>

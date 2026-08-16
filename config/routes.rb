@@ -54,6 +54,7 @@ Rails.application.routes.draw do
 
   namespace :autocompletable do
     resources :users, only: :index
+    resources :rooms, only: :index
   end
 
   patch "room_positions", to: "rooms/positions#update", as: :room_positions

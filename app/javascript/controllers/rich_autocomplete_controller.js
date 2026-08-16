@@ -1,9 +1,10 @@
 import { Controller } from "@hotwired/stimulus"
 import MentionsAutocompleteHandler from "lib/autocomplete/mentions_autocomplete_handler"
+import ChannelsAutocompleteHandler from "lib/autocomplete/channels_autocomplete_handler"
 import { debounce } from "helpers/timing_helpers"
 
 export default class extends Controller {
-  static values = { url: String }
+  static values = { url: String, roomsUrl: String }
 
   initialize() {
     this.handlers = []
@@ -33,6 +34,7 @@ export default class extends Controller {
   #installHandlers() {
     this.#uninstallHandlers()
     this.handlers = [ new MentionsAutocompleteHandler(this.element, this.urlValue) ]
+    if (this.hasRoomsUrlValue) this.handlers.push(new ChannelsAutocompleteHandler(this.element, this.roomsUrlValue))
   }
 
   #uninstallHandlers() {

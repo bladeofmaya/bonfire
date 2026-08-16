@@ -180,7 +180,9 @@ class RoomsControllerTest < ActionDispatch::IntegrationTest
         assert_select "fieldset[data-composer-target='fields']"
         assert_select "[data-composer-target='fileList']"
         assert_select "trix-editor[aria-label='Write a message'][data-composer-target='text']" \
-                      "[data-controller='rich-autocomplete']"
+                      "[data-controller='rich-autocomplete']" \
+                      "[data-rich-autocomplete-url-value='#{autocompletable_users_path(room_id: room.id)}']" \
+                      "[data-rich-autocomplete-rooms-url-value='#{autocompletable_rooms_path(room_id: room.id)}']"
         assert_select "input[type='file'][multiple][data-action='composer#filePicked']"
         assert_select "button[type='button'][data-action='composer#toggleToolbar']", text: "Rich text"
         assert_select "button[type='submit'][data-action='composer#submit']", text: "Send Message"

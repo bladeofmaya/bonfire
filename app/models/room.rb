@@ -1,5 +1,5 @@
 class Room < ApplicationRecord
-  include Streaming
+  include Referenceable, Streaming
 
   has_many :memberships, dependent: :delete_all do
     def grant_to(users)

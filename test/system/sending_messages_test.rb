@@ -46,6 +46,21 @@ class SendingMessagesTest < ApplicationSystemTestCase
     end
   end
 
+  test "linking to another channel with a hashtag" do
+    join_room rooms(:designers)
+
+    find("trix-editor[aria-label='Write a message']").send_keys("#H")
+    find("suggestion-option", text: "HQ").click
+    assert_selector "trix-editor [data-trix-attachment]"
+    click_on "Send Message"
+
+    assert_selector ".message__body a.channel-reference", text: "HQ"
+    page.document.synchronize do
+      find(".message__body a.channel-reference", text: "HQ").click
+    end
+    assert_current_path room_path(rooms(:hq))
+  end
+
   test "deleting messages" do
     using_session("Kevin") do
       sign_in "kevin@37signals.com"

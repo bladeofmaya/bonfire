@@ -29,6 +29,7 @@
                           controller: "rich-autocomplete",
                           action: rich_text_data_actions,
                           rich_autocomplete_url_value: autocompletable_users_path(room_id: room.id),
+                          rich_autocomplete_rooms_url_value: autocompletable_rooms_path(room_id: room.id),
                           permitted_attachment_types: "application/vnd.actiontext.opengraph-embed",
                           composer_target: "text" } %>
                 </div>
