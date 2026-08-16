@@ -235,11 +235,87 @@ body.sidebar.stream-room { --sidebar-width: 0vw; }
 }
 
 .room-stream__frame,
+.room-stream__player,
 .room-stream__poster-layer,
 .room-stream__poster {
   inline-size: 100%;
   block-size: 100%;
   border: 0;
+}
+
+.room-stream__player {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  background: #000;
+  color: white;
+
+  media-outlet,
+  media-outlet video {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+  }
+
+  media-outlet video { object-fit: contain; }
+}
+
+.room-stream__controls {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: var(--space-inline-half);
+  padding: var(--space-block-half) var(--space-inline);
+  background: linear-gradient(transparent, rgb(0 0 0 / 0.85));
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.room-stream__player:is(:hover, :focus-within, [data-paused], [data-user-idle="false"]) .room-stream__controls { opacity: 1; }
+
+.room-stream__control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--control-size);
+  padding: 0 var(--space-inline-half);
+  border-radius: var(--radius-small);
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible { background: rgb(255 255 255 / 0.18); }
+
+  > span { display: none; }
+}
+
+media-play-button[data-paused] [slot="play"],
+media-play-button:not([data-paused]) [slot="pause"],
+media-play-button[data-ended] [slot="replay"],
+media-mute-button[data-volume="muted"] [slot="unmute"],
+media-mute-button:not([data-volume="muted"]) [slot="mute"],
+media-pip-button:not([data-pip]) [slot="enter"],
+media-pip-button[data-pip] [slot="exit"],
+media-fullscreen-button:not([data-fullscreen]) [slot="enter"],
+media-fullscreen-button[data-fullscreen] [slot="exit"] { display: inline; }
+
+.room-stream__controls-spacer { flex: 1; }
+.room-stream__live-indicator { font-size: var(--font-size-small); font-weight: 800; }
+
+.room-stream__volume {
+  inline-size: 6rem;
+  accent-color: var(--color-primary);
+}
+
+.room-stream__sound {
+  z-index: 5;
+  place-self: center;
+  border-color: white;
+  background: rgb(0 0 0 / 0.78);
+  color: white;
+
+  &[hidden] { display: none; }
 }
 
 .room-stream__poster-layer {

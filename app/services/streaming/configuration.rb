@@ -29,6 +29,12 @@ class Streaming::Configuration
     def audience = value(:audience, env: "RTMP_HOMEBREW_AUDIENCE") || "rtmp-homebrew"
     def event_secret = value(:event_secret, env: "RTMP_HOMEBREW_EVENT_SECRET")
 
+    def direct_player_enabled?
+      !!ActiveModel::Type::Boolean.new.cast(
+        ENV.fetch("RTMP_HOMEBREW_DIRECT_PLAYER", credentials[:direct_player])
+      )
+    end
+
     def allowed_player_origins
       raw = value(:allowed_player_origins, env: "RTMP_HOMEBREW_ALLOWED_PLAYER_ORIGINS")
       Array(raw.is_a?(String) ? raw.split(",") : raw).map(&:strip).compact_blank.uniq

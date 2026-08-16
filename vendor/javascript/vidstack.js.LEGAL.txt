@@ -1,0 +1,10 @@
+Bundled license information:
+
+maverick.js/dist/prod/chunks/chunk-XC5AOFRA.js:
+  /**
+   * The code below this comment was adapted from Lit: https://github.dev/lit/lit
+   *
+   * @license
+   * Copyright 2019 Google LLC
+   * SPDX-License-Identifier: BSD-3-Clause
+   */

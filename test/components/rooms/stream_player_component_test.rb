@@ -22,4 +22,23 @@ class Rooms::StreamPlayerComponentTest < ComponentTestCase
     assert_selector "[role='status'][aria-live='polite']", text: "Connecting to stream…"
     assert_no_match(/token|private.?key/i, rendered_content)
   end
+
+  test "renders the direct Vidstack contract without placing a grant in HTML or the media URL" do
+    Streaming::Configuration.stubs(:direct_player_enabled?).returns(true)
+
+    render_inline Rooms::StreamPlayerComponent.new(room: @room)
+
+    assert_selector "section.room-stream[data-room-stream-direct-value='true']" \
+                    "[data-room-stream-media-url-value='https://stream.example.test/hls/live/index.m3u8']"
+    assert_selector "media-player[data-room-stream-target='player'][autoplay][muted][playsinline]" do
+      assert_selector "media-outlet"
+      assert_selector "media-play-button[aria-label='Play or pause stream']"
+      assert_selector "media-mute-button[aria-label='Mute or unmute stream']"
+      assert_selector "media-pip-button[aria-label='Toggle picture in picture']"
+      assert_selector "media-fullscreen-button[aria-label='Toggle fullscreen']"
+    end
+    assert_selector "button[data-action='room-stream#watchWithSound']", text: "Watch with sound"
+    assert_no_selector "iframe"
+    assert_no_match(/eyJ[a-zA-Z0-9_-]+\./, rendered_content)
+  end
 end

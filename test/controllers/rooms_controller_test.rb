@@ -49,6 +49,23 @@ class RoomsControllerTest < ActionDispatch::IntegrationTest
     assert_no_match(/RTMP_HOMEBREW_PRIVATE_KEY/, response.body)
   end
 
+  test "direct stream player uses narrow media CSP and keeps its iframe fallback out of the response" do
+    configure_streaming
+    Streaming::Configuration.stubs(:direct_player_enabled?).returns(true)
+    room = rooms(:designers)
+    room.update!(stream_enabled: true, stream_player_url: "https://stream.example.test/player", stream_path: "live")
+    sign_in :jz
+
+    get room_url(room)
+
+    assert_response :success
+    assert_select "media-player[data-room-stream-target='player']"
+    assert_select "iframe", count: 0
+    assert_includes response.headers["Content-Security-Policy"], "connect-src 'self' https://stream.example.test"
+    assert_includes response.headers["Content-Security-Policy"], "media-src 'self' https://stream.example.test"
+    assert_no_match(/eyJ[a-zA-Z0-9_-]+\./, response.body)
+  end
+
   test "configured stream renders its rich description and compact viewer menu" do
     configure_streaming
     room = rooms(:designers)

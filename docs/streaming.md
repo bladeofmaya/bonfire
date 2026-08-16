@@ -19,6 +19,7 @@ Configure these values as environment variables or under the
 | `RTMP_HOMEBREW_ALLOWED_PLAYER_ORIGINS` | `allowed_player_origins` | Comma-separated exact HTTPS player origins. Credentials accept an array. |
 | `RTMP_HOMEBREW_PREVIOUS_JWKS` | `previous_jwks` | Public JWKs retained during an operator-controlled key-rotation overlap. Never include private `d`; Bonfire strips it defensively. |
 | `RTMP_HOMEBREW_EVENT_SECRET` | `event_secret` | High-entropy shared secret used only to authenticate publisher lifecycle callbacks. |
+| `RTMP_HOMEBREW_DIRECT_PLAYER` | `direct_player` | Enables Bonfire's self-hosted Vidstack player. Keep `false` until the RTMP Homebrew direct-HLS/CORS acceptance checks pass. |
 
 If any signing configuration is present, Bonfire validates the complete
 configuration during startup without logging key material. An unconfigured
@@ -46,10 +47,13 @@ remove it. Never put an old private key in that value.
 
 ## RTMP Homebrew dependency
 
-Production playback requires RTMP Homebrew's embeddable, version-1
-`postMessage` player and JWT/JWKS authentication. Its player response must set
-`frame-ancestors` to the exact Bonfire origin. Development Basic credentials
-must remain in RTMP Homebrew and are never copied into Bonfire.
+Production playback defaults to RTMP Homebrew's embeddable, version-1
+`postMessage` player. Set `RTMP_HOMEBREW_DIRECT_PLAYER=true` only after RTMP
+Homebrew exposes the protected `/hls/<stream-path>/index.m3u8` contract with
+exact-origin CORS. The direct player uses self-hosted Vidstack 0.6.15 (MIT) and
+hls.js 1.7.0 (Apache-2.0), sends grants only as bearer headers, and retains the
+iframe path as the rollback mode. Development Basic credentials remain in
+RTMP Homebrew and are never copied into Bonfire.
 
 ## Publisher lifecycle events
 

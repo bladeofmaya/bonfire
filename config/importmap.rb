@@ -18,3 +18,5 @@ pin_all_from "app/javascript/models", under: "models"
 pin_all_from "vendor/javascript/languages", under: "languages"
 pin "lucide" # @1.31.0
 pin "sortablejs" # @1.15.7
+pin "vidstack", to: "vidstack.js" # @0.6.15, bundled and self-hosted
+pin "hls.js", to: "hls.js" # @1.7.0, self-hosted

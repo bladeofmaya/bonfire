@@ -3,6 +3,7 @@ import { post } from "@rails/request.js"
 
 const SOURCE = "rtmp-homebrew"
 const VERSION = 1
+const VOLUME_KEY = "bonfire-stream-volume"
 const STATES = {
   offline: "Stream is offline",
   connecting: "Connecting to stream…",
@@ -13,16 +14,34 @@ const STATES = {
 }
 
 export default class extends Controller {
-  static targets = [ "frame", "status", "viewport", "poster" ]
-  static values = { grantUrl: String, playerOrigin: String }
+  static targets = [ "frame", "player", "soundButton", "status", "viewport", "poster" ]
+  static values = { grantUrl: String, playerOrigin: String, mediaUrl: String, direct: Boolean }
 
   connect() {
     this.ready = false
     this.stopped = false
+    this.sourceLoaded = false
     this.reconnectAttempts = 0
+    this.authorizationSequence = 0
     this.receiveMessage = this.receiveMessage.bind(this)
-    window.addEventListener("message", this.receiveMessage)
     this.setState("connecting")
+
+    if (this.directValue) this.connectDirectPlayer()
+    else window.addEventListener("message", this.receiveMessage)
+  }
+
+  async connectDirectPlayer() {
+    try {
+      const [ , hlsModule ] = await Promise.all([ import("vidstack"), import("hls.js") ])
+      if (this.stopped) return
+
+      this.Hls = hlsModule.default
+      this.ready = true
+      this.restoreVolume()
+      await this.authorize()
+    } catch (_error) {
+      if (!this.stopped) this.setState("error")
+    }
   }
 
   disconnect() {
@@ -32,16 +51,27 @@ export default class extends Controller {
   teardown() {
     this.stopped = true
     this.ready = false
+    this.authorizationSequence += 1
     window.removeEventListener("message", this.receiveMessage)
     this.abortController?.abort()
     clearTimeout(this.refreshTimer)
     clearTimeout(this.reconnectTimer)
+
+    if (this.hasPlayerTarget) {
+      this.playerTarget.pause?.()
+      this.playerTarget.provider?.destroy?.()
+      this.playerTarget.src = ""
+    }
+
     this.token = null
+    this.Hls = null
   }
 
   visibilityChanged() {
     if (document.hidden) {
       clearTimeout(this.refreshTimer)
+      clearTimeout(this.reconnectTimer)
+      if (this.hasPlayerTarget) this.playerTarget.provider?.instance?.stopLoad?.()
     } else if (this.ready && !this.stopped) {
       this.reconnectAttempts = 0
       this.authorize()
@@ -49,7 +79,7 @@ export default class extends Controller {
   }
 
   receiveMessage(event) {
-    if (event.origin !== this.playerOriginValue || event.source !== this.frameTarget.contentWindow) return
+    if (!this.hasFrameTarget || event.origin !== this.playerOriginValue || event.source !== this.frameTarget.contentWindow) return
     const message = event.data
     if (!message || message.source !== SOURCE || message.version !== VERSION) return
 
@@ -71,8 +101,26 @@ export default class extends Controller {
     }
   }
 
+  configureProvider(event) {
+    const provider = event.detail
+    if (!this.directValue || provider?.type !== "hls" || !this.Hls) return
+
+    provider.library = this.Hls
+    provider.config = {
+      lowLatencyMode: true,
+      backBufferLength: 30,
+      liveSyncDurationCount: 2,
+      liveMaxLatencyDurationCount: 5,
+      xhrSetup: xhr => {
+        xhr.withCredentials = false
+        if (this.token) xhr.setRequestHeader("Authorization", `Bearer ${this.token}`)
+      }
+    }
+  }
+
   async authorize() {
     if (!this.ready || this.stopped || document.hidden) return
+    const sequence = ++this.authorizationSequence
     this.abortController?.abort()
     this.abortController = new AbortController()
 
@@ -81,27 +129,101 @@ export default class extends Controller {
         responseKind: "json",
         signal: this.abortController.signal
       })
+      if (sequence !== this.authorizationSequence || this.stopped) return
 
       if ([ 401, 403, 404 ].includes(response.statusCode)) return this.stopAuthorization()
       if (!response.ok) return this.scheduleReconnect()
 
       const grant = await response.json
+      if (sequence !== this.authorizationSequence || this.stopped) return
       if (grant.player_origin !== this.playerOriginValue) return this.stopAuthorization()
 
-      this.token = grant.token
-      this.frameTarget.contentWindow.postMessage({
-        source: "bonfire",
-        version: VERSION,
-        type: "playback.authorize",
-        token: this.token,
-        expires_at: grant.expires_at,
-        stream_path: grant.stream_path
-      }, this.playerOriginValue)
-      this.token = null
-      this.scheduleRefresh()
+      if (this.directValue) this.authorizeDirectPlayer(grant)
+      else this.authorizeEmbeddedPlayer(grant)
+      this.scheduleRefresh(grant.expires_at)
     } catch (error) {
       if (error.name !== "AbortError") this.scheduleReconnect()
     }
+  }
+
+  authorizeDirectPlayer(grant) {
+    this.token = grant.token
+    if (!this.sourceLoaded) {
+      this.sourceLoaded = true
+      this.playerTarget.src = { src: this.mediaUrlValue, type: "application/vnd.apple.mpegurl" }
+    } else {
+      this.playerTarget.provider?.instance?.startLoad?.()
+    }
+  }
+
+  authorizeEmbeddedPlayer(grant) {
+    this.token = grant.token
+    this.frameTarget.contentWindow.postMessage({
+      source: "bonfire",
+      version: VERSION,
+      type: "playback.authorize",
+      token: this.token,
+      expires_at: grant.expires_at,
+      stream_path: grant.stream_path
+    }, this.playerOriginValue)
+    this.token = null
+  }
+
+  playing() {
+    this.reconnectAttempts = 0
+    clearTimeout(this.reconnectTimer)
+    this.setState("live")
+  }
+
+  waiting() {
+    if (this.viewportTarget.dataset.state === "live") this.setState("reconnecting")
+  }
+
+  error() {
+    this.setState("error")
+    this.scheduleReconnect()
+  }
+
+  hlsError(event) {
+    if (!event.detail?.fatal) return
+    this.setState("reconnecting")
+    this.scheduleReconnect()
+  }
+
+  async watchWithSound() {
+    if (!this.hasPlayerTarget) return
+    this.playerTarget.muted = false
+    if (this.playerTarget.volume === 0) this.playerTarget.volume = 1
+
+    try {
+      await this.playerTarget.play()
+      this.soundButtonTarget.hidden = true
+      this.persistVolume()
+    } catch (_error) {
+      this.playerTarget.muted = true
+    }
+  }
+
+  volumeChanged() {
+    if (this.hasPlayerTarget && !this.playerTarget.muted) this.persistVolume()
+  }
+
+  setVolume(event) {
+    if (!this.hasPlayerTarget) return
+    this.playerTarget.volume = Number.parseFloat(event.currentTarget.value)
+    this.playerTarget.muted = this.playerTarget.volume === 0
+    this.persistVolume()
+  }
+
+  restoreVolume() {
+    if (!this.hasPlayerTarget) return
+    const volume = Number.parseFloat(localStorage.getItem(VOLUME_KEY))
+    if (Number.isFinite(volume)) this.playerTarget.volume = Math.min(1, Math.max(0, volume))
+    this.playerTarget.muted = true
+  }
+
+  persistVolume() {
+    try { localStorage.setItem(VOLUME_KEY, this.playerTarget.volume.toString()) } catch (_error) {}
   }
 
   setState(state) {
@@ -112,17 +234,24 @@ export default class extends Controller {
 
   stopAuthorization() {
     this.stopped = true
+    this.authorizationSequence += 1
     this.token = null
     this.abortController?.abort()
     clearTimeout(this.refreshTimer)
     clearTimeout(this.reconnectTimer)
+    if (this.hasPlayerTarget) {
+      this.playerTarget.pause?.()
+      this.playerTarget.provider?.instance?.stopLoad?.()
+    }
     this.setState("unauthorized")
   }
 
-  scheduleRefresh() {
+  scheduleRefresh(expiresAt) {
     clearTimeout(this.refreshTimer)
+    const expiresIn = new Date(expiresAt).getTime() - Date.now()
     const jitter = Math.floor(Math.random() * 6001) - 3000
-    this.refreshTimer = setTimeout(() => this.authorize(), 30_000 + jitter)
+    const delay = Math.max(5_000, Math.min(30_000 + jitter, expiresIn - 20_000))
+    this.refreshTimer = setTimeout(() => this.authorize(), delay)
   }
 
   scheduleReconnect() {

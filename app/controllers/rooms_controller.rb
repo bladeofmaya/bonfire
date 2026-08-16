@@ -3,7 +3,14 @@ class RoomsController < ApplicationController
   before_action :ensure_can_administer, only: %i[ destroy ]
   before_action :remember_last_room_visited, only: :show
   content_security_policy only: :show do |policy|
-    policy.frame_src :self, @room.stream_player_origin if @room&.stream_configured?
+    if @room&.stream_configured?
+      if Streaming::Configuration.direct_player_enabled?
+        policy.connect_src :self, @room.stream_player_origin
+        policy.media_src :self, @room.stream_player_origin
+      else
+        policy.frame_src :self, @room.stream_player_origin
+      end
+    end
   end
 
   def index
