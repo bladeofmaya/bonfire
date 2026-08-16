@@ -62,7 +62,7 @@ class RoomsControllerTest < ActionDispatch::IntegrationTest
     assert_select "media-player[data-room-stream-target='player']"
     assert_select "iframe", count: 0
     assert_includes response.headers["Content-Security-Policy"], "connect-src 'self' https://stream.example.test"
-    assert_includes response.headers["Content-Security-Policy"], "media-src 'self' https://stream.example.test"
+    assert_includes response.headers["Content-Security-Policy"], "media-src 'self' blob: https://stream.example.test"
     assert_no_match(/eyJ[a-zA-Z0-9_-]+\./, response.body)
   end
 

@@ -318,6 +318,13 @@ media-fullscreen-button[data-fullscreen] [slot="exit"] { display: inline; }
   &[hidden] { display: none; }
 }
 
+.room-stream__viewport:is([data-state="offline"], [data-state="unauthorized"], [data-state="error"]) {
+  .room-stream__controls,
+  .room-stream__sound { display: none; }
+}
+
+.room-stream__viewport:not([data-state="live"]) .room-stream__sound { display: none; }
+
 .room-stream__poster-layer {
   z-index: 1;
   display: grid;
