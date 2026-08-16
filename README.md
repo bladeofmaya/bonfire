@@ -80,7 +80,14 @@ version:
 ```sh
 bin/bonfire status
 bin/bonfire deploy
+bin/bonfire kamal details
 ```
+
+`bin/bonfire kamal …` runs any Kamal subcommand with the private deployment
+configuration loaded. Kamal loads `.kamal/secrets` itself; Bonfire never
+evaluates, captures, or prints secret values. Commands that directly inspect
+secrets or execute arbitrary code are intentionally unavailable through this
+LLM-safe wrapper.
 
 To move an existing installation, lower the public hostname's DNS TTL first,
 then run the migration with the new SSH destination:

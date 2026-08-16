@@ -122,6 +122,49 @@ class Bonfire::DeploymentTest < ActiveSupport::TestCase
     assert_equal "chat.example.com", environment.fetch("DEPLOY_SERVER")
   end
 
+  test "kamal forwards arguments with configuration without reading secrets" do
+    configure
+    File.write(File.join(@root, ".kamal/secrets"), <<~SECRETS)
+      SECRET_KEY_BASE=never-print-this
+      VAPID_PRIVATE_KEY=private-never-print-this
+      VAPID_PUBLIC_KEY=public-never-print-this
+    SECRETS
+
+    assert_equal 0, cli.run(%w[kamal app logs --since 5m])
+
+    command, environment = @runner.runs.sole
+    assert_equal %w[kamal app logs --since 5m], command
+    assert_equal "chat.example.com", environment.fetch("DEPLOY_HOST")
+    refute_includes environment, "SECRET_KEY_BASE"
+    refute_includes @output.string, "never-print-this"
+    refute_includes @error.string, "never-print-this"
+  end
+
+  test "kamal leaves dynamic secret resolution to Kamal" do
+    configure
+    File.write(File.join(@root, ".kamal/secrets"), <<~SECRETS)
+      SECRETS=$(secret-provider fetch)
+      SECRET_KEY_BASE=$(secret-provider extract SECRET_KEY_BASE $SECRETS)
+    SECRETS
+
+    assert_equal 0, cli.run(%w[kamal details])
+    assert_equal %w[kamal details], @runner.runs.sole.first
+  end
+
+  test "kamal refuses commands that can expose secrets or execute arbitrary code" do
+    configure
+    configure_secrets
+
+    %w[config secrets console shell dbc].each do |command|
+      assert_equal 1, cli.run([ "kamal", command ])
+    end
+    assert_equal 1, cli.run(%w[kamal app exec printenv])
+    assert_equal 1, cli.run(%w[kamal accessory exec database printenv])
+
+    assert_includes @error.string, "disabled by the LLM-safe wrapper"
+    assert_empty @runner.runs
+  end
+
   test "setup can configure a separate deployment server" do
     assert_equal 0, cli.run(%w[setup --host chat.example.com --server 203.0.113.10 --configure-only])
 
@@ -215,4 +258,5 @@ class Bonfire::DeploymentTest < ActiveSupport::TestCase
         VAPID_PUBLIC_KEY=public
       SECRETS
     end
+
 end

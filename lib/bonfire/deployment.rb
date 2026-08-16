@@ -26,6 +26,8 @@ module Bonfire
 
     SECRET_KEYS = %w[SECRET_KEY_BASE VAPID_PRIVATE_KEY VAPID_PUBLIC_KEY].freeze
     OPTIONAL_SECRET_KEYS = %w[RAILS_MASTER_KEY].freeze
+    SENSITIVE_KAMAL_ARGUMENTS = %w[config secrets console shell dbc].freeze
+    SENSITIVE_KAMAL_SEQUENCES = [ %w[app exec], %w[accessory exec] ].freeze
 
     DEFAULTS = {
       "DEPLOY_SSH_USER" => "root",
@@ -136,6 +138,7 @@ module Bonfire
         when "status" then status(arguments)
         when "setup" then setup(arguments)
         when "deploy" then deploy(arguments)
+        when "kamal" then kamal(arguments)
         when "migrate" then migrate(arguments)
         else
           @error.puts "Unknown command: #{command}"
@@ -159,6 +162,7 @@ module Bonfire
               status   Report local configuration and remote deployment status
               setup    Configure and optionally bootstrap a new deployment
               deploy   Deploy the current Git commit with Kamal
+              kamal    Run a Kamal command with Bonfire's private environment
               migrate  Move an existing deployment to a new server
               help     Show this help
 
@@ -294,6 +298,30 @@ module Bonfire
 
           @output.puts "Deployment completed: https://#{config.fetch("DEPLOY_HOST")}"
           0
+        end
+
+        def kamal(arguments)
+          raise Error, "No deployment configuration. Run `bin/bonfire setup` first." unless @config_file.exist?
+          raise Error, "Missing #{SECRETS_PATH}. Run `bin/bonfire setup` first." unless @secrets_file.exist?
+          raise Error, "Install required local tools: kamal" unless @runner.available?("kamal")
+          validate_safe_kamal_arguments!(arguments)
+
+          config = configured_values
+          validate_configuration!(config)
+
+          # Kamal owns .kamal/secrets, including its supported secret-provider
+          # syntax. Do not source, parse, or copy those values into this process.
+          @runner.run("kamal", *arguments, env: config) ? 0 : 1
+        end
+
+        def validate_safe_kamal_arguments!(arguments)
+          sensitive_argument = arguments.find { |argument| SENSITIVE_KAMAL_ARGUMENTS.include?(argument) }
+          sensitive_sequence = SENSITIVE_KAMAL_SEQUENCES.find do |sequence|
+            arguments.each_cons(sequence.length).any? { |window| window == sequence }
+          end
+          return unless sensitive_argument || sensitive_sequence
+
+          raise Error, "That Kamal command can expose secrets or execute arbitrary code and is disabled by the LLM-safe wrapper"
         end
 
         def migrate(arguments)
