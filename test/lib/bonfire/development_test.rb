@@ -57,6 +57,34 @@ class Bonfire::DevelopmentTest < ActiveSupport::TestCase
     assert_includes @output.string, "http://bonfire.localhost:3021"
   end
 
+  test "start safely loads generated RTMP Homebrew settings" do
+    environment_path = File.join(@root, "bonfire-streaming.env")
+    File.write(environment_path, <<~ENVIRONMENT)
+      RTMP_HOMEBREW_PRIVATE_KEY='private\\nkey'
+      RTMP_HOMEBREW_KEY_ID=development-key
+      RTMP_HOMEBREW_ISSUER=http://bonfire.localhost:3021
+      RTMP_HOMEBREW_AUDIENCE=rtmp-homebrew
+      RTMP_HOMEBREW_ALLOWED_PLAYER_ORIGINS=https://stream.localhost:8443
+      UNRELATED_SECRET=ignored
+    ENVIRONMENT
+
+    with_environment("BONFIRE_STREAMING_ENV_FILE" => environment_path,
+      "RTMP_HOMEBREW_AUDIENCE" => "explicit-audience") do
+      assert_equal 0, cli.run([])
+    end
+
+    _, foreman_environment = @runner.replacements.first
+    assert_equal "private\\nkey", foreman_environment.fetch("RTMP_HOMEBREW_PRIVATE_KEY")
+    assert_equal "explicit-audience", foreman_environment.fetch("RTMP_HOMEBREW_AUDIENCE")
+    assert_equal "https://stream.localhost:8443", foreman_environment.fetch("RTMP_HOMEBREW_ALLOWED_PLAYER_ORIGINS")
+    assert_not_includes foreman_environment, "UNRELATED_SECRET"
+    assert_includes @output.string, environment_path
+    assert_not_includes @output.string, "private\\nkey"
+
+    _, preparation_environment = @runner.runs.find { |command, _| command == %w[bin/rails db:prepare] }
+    assert_equal "development-key", preparation_environment.fetch("RTMP_HOMEBREW_KEY_ID")
+  end
+
   test "reset removes local state and prepares a fresh database" do
     assert_equal 0, cli.run(%w[reset --yes --no-start])
 
@@ -125,5 +153,13 @@ class Bonfire::DevelopmentTest < ActiveSupport::TestCase
         FileUtils.mkdir_p(File.dirname(absolute_path))
         File.write(absolute_path, contents)
       end
+    end
+
+    def with_environment(values)
+      previous = values.to_h { |key, _| [ key, ENV[key] ] }
+      values.each { |key, value| ENV[key] = value }
+      yield
+    ensure
+      previous.each { |key, value| value.nil? ? ENV.delete(key) : ENV[key] = value }
     end
 end

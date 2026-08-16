@@ -32,6 +32,20 @@ class UnreadRoomsChannelTest < ActionCable::Channel::TestCase
     assert_equal [ direct.id ], broadcasts.collect { |broadcast| broadcast["roomId"] }
   end
 
+  test "a mentioned member receives the separate unread mention count" do
+    room = rooms(:watercooler)
+    membership = memberships(:david_watercooler)
+    membership.update!(connected_at: nil, connections: 0, unread_at: nil, unread_count: 0, unread_mention_count: 0)
+    message = room.messages.create!(
+      body: "Hello #{mention_attachment_for(:david)}", creator: users(:jason), client_message_id: "mention-broadcast"
+    )
+
+    broadcasts = capture_unread_broadcasts_for(users(:david)) { message.broadcast_create }
+
+    assert_equal 1, broadcasts.last.fetch("unreadCount")
+    assert_equal 1, broadcasts.last.fetch("unreadMentionCount")
+  end
+
   private
     def capture_unread_broadcasts_for(user)
       stub_connection(current_user: user)

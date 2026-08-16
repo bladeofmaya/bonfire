@@ -6,6 +6,13 @@
         class: [ "sidebar-list-item sidebar-list-item--channel align-center room btn txt-nowrap",
           "unread sidebar-list-item--unread": unread?, "room-list--current": selected? ] do %>
     <span class="overflow-ellipsis"><%= room.name %></span>
+    <% if streaming? %>
+      <span class="channel-live-badge" data-room-stream-live-badge
+            data-controller="stream-live-badge"
+            data-stream-live-badge-expires-at-value="<%= room.stream_live_until.iso8601(3) %>">LIVE</span>
+    <% end %>
+    <span class="channel__mention-count sidebar-unread-count" <%= "hidden" unless mentioned? %>
+        aria-label="<%= helpers.pluralize(unread_mention_count, "unread mention") if mentioned? %>"><%= unread_mention_count if mentioned? %></span>
   <% end %>
 
   <% if reorderable? %>

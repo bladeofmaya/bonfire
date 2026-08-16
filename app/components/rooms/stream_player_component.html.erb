@@ -4,14 +4,11 @@
     data-action="visibilitychange@document->room-stream#visibilityChanged turbo:before-cache@document->room-stream#teardown"
     data-room-stream-grant-url-value="<%= helpers.room_stream_playback_grant_path(room) %>"
     data-room-stream-player-origin-value="<%= room.stream_player_origin %>">
-  <header class="room-stream__header">
-    <h2 id="room-stream-title-<%= room.id %>" class="txt-medium margin-none"><%= title %></h2>
-    <p class="room-stream__status" role="status" aria-live="polite" data-room-stream-target="status">Connecting to stream…</p>
-  </header>
-
   <div class="room-stream__viewport" data-room-stream-target="viewport" data-state="connecting">
     <% if room.stream_poster.attached? %>
-      <%= helpers.image_tag room.stream_poster, class: "room-stream__poster", alt: "", data: { room_stream_target: "poster" } %>
+      <div class="room-stream__poster-layer" data-room-stream-target="poster">
+        <%= helpers.image_tag room.stream_poster, class: "room-stream__poster", alt: "" %>
+      </div>
     <% end %>
 
     <iframe
@@ -23,4 +20,10 @@
       sandbox="allow-scripts allow-same-origin allow-presentation"
       data-room-stream-target="frame"></iframe>
   </div>
+
+  <footer class="room-stream__info">
+    <h2 id="room-stream-title-<%= room.id %>" class="room-stream__title txt-medium margin-none"><%= title %></h2>
+    <p class="room-stream__status" role="status" aria-live="polite" data-room-stream-target="status">Connecting to stream…</p>
+    <%= helpers.render "rooms/show/stream_viewers", room: room, viewers: viewers %>
+  </footer>
 </section>

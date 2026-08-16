@@ -42,10 +42,14 @@ class Rooms::PositionsController < ApplicationController
       rooms.each do |room|
         room.users.active.find_each do |user|
           next if user == Current.user
+          membership = room.memberships.find_by!(user: user)
 
           html = render_to_string(
             partial: "users/sidebars/rooms/shared",
-            locals: { room: room, administrator: user.administrator? }
+            locals: {
+              room: room, unread: membership.unread?, unread_mention_count: membership.unread_mention_count,
+              administrator: user.administrator?
+            }
           )
           broadcast_replace_to user, :rooms, target: [ room, :list ], html: html
         end

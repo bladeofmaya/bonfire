@@ -41,7 +41,9 @@
     <%= yield :head %>
   </head>
 
-  <body class="<%= body_classes %>" data-controller="local-time lightbox theme">
+  <body class="<%= body_classes %>"
+      data-controller="external-links local-time lightbox theme"
+      data-action="turbo:load@document->external-links#refresh turbo:frame-load@document->external-links#refresh turbo:render@document->external-links#refresh turbo:before-stream-render@document->external-links#refreshAfterRender">
     <a href="#main-content" class="skip-navigation btn">Skip to main content</a>
 
     <nav id="nav">

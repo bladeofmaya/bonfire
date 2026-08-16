@@ -35,6 +35,12 @@
       <%= form.text_field :stream_title, class: "input full-width", placeholder: room.name %>
     </label>
 
+    <div class="stream-settings__description-editor txt-align-start">
+      <label for="room_stream_description"><strong>Stream description and schedule</strong></label>
+      <%= form.rich_text_area :stream_description, class: "input", aria: { label: "Stream description and schedule" } %>
+      <span class="txt-small">Shown below the player whenever members visit this channel.</span>
+    </div>
+
     <label class="txt-align-start">
       <strong>Poster image</strong>
       <%= form.file_field :stream_poster, class: "input input--file", accept: "image/*" %>

@@ -4,7 +4,8 @@
       data-channel-order-url-value="<%= room_positions_path %>"
     <% end %>>
   <% memberships.each do |membership| %>
-    <%= render "users/sidebars/rooms/shared", room: membership.room, unread: membership.unread?, administrator: Current.user.administrator? %>
+    <%= render "users/sidebars/rooms/shared", room: membership.room, unread: membership.unread?,
+          unread_mention_count: membership.unread_mention_count, administrator: Current.user.administrator? %>
   <% end %>
 </div>
 <p id="channel-order-instructions" class="for-screen-reader">Drag to reorder, or use the up and down arrow keys while the reorder handle is focused.</p>

@@ -13,12 +13,14 @@ class Rooms::StreamsControllerTest < ActionDispatch::IntegrationTest
       stream_enabled: "1",
       stream_player_url: "https://stream.example.test/player",
       stream_path: "live",
-      stream_title: "Town Hall"
+      stream_title: "Town Hall",
+      stream_description: "Fridays at 20:00"
     } }
 
     assert_redirected_to "#{edit_rooms_closed_url(room)}#streaming"
     assert room.reload.stream_configured?
     assert_equal "Town Hall", room.stream_title
+    assert_equal "Fridays at 20:00", room.stream_description.to_plain_text
   end
 
   test "closed room settings show stream controls only to installation administrators" do
@@ -32,6 +34,7 @@ class Rooms::StreamsControllerTest < ActionDispatch::IntegrationTest
       assert_select "input[name='room[stream_player_url]']"
       assert_select "input[name='room[stream_path]']"
       assert_select "input[name='room[stream_title]']"
+      assert_select ".stream-settings__description-editor trix-editor[aria-label='Stream description and schedule']"
       assert_select "input[name='room[stream_poster]'][type='file']"
     end
 

@@ -1,10 +1,11 @@
 class Rooms::StreamPlayerComponent < ApplicationComponent
   STATES = %w[ offline connecting live reconnecting unauthorized error ].freeze
 
-  attr_reader :room
+  attr_reader :room, :viewers
 
-  def initialize(room:)
+  def initialize(room:, viewers: [])
     @room = room
+    @viewers = viewers
   end
 
   def title

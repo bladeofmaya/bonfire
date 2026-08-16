@@ -40,6 +40,19 @@ class PresenceChannelTest < ActionCable::Channel::TestCase
     end
   end
 
+  test "stream room presence changes broadcast the viewer popup" do
+    configure_streaming
+    room = rooms(:designers)
+    room.update!(stream_enabled: true, stream_player_url: "https://stream.example.test/player", stream_path: "live")
+    membership = room.memberships.find_by!(user: users(:david))
+
+    assert_turbo_stream_broadcasts [ room, :presence ], count: 1 do
+      subscribe room_id: room.id
+    end
+
+    assert membership.reload.connected?
+  end
+
   test "unsubscribing marks the membership as disconnected" do
     membership = users(:david).memberships.first
     subscribe room_id: membership.room_id

@@ -20,7 +20,12 @@ class Users::SidebarsControllerTest < ActionDispatch::IntegrationTest
       assert_select "a.channel-list__invite[href='#{account_invitation_path}'][data-turbo-frame='account_invitation_dialog']" \
                     "[aria-label='Invite people'] [data-lucide='user-round-plus']"
     end
-    assert_select "section.channel-list__section[aria-labelledby='channels-heading']", text: /Channels/
+    assert_select "section.channel-list__section[aria-labelledby='channels-heading']", text: /Channels/ do
+      assert_select ".channel-list__section-header" do
+        assert_select "h2", text: "Channels"
+        assert_select "a.channel-list__new-channel[href='#{new_rooms_open_path}'][aria-label='Create a channel']"
+      end
+    end
     assert_select "section.channel-list__directs[aria-labelledby='direct-messages-heading']" do
       assert_select "h2", text: "Direct Messages"
       assert_select "a.channel-list__new-direct[href='#{new_rooms_direct_path}']" \
@@ -55,21 +60,19 @@ class Users::SidebarsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".sidebar__tools a[href='#{edit_account_path}']", count: 0
   end
 
-  test "shows room creation to administrators when creation is restricted" do
-    accounts(:signal).update!(settings: { restrict_room_creation_to_administrators: true })
-
+  test "shows channel creation beside the heading for administrators" do
     get user_sidebar_url
 
-    assert_select "a.rooms__new-btn[href='#{new_rooms_open_path}'][aria-label='New Chat Room']"
+    assert_select ".channel-list__section-header a.channel-list__new-channel[href='#{new_rooms_open_path}']"
+    assert_select "a.rooms__new-btn", count: 0
   end
 
-  test "hides restricted room creation from members" do
-    accounts(:signal).update!(settings: { restrict_room_creation_to_administrators: true })
+  test "hides channel creation from members" do
     sign_in :jz
 
     get user_sidebar_url
 
-    assert_select "a.rooms__new-btn", count: 0
+    assert_select "a.channel-list__new-channel", count: 0
   end
 
   test "hides administrator server actions and dropdown from members" do
@@ -83,15 +86,6 @@ class Users::SidebarsControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href='#{edit_account_path}']", count: 0
     assert_select "turbo-frame#account_invitation_dialog", count: 1
     assert_select "#shared_rooms[data-controller='sorted-list'] .channel-order-item__handle", count: 0
-  end
-
-  test "shows unrestricted room creation to members" do
-    accounts(:signal).update!(settings: { restrict_room_creation_to_administrators: false })
-    sign_in :jz
-
-    get user_sidebar_url
-
-    assert_select "a.rooms__new-btn[href='#{new_rooms_open_path}'][aria-label='New Chat Room']"
   end
 
   test "initial shared and direct items expose their distinct sorting contracts" do
@@ -137,9 +131,11 @@ class Users::SidebarsControllerTest < ActionDispatch::IntegrationTest
     end
   end
   test "unread other" do
-    rooms(:watercooler).messages.create! client_message_id: 999, body: "Hello", creator: users(:jason)
+    rooms(:watercooler).messages.create! client_message_id: 999,
+      body: "Hello #{mention_attachment_for(:david)}", creator: users(:jason)
 
     get user_sidebar_url
     assert_select ".unread", count: users(:david).memberships.reject { |m| m.room.direct? || !m.unread? }.count
+    assert_select "##{dom_id(rooms(:watercooler), :list)} .channel__mention-count", text: "1"
   end
 end

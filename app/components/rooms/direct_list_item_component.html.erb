@@ -22,7 +22,7 @@
       <span class="direct__name txt-nowrap overflow-ellipsis" aria-hidden="true"><%= display_names %></span>
     </span>
 
-    <span class="direct__unread-count" <%= "hidden" unless unread? %>
+    <span class="direct__unread-count sidebar-unread-count" <%= "hidden" unless unread? %>
         aria-label="<%= helpers.pluralize(unread_count, "unread message") %>"><%= unread_count %></span>
   <% end %>
 

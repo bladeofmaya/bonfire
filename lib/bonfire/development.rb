@@ -1,6 +1,7 @@
 require "fileutils"
 require "open3"
 require "optparse"
+require "shellwords"
 
 module Bonfire
   module Development
@@ -35,6 +36,14 @@ module Bonfire
       APP_URL = "http://bonfire.localhost:3021"
       COMPOSE_FILE = "compose.dev.yml"
       PROCFILE = "Procfile.dev"
+      STREAMING_ENV_KEYS = %w[
+        RTMP_HOMEBREW_PRIVATE_KEY
+        RTMP_HOMEBREW_KEY_ID
+        RTMP_HOMEBREW_ISSUER
+        RTMP_HOMEBREW_AUDIENCE
+        RTMP_HOMEBREW_ALLOWED_PLAYER_ORIGINS
+        RTMP_HOMEBREW_EVENT_SECRET
+      ].freeze
 
       def initialize(root: File.expand_path("../..", __dir__), input: $stdin, output: $stdout, error: $stderr, runner: nil)
         @root = root
@@ -95,13 +104,14 @@ module Bonfire
           parser.parse!(arguments)
 
           ensure_development_environment!
+          load_streaming_environment
           ensure_tools!
           ensure_docker!
           prepare_database if prepare
 
           @output.puts "Starting Bonfire development..."
           @output.puts "Open #{APP_URL}"
-          @runner.replace("foreman", "start", "-f", PROCFILE)
+          @runner.replace("foreman", "start", "-f", PROCFILE, env: streaming_environment)
           0
         end
 
@@ -138,6 +148,47 @@ module Bonfire
           if ENV["RAILS_ENV"] == "production" || ENV["RACK_ENV"] == "production"
             raise Error, "Refusing to run with a production environment"
           end
+        end
+
+        def load_streaming_environment
+          return if streaming_environment.empty?
+
+          @output.puts "Loaded RTMP Homebrew integration settings from #{streaming_environment_path}"
+        end
+
+        def streaming_environment
+          @streaming_environment ||= begin
+            if File.file?(streaming_environment_path)
+              parse_streaming_environment.filter_map do |key, value|
+                [ key, ENV.fetch(key, value) ] if STREAMING_ENV_KEYS.include?(key)
+              end.to_h
+            else
+              {}
+            end
+          end
+        end
+
+        def parse_streaming_environment
+          File.readlines(streaming_environment_path, chomp: true).filter_map do |line|
+            line = line.strip
+            next if line.empty? || line.start_with?("#")
+
+            key, raw_value = line.delete_prefix("export ").split("=", 2)
+            next unless key&.match?(/\A[A-Z][A-Z0-9_]*\z/) && raw_value
+
+            values = Shellwords.shellsplit(raw_value)
+            raise Error, "Invalid RTMP Homebrew environment entry for #{key}" unless values.one?
+            [ key, values.first ]
+          rescue ArgumentError => error
+            raise Error, "Invalid RTMP Homebrew environment entry: #{error.message}"
+          end
+        end
+
+        def streaming_environment_path
+          @streaming_environment_path ||= ENV.fetch(
+            "BONFIRE_STREAMING_ENV_FILE",
+            File.expand_path("../rtmp-homebrew/.local/bonfire-streaming.env", @root)
+          )
         end
 
         def ensure_tools!(foreman: true)
@@ -190,7 +241,7 @@ module Bonfire
 
         def prepare_database
           @output.puts "Preparing the development database..."
-          success = @runner.run("bin/rails", "db:prepare", env: { "RAILS_ENV" => "development" })
+          success = @runner.run("bin/rails", "db:prepare", env: streaming_environment.merge("RAILS_ENV" => "development"))
           raise Error, "Could not prepare the development database" unless success
         end
     end

@@ -44,14 +44,18 @@
     <%= turbo_frame_tag "direct_conversation_dialog" %>
 
     <section class="channel-list__section rooms position-relative flex flex-column gap" aria-labelledby="channels-heading">
-      <h2 id="channels-heading" class="channel-list__section-title">Channels</h2>
-      <%= render "users/sidebars/rooms/shared_list", memberships: @other_memberships %>
-
-      <% if Current.user.administrator? || !Current.account.settings.restrict_room_creation_to_administrators? %>
-        <%= link_to new_rooms_open_path, class: "rooms__new-btn btn room align-center gap txt-reversed", aria: { label: "New Chat Room" } do %>
-          <%= image_tag "add.svg", size: 20, aria: { hidden: "true" }, style: "view-transition-name: new-room" %>
+      <div class="channel-list__section-header">
+        <h2 id="channels-heading" class="channel-list__section-title">Channels</h2>
+        <% if Current.user.administrator? %>
+          <%= link_to new_rooms_open_path,
+                class: "channel-list__new-channel btn btn--icon",
+                aria: { label: "Create a channel" },
+                title: "Create a channel" do %>
+            <%= image_tag "add.svg", size: 16, aria: { hidden: "true" } %>
+          <% end %>
         <% end %>
-      <% end %>
+      </div>
+      <%= render "users/sidebars/rooms/shared_list", memberships: @other_memberships %>
     </section>
 
     <section class="channel-list__section channel-list__directs" aria-labelledby="direct-messages-heading">

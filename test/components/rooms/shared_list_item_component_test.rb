@@ -13,12 +13,22 @@ class Rooms::SharedListItemComponentTest < ComponentTestCase
     assert_selector "a[href='#{room_path}'][data-room-id='#{room.id}']"
     assert_selector "[data-rooms-list-target='room'][data-badge-dot-target='unread']"
     assert_selector ".overflow-ellipsis", text: room.name
+    assert_no_selector "[data-room-stream-live-badge]"
   end
 
   test "renders the shared selected-state contract" do
     render_inline component(rooms(:watercooler), selected: true)
 
     assert_selector ".sidebar-list-item.sidebar-list-item--channel.room-list--current"
+  end
+
+  test "renders only unread mentions as a channel count badge" do
+    render_inline component(rooms(:watercooler), unread: true, unread_mention_count: 3)
+
+    assert_selector ".channel__mention-count.sidebar-unread-count[aria-label='3 unread mentions']", text: "3"
+
+    render_inline component(rooms(:watercooler), unread: true, unread_mention_count: 0)
+    assert_selector ".channel__mention-count[hidden]:empty", visible: :all
   end
 
   test "uses the explicit sort key without changing the visible name" do
@@ -63,8 +73,29 @@ class Rooms::SharedListItemComponentTest < ComponentTestCase
                     "[data-action='keydown->channel-order#moveWithKeyboard'] [data-lucide='grip-vertical']"
   end
 
+  test "renders the live badge only while the stream heartbeat is fresh" do
+    room = rooms(:watercooler)
+    room.assign_attributes stream_enabled: true, stream_session_id: "session-1", stream_last_seen_at: Time.current
+
+    render_inline component(room)
+
+    assert_selector "[data-room-stream-live-badge][data-controller='stream-live-badge']", text: "LIVE"
+  end
+
+  test "does not render the live badge for enabled but offline or stale streams" do
+    room = rooms(:watercooler)
+    room.assign_attributes stream_enabled: true, stream_session_id: "session-1", stream_last_seen_at: 1.minute.ago
+
+    render_inline component(room)
+
+    assert_no_selector "[data-room-stream-live-badge]"
+  end
+
   private
-    def component(room, unread: false, selected: false, sort_key: room.name)
-      Rooms::SharedListItemComponent.new(room: room, unread: unread, selected: selected, sort_key: sort_key)
+    def component(room, unread: false, unread_mention_count: 0, selected: false, sort_key: room.name)
+      Rooms::SharedListItemComponent.new(
+        room: room, unread: unread, unread_mention_count: unread_mention_count,
+        selected: selected, sort_key: sort_key
+      )
     end
 end

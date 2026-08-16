@@ -37,11 +37,31 @@ class RoomsControllerTest < ActionDispatch::IntegrationTest
     get room_url(room)
 
     assert_response :success
-    assert_select "main > section.room-stream + #message-area"
+    assert_select "body.sidebar.stream-room"
+    assert_select "main > section.room-stream"
+    assert_select "main > section.stream-description"
+    assert_select ".room-stream__info > .stream-viewers"
+    assert_select "main > turbo-cable-stream-source[channel='RoomPresenceChannel']", count: 1
+    assert_select "aside#sidebar .member-sidebar", count: 0
     assert_select "iframe[src='https://stream.example.test/player']"
     assert_includes response.headers["Content-Security-Policy"], "frame-src 'self' https://stream.example.test"
     assert_no_match(/eyJ[a-zA-Z0-9_-]+\./, response.body)
     assert_no_match(/RTMP_HOMEBREW_PRIVATE_KEY/, response.body)
+  end
+
+  test "configured stream renders its rich description and compact viewer menu" do
+    configure_streaming
+    room = rooms(:designers)
+    room.update!(stream_enabled: true, stream_player_url: "https://stream.example.test/player", stream_path: "live",
+      stream_description: "Every Friday at eight")
+    memberships(:jz_designers).update!(connected_at: Time.current, connections: 1)
+    sign_in :jz
+
+    get room_url(room)
+
+    assert_select ".stream-description .trix-content", text: /Every Friday at eight/
+    assert_select "##{dom_id(room, :stream_viewers)} summary", text: /1 viewer/
+    assert_select ".stream-viewers__popup a[href='#{user_path(users(:jz))}']", text: users(:jz).name
   end
 
   test "disabled streams do not render a player" do

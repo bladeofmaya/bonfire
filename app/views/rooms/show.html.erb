@@ -1,5 +1,5 @@
 <% @page_title = room_display_name(@room) %>
-<% @body_class = "sidebar" %>
+<% @body_class = [ "sidebar", ("stream-room" if @room.stream_configured?) ].compact.join(" ") %>
 <% content_for :head do %>
   <%= turbo_exempts_page_from_preview %>
   <meta name="current-room-id" content="<%= @room.id %>">
@@ -8,11 +8,17 @@
 <%= render "rooms/show/nav", room: @room %>
 
 <% content_for :sidebar, sidebar_turbo_frame_tag(src: user_sidebar_path) %>
-<% content_for :members do %>
-  <%= render "rooms/show/members", users: @sidebar_users %>
+<% unless @room.stream_configured? %>
+  <% content_for :members do %>
+    <%= render "rooms/show/members", users: @sidebar_users %>
+  <% end %>
 <% end %>
 
-<%= render Rooms::StreamPlayerComponent.new(room: @room) if @room.stream_configured? %>
+<% if @room.stream_configured? %>
+  <%= render Rooms::StreamPlayerComponent.new(room: @room, viewers: @room.stream_viewers) %>
+  <%= render "rooms/show/stream_description", room: @room %>
+  <%= turbo_stream_from @room, :presence, channel: "RoomPresenceChannel" %>
+<% end %>
 
 <%= message_area_tag(@room) do %>
   <%= render "messages/template" %>

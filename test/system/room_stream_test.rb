@@ -11,6 +11,7 @@ class RoomStreamingTest < ApplicationSystemTestCase
 
   test "player messages require the exact origin and source and expose every state" do
     assert_selector ".room-stream__status", text: "Connecting to stream…"
+    assert_no_selector "[data-room-id='#{@room.id}'] [data-room-stream-live-badge]"
 
     dispatch_player_message(type: "player.state", state: "live", origin: "https://evil.example")
     assert_no_selector ".room-stream__status", text: "Stream is live", wait: 0.2
@@ -71,12 +72,25 @@ class RoomStreamingTest < ApplicationSystemTestCase
   end
 
   test "stream remains in normal flow at desktop and mobile widths" do
-    assert_selector "main > .room-stream + #message-area"
+    assert_selector "body.stream-room main > .room-stream"
+    assert_selector "main > .stream-description"
+    assert_selector ".room-stream__info > .stream-viewers"
     assert_no_selector ".room-stream[style*='position: fixed']"
 
     page.current_window.resize_to(390, 844)
     assert_selector ".room-stream__viewport"
     assert_selector "footer .composer"
+  end
+
+  test "external rich-text links open in a new tab while internal links stay in Bonfire" do
+    @room.update!(stream_description: <<~HTML)
+      <a href="https://example.com/schedule">External schedule</a>
+      <a href="#{room_path(@room)}">Internal room link</a>
+    HTML
+    visit room_url(@room)
+
+    assert_selector ".stream-description a[href='https://example.com/schedule'][target='_blank'][rel~='noopener'][rel~='noreferrer']"
+    assert_selector ".stream-description a[href='#{room_path(@room)}']:not([target='_blank'])"
   end
 
   private

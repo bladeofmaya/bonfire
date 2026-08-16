@@ -27,6 +27,31 @@ uploads, so it needs no Postgres or MinIO containers.
 Foreman reads `Procfile.dev` and supervises both processes. Stopping Foreman
 also stops the attached Redis Compose process.
 
+### Testing RTMP Homebrew streaming
+
+Start RTMP Homebrew first so it can generate Bonfire's local signing
+configuration:
+
+```sh
+cd ../rtmp-homebrew
+bin/dev
+```
+
+Then start Bonfire normally in another terminal:
+
+```sh
+cd ../bonfire
+bin/dev
+```
+
+`bin/dev` automatically loads the expected integration settings from
+`../rtmp-homebrew/.local/bonfire-streaming.env` without printing their values.
+Existing environment values take precedence. Set `BONFIRE_STREAMING_ENV_FILE`
+to use a different generated file.
+
+Configure a room with player URL `https://stream.localhost:8443` and stream
+path `live`, then run `bin/stream` from RTMP Homebrew to publish the test feed.
+
 On first run, Bonfire guides you through creating the administrator account.
 
 ### Resetting local data

@@ -106,12 +106,6 @@
   padding-inline: var(--sidebar-inline-space);
 }
 
-.rooms__new-btn {
-  inset-block-end: calc((var(--sidebar-tools-height) * -1) + var(--block-space) * 1.5);
-  position: sticky;
-  z-index: 4;
-}
-
 .room:not(.sidebar-list-item) {
   background-color: var(--color-text-reversed);
   color: var(--color-text);

@@ -1,4 +1,4 @@
-# Private room streaming
+# Room streaming
 
 Bonfire embeds an RTMP Homebrew player for explicitly configured rooms.
 Bonfire does not ingest, proxy, record, or restream media. Room membership is
@@ -18,6 +18,7 @@ Configure these values as environment variables or under the
 | `RTMP_HOMEBREW_AUDIENCE` | `audience` | JWT audience; defaults to `rtmp-homebrew`. |
 | `RTMP_HOMEBREW_ALLOWED_PLAYER_ORIGINS` | `allowed_player_origins` | Comma-separated exact HTTPS player origins. Credentials accept an array. |
 | `RTMP_HOMEBREW_PREVIOUS_JWKS` | `previous_jwks` | Public JWKs retained during an operator-controlled key-rotation overlap. Never include private `d`; Bonfire strips it defensively. |
+| `RTMP_HOMEBREW_EVENT_SECRET` | `event_secret` | High-entropy shared secret used only to authenticate publisher lifecycle callbacks. |
 
 If any signing configuration is present, Bonfire validates the complete
 configuration during startup without logging key material. An unconfigured
@@ -27,6 +28,9 @@ grant.
 Development defaults the allowed player origin to
 `https://stream.localhost:8443`. Set
 `RTMP_HOMEBREW_ALLOWED_PLAYER_ORIGINS` before starting Bonfire to override it.
+When RTMP Homebrew is checked out next to Bonfire, `bin/dev` also loads its
+generated `.local/bonfire-streaming.env` automatically; explicit environment
+values remain authoritative.
 
 Generate and store the private key outside the repository. RTMP Homebrew reads
 public verification keys from:
@@ -46,6 +50,38 @@ Production playback requires RTMP Homebrew's embeddable, version-1
 `postMessage` player and JWT/JWKS authentication. Its player response must set
 `frame-ancestors` to the exact Bonfire origin. Development Basic credentials
 must remain in RTMP Homebrew and are never copied into Bonfire.
+
+## Publisher lifecycle events
+
+RTMP Homebrew is authoritative for whether a publisher is currently present.
+It posts `stream.started`, `stream.heartbeat`, and `stream.stopped` events to
+`POST /streaming/events`. A heartbeat must be sent every 15 seconds while the
+publisher is present. Bonfire expires the LIVE badge 45 seconds after the last
+heartbeat, so a missed stop event or service failure cannot leave it displayed
+indefinitely.
+
+Each JSON event has this shape:
+
+```json
+{
+  "version": 1,
+  "event_id": "unique-event-id",
+  "type": "stream.started",
+  "stream_path": "live",
+  "session_id": "stable-for-one-publisher-session",
+  "occurred_at": "2026-08-15T18:00:00.000Z"
+}
+```
+
+Set `X-Bonfire-Timestamp` to the current Unix timestamp and
+`X-Bonfire-Signature` to the lowercase hexadecimal HMAC-SHA256 of
+`<timestamp>.<raw JSON body>` using `RTMP_HOMEBREW_EVENT_SECRET`. Bonfire
+rejects timestamps and event occurrence times outside a two-minute window.
+Event IDs make retries idempotent, while session IDs ensure that a delayed stop
+from an old publisher cannot stop a newer publisher.
+
+The shared secret must be generated and stored outside both repositories. Do
+not reuse a playback, publishing, cookie, or JWT-signing secret.
 
 ## Local fixture protocol
 

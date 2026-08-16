@@ -52,13 +52,14 @@ export default class extends Controller {
     this.#disconnected = true
   }
 
-  #unread({ roomId, unreadCount }) {
+  #unread({ roomId, unreadCount, unreadMentionCount }) {
     const unreadRoom = this.#findRoomTarget(roomId)
 
     if (unreadRoom) {
       if (Current.room.id != roomId) {
         unreadRoom.classList.add(this.unreadClass)
-        this.#updateUnreadCount(unreadRoom, unreadCount ?? this.#unreadCount(unreadRoom) + 1)
+        const count = unreadRoom.classList.contains("direct") ? unreadCount : unreadMentionCount
+        this.#updateUnreadCount(unreadRoom, count ?? this.#unreadCount(unreadRoom) + 1)
       }
 
       const sortableItem = unreadRoom.closest("[data-sorted-list-target='item']")
@@ -71,16 +72,17 @@ export default class extends Controller {
   }
 
   #unreadCount(room) {
-    return Number.parseInt(room.querySelector(".direct__unread-count")?.textContent || "0", 10)
+    return Number.parseInt(room.querySelector(".sidebar-unread-count")?.textContent || "0", 10)
   }
 
   #updateUnreadCount(room, count) {
-    const badge = room.querySelector(".direct__unread-count")
+    const badge = room.querySelector(".sidebar-unread-count")
 
     if (badge) {
       badge.textContent = count
       badge.hidden = count === 0
-      badge.setAttribute("aria-label", `${count} unread ${count === 1 ? "message" : "messages"}`)
+      const noun = badge.classList.contains("channel__mention-count") ? "mention" : "message"
+      badge.setAttribute("aria-label", `${count} unread ${noun}${count === 1 ? "" : "s"}`)
     }
   }
 }

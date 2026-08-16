@@ -1,0 +1,8 @@
+<section class="stream-description" aria-labelledby="stream-description-title">
+  <h2 id="stream-description-title" class="stream-description__title txt-medium">About this stream</h2>
+  <% if room.stream_description.present? %>
+    <div class="stream-description__content trix-content"><%= room.stream_description %></div>
+  <% else %>
+    <p class="stream-description__empty txt-subtle">Stream details and schedule will appear here.</p>
+  <% end %>
+</section>

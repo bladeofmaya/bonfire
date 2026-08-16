@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_14_140000) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_16_123000) do
   create_table "accounts", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "custom_styles"
@@ -90,6 +90,7 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_14_140000) do
     t.integer "room_id", null: false
     t.datetime "unread_at"
     t.integer "unread_count", default: 0, null: false
+    t.integer "unread_mention_count", default: 0, null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
     t.index ["room_id", "created_at"], name: "index_memberships_on_room_id_and_created_at"
@@ -126,8 +127,12 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_14_140000) do
     t.string "name"
     t.integer "position"
     t.boolean "stream_enabled", default: false, null: false
+    t.datetime "stream_last_seen_at"
+    t.datetime "stream_live_at"
+    t.string "stream_notified_session_id"
     t.string "stream_path"
     t.string "stream_player_url"
+    t.string "stream_session_id"
     t.string "stream_title"
     t.string "type", null: false
     t.datetime "updated_at", null: false
@@ -152,6 +157,13 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_14_140000) do
     t.integer "user_id", null: false
     t.index ["token"], name: "index_sessions_on_token", unique: true
     t.index ["user_id"], name: "index_sessions_on_user_id"
+  end
+
+  create_table "streaming_events", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "event_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_id"], name: "index_streaming_events_on_event_id", unique: true
   end
 
   create_table "users", force: :cascade do |t|

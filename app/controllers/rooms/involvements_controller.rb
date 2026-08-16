@@ -22,7 +22,10 @@ class Rooms::InvolvementsController < ApplicationController
       when @membership.involvement_previously_was.inquiry.invisible?
         broadcast_prepend_to @membership.user, :rooms, target: :shared_rooms,
           partial: "users/sidebars/rooms/shared",
-          locals: { room: @room, administrator: @membership.user.administrator? }
+          locals: {
+            room: @room, unread: @membership.unread?, unread_mention_count: @membership.unread_mention_count,
+            administrator: @membership.user.administrator?
+          }
       end
     end
 end

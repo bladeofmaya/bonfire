@@ -15,7 +15,7 @@ class Membership < ApplicationRecord
   scope :unread,  -> { where.not(unread_at: nil) }
 
   def read
-    update!(unread_at: nil, unread_count: 0)
+    update!(unread_at: nil, unread_count: 0, unread_mention_count: 0)
   end
 
   def unread?

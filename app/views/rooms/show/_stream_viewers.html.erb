@@ -1,0 +1,32 @@
+<%= tag.div id: dom_id(room, :stream_viewers), class: "stream-viewers" do %>
+  <details class="stream-viewers__menu context-menu position-relative"
+      data-controller="popup"
+      data-action="keydown.esc->popup#close toggle->popup#toggle click@document->popup#closeOnClickOutside"
+      data-popup-orientation-top-class="popup-orientation-top">
+    <summary class="stream-viewers__trigger" aria-label="Show people watching this stream">
+      <span class="stream-viewers__indicator" aria-hidden="true"></span>
+      <strong><%= viewers.size %></strong>
+      <span><%= "viewer".pluralize(viewers.size) %></span>
+    </summary>
+
+    <div class="stream-viewers__popup border shadow" data-popup-target="menu">
+      <h2 class="stream-viewers__heading">Watching now — <%= viewers.size %></h2>
+      <% if viewers.any? %>
+        <ul class="stream-viewers__list">
+          <% viewers.each do |user| %>
+            <li>
+              <%= link_to user_path(user), class: "stream-viewers__person", data: { action: "popup#close" } do %>
+                <figure class="avatar stream-viewers__avatar">
+                  <%= image_tag fresh_user_avatar_path(user), size: 32, loading: :lazy, aria: { hidden: "true" } %>
+                </figure>
+                <span class="overflow-ellipsis"><%= user.name %></span>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="stream-viewers__empty txt-subtle">No one else is watching yet.</p>
+      <% end %>
+    </div>
+  </details>
+<% end %>

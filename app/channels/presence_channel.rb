@@ -6,10 +6,12 @@ class PresenceChannel < RoomChannel
     membership.present
 
     broadcast_read_room
+    @room.broadcast_stream_viewers if @room.stream_configured?
   end
 
   def absent
     membership.disconnected
+    @room.broadcast_stream_viewers if @room.stream_configured?
   end
 
   def refresh

@@ -80,6 +80,7 @@ Rails.application.routes.draw do
   end
 
   get "/.well-known/rtmp-homebrew-jwks.json", to: "streaming/jwks#show", as: :rtmp_homebrew_jwks
+  post "/streaming/events", to: "streaming/events#create", as: :streaming_events
 
   namespace :rooms do
     resources :opens

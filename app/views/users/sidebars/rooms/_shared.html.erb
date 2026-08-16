@@ -2,5 +2,6 @@
       room: room,
       position: room.position,
       unread: local_assigns.fetch(:unread, false),
+      unread_mention_count: local_assigns.fetch(:unread_mention_count, 0),
       reorderable: local_assigns.fetch(:administrator, Current.user&.administrator?)
     ) %>

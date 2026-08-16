@@ -14,7 +14,10 @@ module Membership::Connectable
     end
 
     def connect(membership, connections)
-      where(id: membership.id).update_all(connections: connections, connected_at: Time.current, unread_at: nil, unread_count: 0)
+      where(id: membership.id).update_all(
+        connections: connections, connected_at: Time.current,
+        unread_at: nil, unread_count: 0, unread_mention_count: 0
+      )
     end
   end
 

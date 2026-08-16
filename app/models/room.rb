@@ -1,4 +1,6 @@
 class Room < ApplicationRecord
+  include Streaming
+
   has_many :memberships, dependent: :delete_all do
     def grant_to(users)
       room = proxy_association.owner
@@ -20,6 +22,7 @@ class Room < ApplicationRecord
   has_many :users, through: :memberships
   has_many :messages, dependent: :destroy
   has_one_attached :stream_poster
+  has_rich_text :stream_description
 
   belongs_to :creator, class_name: "User", default: -> { Current.user }
 
@@ -72,7 +75,7 @@ class Room < ApplicationRecord
   def stream_configured?
     stream_enabled? && stream_player_uri.present? && stream_path.to_s.match?(STREAM_PATH_FORMAT) &&
       !stream_path.include?("..") && !stream_path.start_with?("/") &&
-      Streaming::Configuration.allowed_player_origin?(stream_player_origin)
+      ::Streaming::Configuration.allowed_player_origin?(stream_player_origin)
   end
 
   def stream_player_origin
@@ -105,7 +108,7 @@ class Room < ApplicationRecord
         errors.add :stream_player_url, "must use HTTPS"
       elsif uri.userinfo.present? || uri.query.present? || uri.fragment.present?
         errors.add :stream_player_url, "must not contain credentials, a query, or a fragment"
-      elsif !Streaming::Configuration.allowed_player_origin?(stream_player_origin)
+      elsif !::Streaming::Configuration.allowed_player_origin?(stream_player_origin)
         errors.add :stream_player_url, "origin is not allowed"
       end
     end
@@ -137,6 +140,11 @@ class Room < ApplicationRecord
       recipients.visible.disconnected.update_all(
         unread_at: message.created_at,
         unread_count: Arel.sql("unread_count + 1"),
+        updated_at: Time.current
+      )
+
+      recipients.visible.disconnected.where(user_id: message.mentionees.select(:id)).update_all(
+        unread_mention_count: Arel.sql("unread_mention_count + 1"),
         updated_at: Time.current
       )
 

@@ -86,25 +86,6 @@
           </div>
         <% end %>
 
-        <div class="profile-settings__fields margin-block-start pad-block pad-inline-double fill-shade border-radius">
-          <%= form_with model: @account, method: :put, data: { controller: "form" }, class: "flex align-center gap center" do |form| %>
-            <div class="flex-item-grow flex align-center gap txt-align-start">
-              <%= image_tag "crown.svg", class: "colorize--black", aria: { hidden: "true" }, size: 18 %>
-              Must be admin to create new rooms
-            </div>
-            <%= form.fields_for :settings, @account.settings do |settings_form| %>
-              <%= settings_form.hidden_field :restrict_room_creation_to_administrators,
-                    value: !Current.account.settings.restrict_room_creation_to_administrators? %>
-            <% end %>
-            <label class="switch">
-              <input type="checkbox" class="switch__input"
-                    <%= "checked" if Current.account.settings.restrict_room_creation_to_administrators? %>
-                    data-action="change->form#submit">
-              <span class="switch__btn round"></span>
-              <span class="for-screen-reader">Must be admin to create new rooms</span>
-            </label>
-          <% end %>
-        </div>
       <% else %>
         <div class="txt-align-center">
           <%= account_logo_tag style: "txt-xx-large center" %>

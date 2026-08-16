@@ -44,9 +44,7 @@ class RoomsController < ApplicationController
     end
 
     def ensure_permission_to_create_rooms
-      if Current.account.settings.restrict_room_creation_to_administrators? && !Current.user.administrator?
-        head :forbidden
-      end
+      head :forbidden unless Current.user.administrator?
     end
 
     def find_messages
@@ -71,9 +69,13 @@ class RoomsController < ApplicationController
       return unless room = Room.without_directs.order(:position, :id).last
 
       room.users.active.find_each do |user|
+        membership = room.memberships.find_by!(user: user)
         html = render_to_string(
           partial: "users/sidebars/rooms/shared",
-          locals: { room: room, administrator: user.administrator? }
+          locals: {
+            room: room, unread: membership.unread?, unread_mention_count: membership.unread_mention_count,
+            administrator: user.administrator?
+          }
         )
         broadcast_replace_to user, :rooms, target: [ room, :list ], html: html
       end
