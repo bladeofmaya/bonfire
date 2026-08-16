@@ -222,7 +222,12 @@ body.sidebar.stream-room { --sidebar-width: 0vw; }
   color: var(--color-text-muted);
   font-size: var(--font-size-small);
 
-  &.channel-live-badge { color: white; font-size: 0.65rem; }
+  &.channel-live-badge {
+    padding: 0.28em 0.6em;
+    border-radius: var(--radius-pill);
+    color: white;
+    font-size: 0.8rem;
+  }
   &.channel-live-badge--offline { color: var(--color-text-disabled); }
 }
 
@@ -269,8 +274,8 @@ body.sidebar.stream-room { --sidebar-width: 0vw; }
   z-index: 4;
   display: flex;
   align-items: center;
-  gap: var(--space-inline-half);
-  padding: var(--space-block-half) var(--space-inline);
+  gap: 0.35rem;
+  padding: 0.65rem var(--space-inline);
   background: linear-gradient(transparent, rgb(0 0 0 / 0.85));
   opacity: 0;
   transition: opacity 150ms ease;
@@ -282,8 +287,8 @@ body.sidebar.stream-room { --sidebar-width: 0vw; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--control-size);
-  block-size: var(--control-size);
+  inline-size: 3rem;
+  block-size: 3rem;
   padding: 0;
   border-radius: var(--radius-small);
   cursor: pointer;
@@ -291,15 +296,16 @@ body.sidebar.stream-room { --sidebar-width: 0vw; }
   &:hover,
   &:focus-visible { background: rgb(255 255 255 / 0.18); }
 
-  > [slot] { display: none; }
+  shadow-root,
+  [slot] { display: none; }
 
   svg {
-    inline-size: 1.25rem;
-    block-size: 1.25rem;
+    inline-size: 1.55rem;
+    block-size: 1.55rem;
   }
 }
 
-media-play-button[data-paused] [slot="play"],
+media-play-button[data-paused]:not([data-ended]) [slot="play"],
 media-play-button:not([data-paused]) [slot="pause"],
 media-play-button[data-ended] [slot="replay"],
 media-mute-button[data-volume="muted"] [slot="unmute"],
@@ -314,18 +320,12 @@ media-fullscreen-button[data-fullscreen] [slot="exit"] { display: inline; }
 .room-stream__volume-control {
   display: flex;
   align-items: center;
-  gap: var(--space-inline-half);
-  padding-inline: var(--space-inline-half);
-
-  > svg {
-    inline-size: 1rem;
-    block-size: 1rem;
-    color: var(--color-primary);
-  }
+  min-block-size: 3rem;
+  padding-inline: 0 0.4rem;
 }
 
 .room-stream__volume {
-  inline-size: 7rem;
+  inline-size: 8rem;
   accent-color: var(--color-primary);
   cursor: pointer;
 }
