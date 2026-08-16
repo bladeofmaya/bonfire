@@ -19,22 +19,30 @@
           data-room-stream-target="player"
           data-action="provider-change->room-stream#configureProvider playing->room-stream#playing waiting->room-stream#waiting error->room-stream#error hls-error->room-stream#hlsError volume-change->room-stream#volumeChanged">
         <media-outlet></media-outlet>
-        <div class="room-stream__controls" aria-label="Stream controls">
+        <div class="room-stream__controls" aria-label="Stream controls" data-controller="lucide">
           <media-play-button class="room-stream__control" aria-label="Play or pause stream">
-            <span slot="play">Play</span><span slot="pause">Pause</span><span slot="replay">Replay</span>
+            <i data-lucide="play" slot="play" aria-hidden="true"></i>
+            <i data-lucide="pause" slot="pause" aria-hidden="true"></i>
+            <i data-lucide="rotate-ccw" slot="replay" aria-hidden="true"></i>
           </media-play-button>
-          <media-live-indicator class="room-stream__live-indicator">LIVE</media-live-indicator>
           <span class="room-stream__controls-spacer"></span>
           <media-mute-button class="room-stream__control" aria-label="Mute or unmute stream">
-            <span slot="mute">Mute</span><span slot="unmute">Unmute</span>
+            <i data-lucide="volume-2" slot="mute" aria-hidden="true"></i>
+            <i data-lucide="volume-x" slot="unmute" aria-hidden="true"></i>
           </media-mute-button>
-          <input class="room-stream__volume" type="range" min="0" max="1" step="0.05" value="1"
-              aria-label="Stream volume" data-action="input->room-stream#setVolume">
+          <label class="room-stream__volume-control">
+            <i data-lucide="volume-2" aria-hidden="true"></i>
+            <span class="for-screen-reader">Stream volume</span>
+            <input class="room-stream__volume" type="range" min="0" max="1" step="0.05" value="1"
+                aria-label="Stream volume" data-action="input->room-stream#setVolume">
+          </label>
           <media-pip-button class="room-stream__control" aria-label="Toggle picture in picture">
-            <span slot="enter">PiP</span><span slot="exit">Exit PiP</span>
+            <i data-lucide="picture-in-picture-2" slot="enter" aria-hidden="true"></i>
+            <i data-lucide="picture-in-picture-2" slot="exit" aria-hidden="true"></i>
           </media-pip-button>
           <media-fullscreen-button class="room-stream__control" aria-label="Toggle fullscreen">
-            <span slot="enter">Full screen</span><span slot="exit">Exit full screen</span>
+            <i data-lucide="maximize" slot="enter" aria-hidden="true"></i>
+            <i data-lucide="minimize" slot="exit" aria-hidden="true"></i>
           </media-fullscreen-button>
         </div>
       </media-player>

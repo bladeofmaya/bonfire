@@ -221,6 +221,9 @@ body.sidebar.stream-room { --sidebar-width: 0vw; }
   margin: 0;
   color: var(--color-text-muted);
   font-size: var(--font-size-small);
+
+  &.channel-live-badge { color: white; font-size: 0.65rem; }
+  &.channel-live-badge--offline { color: var(--color-text-disabled); }
 }
 
 .room-stream__viewport {
@@ -279,15 +282,21 @@ body.sidebar.stream-room { --sidebar-width: 0vw; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-block-size: var(--control-size);
-  padding: 0 var(--space-inline-half);
+  inline-size: var(--control-size);
+  block-size: var(--control-size);
+  padding: 0;
   border-radius: var(--radius-small);
   cursor: pointer;
 
   &:hover,
   &:focus-visible { background: rgb(255 255 255 / 0.18); }
 
-  > span { display: none; }
+  > [slot] { display: none; }
+
+  svg {
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+  }
 }
 
 media-play-button[data-paused] [slot="play"],
@@ -301,11 +310,24 @@ media-fullscreen-button:not([data-fullscreen]) [slot="enter"],
 media-fullscreen-button[data-fullscreen] [slot="exit"] { display: inline; }
 
 .room-stream__controls-spacer { flex: 1; }
-.room-stream__live-indicator { font-size: var(--font-size-small); font-weight: 800; }
+
+.room-stream__volume-control {
+  display: flex;
+  align-items: center;
+  gap: var(--space-inline-half);
+  padding-inline: var(--space-inline-half);
+
+  > svg {
+    inline-size: 1rem;
+    block-size: 1rem;
+    color: var(--color-primary);
+  }
+}
 
 .room-stream__volume {
-  inline-size: 6rem;
+  inline-size: 7rem;
   accent-color: var(--color-primary);
+  cursor: pointer;
 }
 
 .room-stream__sound {

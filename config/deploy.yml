@@ -19,7 +19,7 @@ env:
   clear:
     RAILS_ENV: production
     DISABLE_SSL: true
-    RTMP_HOMEBREW_DIRECT_PLAYER: <%= ENV.fetch("RTMP_HOMEBREW_DIRECT_PLAYER", "false") %>
+    RTMP_HOMEBREW_DIRECT_PLAYER: <%= ENV.fetch("RTMP_HOMEBREW_DIRECT_PLAYER", "true") %>
   secret:
     - SECRET_KEY_BASE
     - VAPID_PUBLIC_KEY

@@ -186,7 +186,7 @@ export default class extends Controller {
 
   hlsError(event) {
     if (!event.detail?.fatal) return
-    this.setState("reconnecting")
+    this.setState(event.detail?.response?.code === 404 ? "offline" : "reconnecting")
     this.scheduleReconnect()
   }
 
@@ -228,7 +228,10 @@ export default class extends Controller {
 
   setState(state) {
     this.viewportTarget.dataset.state = state
-    this.statusTarget.textContent = STATES[state]
+    const badgeState = [ "live", "offline" ].includes(state)
+    this.statusTarget.classList.toggle("channel-live-badge", badgeState)
+    this.statusTarget.classList.toggle("channel-live-badge--offline", state === "offline")
+    this.statusTarget.textContent = state === "live" ? "LIVE" : state === "offline" ? "OFFLINE" : STATES[state]
     if (this.hasPosterTarget) this.posterTarget.hidden = state === "live"
   }
 

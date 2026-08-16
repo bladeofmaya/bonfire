@@ -36,6 +36,9 @@ class Rooms::StreamPlayerComponentTest < ComponentTestCase
       assert_selector "media-mute-button[aria-label='Mute or unmute stream']"
       assert_selector "media-pip-button[aria-label='Toggle picture in picture']"
       assert_selector "media-fullscreen-button[aria-label='Toggle fullscreen']"
+      assert_selector "[data-controller='lucide'] [data-lucide='pause'][slot='pause']"
+      assert_selector ".room-stream__volume-control [data-lucide='volume-2'] + .for-screen-reader", text: "Stream volume"
+      assert_no_selector "media-live-indicator"
     end
     assert_selector "button[data-action='room-stream#watchWithSound']", text: "Watch with sound"
     assert_no_selector "iframe"
