@@ -96,15 +96,11 @@
   padding: calc(var(--space-block) * 0.6) var(--sidebar-inline-space) 0;
 }
 
-.channel-list__section:last-of-type {
-  padding-block-end: calc(var(--sidebar-tools-height) + var(--space-block));
-}
-
 .channel-list__directs {
   --row-gap: 0.5em;
 
   margin: calc(var(--space-block) * 0.6) var(--sidebar-inline-space) 0;
-  padding: calc(var(--space-block) * 0.6) 0 calc(var(--sidebar-tools-height) + var(--space-block));
+  padding: calc(var(--space-block) * 0.6) 0 var(--space-block);
   border-block-start: 1px solid var(--color-border-subtle);
 }
 
@@ -217,7 +213,7 @@
   gap: 0.5rem;
   padding-block: 0.35rem;
   border-block-start: 1px solid var(--color-border-subtle);
-  background: color-mix(in srgb, var(--color-surface-secondary) 92%, transparent);
+  background: var(--color-surface-secondary);
 }
 
 .user-dock__profile {
