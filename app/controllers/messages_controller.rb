@@ -3,6 +3,7 @@ class MessagesController < ApplicationController
 
   before_action :set_room, except: :create
   before_action :set_message, only: %i[ show edit update destroy ]
+  before_action :ensure_room_allows_editing, only: %i[ edit update ]
   before_action :ensure_can_administer, only: %i[ edit update destroy ]
 
   layout false, only: :index
@@ -51,7 +52,17 @@ class MessagesController < ApplicationController
     end
 
     def ensure_can_administer
-      head :forbidden unless Current.user.can_administer?(@message)
+      allowed = if action_name == "destroy" && @room.stream_configured?
+        Current.user.administrator?
+      else
+        Current.user.can_administer?(@message)
+      end
+
+      head :forbidden unless allowed
+    end
+
+    def ensure_room_allows_editing
+      head :forbidden if @room.stream_configured?
     end
 
 

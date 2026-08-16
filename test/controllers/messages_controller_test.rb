@@ -129,6 +129,39 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Updated body", message.reload.plain_text_body
   end
 
+  test "stream chat messages cannot be edited or updated" do
+    configure_streaming
+    @room.update!(stream_enabled: true, stream_player_url: "https://stream.example.test/player", stream_path: "live")
+    message = @room.messages.where(creator: users(:david)).first
+    original_body = message.plain_text_body
+
+    get edit_room_message_url(@room, message)
+    assert_response :forbidden
+
+    put room_message_url(@room, message), params: { message: { body: "Updated body" } }
+    assert_response :forbidden
+    assert_equal original_body, message.reload.plain_text_body
+  end
+
+  test "only administrators can delete stream chat messages" do
+    configure_streaming
+    @room = rooms(:designers)
+    @room.update!(stream_enabled: true, stream_player_url: "https://stream.example.test/player", stream_path: "live")
+    message = @room.messages.where(creator: users(:jason)).first
+
+    sign_in :jz
+    delete room_message_url(@room, message, format: :turbo_stream)
+    assert_response :forbidden
+    assert Message.exists?(message.id)
+
+    sign_in :david
+    assert users(:david).administrator?
+    assert_difference -> { Message.count }, -1 do
+      delete room_message_url(@room, message, format: :turbo_stream)
+      assert_response :success
+    end
+  end
+
   test "destroy destroys a message belonging to the user" do
     message = @room.messages.where(creator: users(:david)).first
 

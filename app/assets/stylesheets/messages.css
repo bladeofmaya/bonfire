@@ -350,6 +350,12 @@ img.message__attachment {
   }
 }
 
+.message__stream-delete-btn {
+  display: none;
+
+  .admin & { display: inline-flex; }
+}
+
 .message__options-btn {
   @media (hover: hover) and (pointer: fine) {
     opacity: 0;

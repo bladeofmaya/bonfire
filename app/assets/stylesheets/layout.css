@@ -20,7 +20,7 @@ body {
     @media (min-width: 100ch) {
       /* Keep the channel rail proportional on larger desktops without letting
          it dominate ultrawide layouts. */
-      --channel-list-width: clamp(14rem, 18vw, 22rem);
+      --channel-list-width: clamp(13rem, 16vw, 20rem);
       --sidebar-width: clamp(13rem, 17vw, 17rem);
     }
   }

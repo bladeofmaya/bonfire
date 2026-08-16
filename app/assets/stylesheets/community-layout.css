@@ -2,6 +2,8 @@
   border-inline-end: 1px solid var(--color-border-subtle);
 
   .directs {
+    --row-gap: 0.5em;
+
     display: flex;
     flex-direction: column;
     position: static;
@@ -21,6 +23,7 @@
   --hover-size: 0;
 
   min-inline-size: 0;
+  font-size: 0.9rem;
   margin: 0;
   border: 1px solid transparent;
   border-radius: var(--radius-medium);
@@ -52,8 +55,8 @@
   display: flex;
   inline-size: 100%;
   justify-content: flex-start;
-  gap: 0.5em;
-  padding: 0.45rem 0.6rem;
+  gap: 0.4em;
+  padding: 0.25rem 0.5rem;
 }
 
 .channel-live-badge {
@@ -88,7 +91,7 @@
 }
 
 .channel-list__section {
-  padding: var(--space-block) var(--sidebar-inline-space) 0;
+  padding: calc(var(--space-block) * 0.6) var(--sidebar-inline-space) 0;
 }
 
 .channel-list__section:last-of-type {
@@ -96,8 +99,10 @@
 }
 
 .channel-list__directs {
-  margin: var(--space-block) var(--sidebar-inline-space) 0;
-  padding: var(--space-block) 0 calc(var(--sidebar-tools-height) + var(--space-block));
+  --row-gap: 0.5em;
+
+  margin: calc(var(--space-block) * 0.6) var(--sidebar-inline-space) 0;
+  padding: calc(var(--space-block) * 0.6) 0 calc(var(--sidebar-tools-height) + var(--space-block));
   border-block-start: 1px solid var(--color-border-subtle);
 }
 
@@ -114,7 +119,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  margin-block-end: 0.35rem;
+  margin-block-end: 0.2rem;
 
   .channel-list__section-title { margin-block-end: 0; }
 }
@@ -132,16 +137,21 @@
 .channel-list__header {
   display: flex;
   align-items: center;
-  gap: 0.7rem;
-  min-block-size: 4rem;
-  padding: 0.75rem var(--sidebar-inline-space);
+  gap: 0.4rem;
+  min-block-size: 3.5rem;
+  padding: 0.55rem var(--sidebar-inline-space);
   border-block-end: 1px solid var(--color-border-subtle);
 }
 
 .channel-list__server-menu {
   flex: 1;
+  min-inline-size: 0;
 
-  .context-menu__trigger { margin: -0.4rem; }
+  .context-menu__trigger {
+    gap: 0.35rem;
+    margin: -0.25rem;
+    padding: 0.25rem;
+  }
   .context-menu__menu { inline-size: 100%; }
 }
 
@@ -154,8 +164,8 @@
 }
 
 .channel-list__logo {
-  inline-size: 2.25rem;
-  block-size: 2.25rem;
+  inline-size: 1.9rem;
+  block-size: 1.9rem;
   flex: 0 0 auto;
   border-radius: var(--radius-medium);
   object-fit: cover;
@@ -165,11 +175,11 @@
   flex: 1;
   min-inline-size: 0;
   color: var(--color-text-primary);
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
 .channel-list__invite {
-  --btn-size: 2.25rem;
+  --btn-size: 2rem;
 
   flex: 0 0 auto;
 

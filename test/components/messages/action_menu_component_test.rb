@@ -42,6 +42,18 @@ class Messages::ActionMenuComponentTest < ComponentTestCase
     assert_selector ".message__actions img:not([aria-hidden='true'])", count: 0, visible: false
   end
 
+  test "omits editing for stream chat messages" do
+    @message.room.stubs(:stream_configured?).returns(true)
+
+    render_inline component
+
+    assert_no_selector "a.message__edit-btn", visible: false
+    delete_path = Rails.application.routes.url_helpers.room_message_path(@message.room, @message)
+    assert_selector "form[action='#{delete_path}'][data-turbo-confirm]", visible: false do
+      assert_selector "button.message__stream-delete-btn[aria-label='Delete message']", visible: false
+    end
+  end
+
   private
     def component
       Messages::ActionMenuComponent.new(message: @message, permalink_url: @permalink_url)

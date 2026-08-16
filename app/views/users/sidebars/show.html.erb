@@ -58,7 +58,7 @@
       <%= render "users/sidebars/rooms/shared_list", memberships: @other_memberships %>
     </section>
 
-    <section class="channel-list__section channel-list__directs" aria-labelledby="direct-messages-heading">
+    <section class="channel-list__section channel-list__directs flex flex-column gap" aria-labelledby="direct-messages-heading">
       <div class="channel-list__section-header">
         <h2 id="direct-messages-heading" class="channel-list__section-title">Direct Messages</h2>
         <%= link_to new_rooms_direct_path,

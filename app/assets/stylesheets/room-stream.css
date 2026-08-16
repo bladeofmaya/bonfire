@@ -13,7 +13,7 @@ body.sidebar.stream-room { --sidebar-width: 0vw; }
 
   #main-content {
     display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(18rem, 0.8fr);
+    grid-template-columns: minmax(0, 1.9fr) minmax(20rem, 0.9fr);
     grid-template-rows: minmax(0, 1fr) auto min-content;
     overflow: hidden;
   }
@@ -49,6 +49,7 @@ body.sidebar.stream-room { --sidebar-width: 0vw; }
     grid-column: 2;
     grid-row: 1 / 3;
     min-block-size: 0;
+    overflow-x: hidden;
     padding: var(--space-block) var(--space-inline-half);
     border-inline-start: 1px solid var(--color-border-subtle);
     row-gap: 0.35rem;
@@ -92,14 +93,37 @@ body.sidebar.stream-room { --sidebar-width: 0vw; }
   }
 
   .message__avatar { --avatar-size: 1.6rem; }
-  .message__body { max-inline-size: 100%; }
+  .message__body {
+    min-inline-size: 0;
+    max-inline-size: 100%;
+    overflow-wrap: anywhere;
+  }
   .message__body-content {
     inline-size: auto;
+    min-inline-size: 0;
     font-size: 0.9rem;
   }
+  .boosts,
+  .boosts > * { min-inline-size: 0; }
   .message__permalink { display: none; }
   .message + .message--threaded { margin-block-start: 0; }
   .message__day-separator { margin-block: var(--space-block-half); }
+
+  /* The chat column is a scroll container. Keep menus inside its inline edge
+     instead of centering half of them beneath the adjacent stream player. */
+  .message__actions-menu {
+    inset-inline-start: 0;
+    z-index: 4;
+    transform: none;
+    transform-origin: top left;
+
+    &::before,
+    &::after {
+      inset-inline-start: calc(var(--btn-size) / 2);
+    }
+
+    .popup-orientation-top & { transform-origin: bottom left; }
+  }
 }
 
 .stream-description {

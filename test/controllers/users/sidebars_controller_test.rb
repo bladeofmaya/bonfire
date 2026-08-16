@@ -26,7 +26,7 @@ class Users::SidebarsControllerTest < ActionDispatch::IntegrationTest
         assert_select "a.channel-list__new-channel[href='#{new_rooms_open_path}'][aria-label='Create a channel']"
       end
     end
-    assert_select "section.channel-list__directs[aria-labelledby='direct-messages-heading']" do
+    assert_select "section.channel-list__directs.flex.flex-column.gap[aria-labelledby='direct-messages-heading']" do
       assert_select "h2", text: "Direct Messages"
       assert_select "a.channel-list__new-direct[href='#{new_rooms_direct_path}']" \
                     "[data-turbo-frame='direct_conversation_dialog'][aria-label='Start a ping']"

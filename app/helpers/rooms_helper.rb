@@ -64,22 +64,23 @@ module RoomsHelper
   private
     def composer_data_options(room)
       {
-        controller: "composer drop-target",
-        action: composer_data_actions,
+        controller: [ "composer", ("drop-target" unless room.stream_configured?) ].compact.join(" "),
+        action: composer_data_actions(allow_files: !room.stream_configured?),
         composer_messages_outlet: "#message-area",
         composer_toolbar_class: "composer--rich-text", composer_room_id_value: room.id
       }
     end
 
-    def composer_data_actions
-      drag_and_drop_actions = "drop-target:drop@window->composer#dropFiles"
+    def composer_data_actions(allow_files: true)
+      drag_and_drop_actions = "drop-target:drop@window->composer#dropFiles" if allow_files
 
       trix_attachment_actions =
         "trix-file-accept->composer#preventAttachment refresh-room:online@window->composer#online"
 
       remaining_actions =
-        "typing-notifications#stop paste->composer#pasteFiles turbo:submit-end->composer#submitEnd refresh-room:offline@window->composer#offline"
+        [ "typing-notifications#stop", ("paste->composer#pasteFiles" if allow_files),
+          "turbo:submit-end->composer#submitEnd", "refresh-room:offline@window->composer#offline" ].compact.join(" ")
 
-      [ drop_target_actions, drag_and_drop_actions, trix_attachment_actions, remaining_actions ].join(" ")
+      [ drop_target_actions, drag_and_drop_actions, trix_attachment_actions, remaining_actions ].compact.join(" ")
     end
 end

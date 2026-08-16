@@ -64,6 +64,24 @@ class RoomsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".stream-viewers__popup a[href='#{user_path(users(:jz))}']", text: users(:jz).name
   end
 
+  test "configured stream chat omits attachment and rich text controls" do
+    configure_streaming
+    room = rooms(:pets)
+    room.update!(stream_enabled: true, stream_player_url: "https://stream.example.test/player", stream_path: "live")
+
+    get room_url(room)
+
+    assert_response :success
+    assert_select "form#composer[data-controller='composer']" do
+      assert_select "input[type='file']", count: 0
+      assert_select "[data-action='composer#toggleToolbar']", count: 0
+    end
+    assert_select "footer .composer a.composer__context-btn", count: 0
+    composer = css_select("form#composer").sole
+    refute_includes composer["data-action"], "composer#dropFiles"
+    refute_includes composer["data-action"], "composer#pasteFiles"
+  end
+
   test "disabled streams do not render a player" do
     configure_streaming
     get room_url(rooms(:watercooler))

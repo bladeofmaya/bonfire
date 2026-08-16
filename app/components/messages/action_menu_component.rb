@@ -9,4 +9,12 @@ class Messages::ActionMenuComponent < ApplicationComponent
   def attachment?
     message.content_type.attachment?
   end
+
+  def editable?
+    !stream_chat?
+  end
+
+  def stream_chat?
+    message.room.stream_configured?
+  end
 end
