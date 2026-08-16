@@ -45,6 +45,7 @@ app/assets/builds/*
 
 # Ignore local product and deployment configuration.
 /TODO.md
+/LLM/
 /.kamal/deploy.env
 /.kamal/secrets
 /.kamal/migration.json
@@ -52,5 +53,3 @@ app/assets/builds/*
 
 # Ignore key files for decrypting credentials and more.
 /config/*.key
-
-TODO.md
