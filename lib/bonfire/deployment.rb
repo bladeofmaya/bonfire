@@ -138,6 +138,7 @@ module Bonfire
         when "status" then status(arguments)
         when "setup" then setup(arguments)
         when "deploy" then deploy(arguments)
+        when "console" then console(arguments)
         when "kamal" then kamal(arguments)
         when "migrate" then migrate(arguments)
         else
@@ -162,6 +163,7 @@ module Bonfire
               status   Report local configuration and remote deployment status
               setup    Configure and optionally bootstrap a new deployment
               deploy   Deploy the current Git commit with Kamal
+              console  Open a Rails console on the production server
               kamal    Run a Kamal command with Bonfire's private environment
               migrate  Move an existing deployment to a new server
               help     Show this help
@@ -312,6 +314,26 @@ module Bonfire
           # Kamal owns .kamal/secrets, including its supported secret-provider
           # syntax. Do not source, parse, or copy those values into this process.
           @runner.run("kamal", *arguments, env: config) ? 0 : 1
+        end
+
+        def console(arguments)
+          parser = OptionParser.new do |option_parser|
+            option_parser.banner = "Usage: bin/bonfire console"
+            option_parser.on("-h", "--help", "Show this help") do
+              @output.puts option_parser
+              return 0
+            end
+          end
+          parser.parse!(arguments)
+          raise Error, "The console command does not accept arguments" if arguments.any?
+          raise Error, "No deployment configuration. Run `bin/bonfire setup` first." unless @config_file.exist?
+          ensure_secrets_file!
+          raise Error, "Install required local tools: kamal" unless @runner.available?("kamal")
+
+          config = configured_values
+          validate_configuration!(config)
+
+          @runner.run("kamal", "console", env: config) ? 0 : 1
         end
 
         def validate_safe_kamal_arguments!(arguments)

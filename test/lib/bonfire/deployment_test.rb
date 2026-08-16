@@ -4,6 +4,20 @@ require "tmpdir"
 require "bonfire/deployment"
 
 class Bonfire::DeploymentTest < ActiveSupport::TestCase
+  test "Kamal injects the RTMP Homebrew environment into production" do
+    deployment = File.read(Rails.root.join("config/deploy.yml"))
+
+    %w[
+      RTMP_HOMEBREW_PRIVATE_KEY
+      RTMP_HOMEBREW_KEY_ID
+      RTMP_HOMEBREW_ISSUER
+      RTMP_HOMEBREW_AUDIENCE
+      RTMP_HOMEBREW_ALLOWED_PLAYER_ORIGINS
+    ].each do |key|
+      assert_includes deployment, "    - #{key}\n"
+    end
+  end
+
   class FakeRunner
     attr_reader :runs
     attr_accessor :git_dirty, :fail_commands
@@ -173,6 +187,27 @@ class Bonfire::DeploymentTest < ActiveSupport::TestCase
     assert_equal 1, cli.run(%w[kamal accessory exec database printenv])
 
     assert_includes @error.string, "disabled by the LLM-safe wrapper"
+    assert_empty @runner.runs
+  end
+
+  test "console opens the fixed production Rails console through Kamal" do
+    configure
+    configure_secrets
+
+    assert_equal 0, cli.run(%w[console])
+
+    command, environment = @runner.runs.sole
+    assert_equal %w[kamal console], command
+    assert_equal "chat.example.com", environment.fetch("DEPLOY_HOST")
+    refute_includes environment, "SECRET_KEY_BASE"
+  end
+
+  test "console rejects additional commands" do
+    configure
+    configure_secrets
+
+    assert_equal 1, cli.run(%w[console User.delete_all])
+    assert_includes @error.string, "does not accept arguments"
     assert_empty @runner.runs
   end
 

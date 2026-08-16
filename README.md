@@ -80,6 +80,7 @@ version:
 ```sh
 bin/bonfire status
 bin/bonfire deploy
+bin/bonfire console
 bin/bonfire kamal details
 ```
 
