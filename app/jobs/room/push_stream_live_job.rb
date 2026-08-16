@@ -9,8 +9,9 @@ class Room::PushStreamLiveJob < ApplicationJob
     }
 
     subscriptions = Push::Subscription.joins(user: :memberships)
-      .merge(Membership.visible.disconnected.involved_in_everything.where(room: room))
+      .merge(Membership.visible.where(room: room))
       .merge(User.active.without_bots)
+      .distinct
 
     Rails.configuration.x.web_push_pool.queue(payload, subscriptions)
   end
