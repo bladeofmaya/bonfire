@@ -41,6 +41,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unauthorized
     assert_nil parsed_cookies.signed[:session_token]
+    assert_select ".flash.flash--alert[role='alert'] .flash__message", text: "Too many requests or unauthorized."
   end
 
   test "destroy" do

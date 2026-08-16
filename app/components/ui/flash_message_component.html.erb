@@ -1,0 +1,22 @@
+<%= tag.div class: css_classes,
+      role: role,
+      aria: { live: aria_live, atomic: "true" },
+      data: {
+        controller: "element-removal",
+        action: "turbo:before-cache@document->element-removal#remove"
+      } do %>
+  <div class="flash__inner shadow">
+    <span class="flash__icon" aria-hidden="true">
+      <%= helpers.image_tag icon, alt: "" %>
+    </span>
+
+    <p class="flash__message"><%= message %></p>
+
+    <%= render Ui::IconButtonComponent.new(
+          label: "Dismiss notification",
+          icon: "remove.svg",
+          variant: :plain,
+          data: { action: "element-removal#remove" }
+        ) %>
+  </div>
+<% end %>

@@ -21,6 +21,6 @@ class Users::ProfilesController < ApplicationController
     end
 
     def update_notice
-      params[:user][:avatar] ? "It may take up to 30 minutes to change everywhere." : "✓"
+      params[:user][:avatar] ? "It may take up to 30 minutes to change everywhere." : "Profile updated"
     end
 end

@@ -14,7 +14,7 @@ class AccountsController < ApplicationController
       @account.update!(account_params)
       @account.publish_readme!(readme) unless readme.nil?
     end
-    redirect_to edit_account_url, notice: "✓"
+    redirect_to edit_account_url, notice: "Account settings saved"
   end
 
   private

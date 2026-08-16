@@ -582,8 +582,9 @@ empty states. It must not replace:
 
 - `messages/unrenderable`, whose message-shaped DOM protects list formatting;
 - `messages/room_not_found`, whose `composer-frame` target is a protocol; or
-- flash markup in the application layout, whose live announcement behavior is
-  global.
+- `Ui::FlashMessageComponent`, the dedicated global feedback leaf whose
+  insertion point and notice/alert selection remain owned by the application
+  layout.
 
 Those wrappers may render a shared state body internally after tests preserve
 their outer contracts.

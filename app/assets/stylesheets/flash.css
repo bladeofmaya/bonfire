@@ -1,23 +1,60 @@
 .flash {
-  display: flex;
-  inset-block-start: var(--block-space);
+  --flash-accent: var(--color-success);
+
+  inline-size: min(34rem, calc(100vi - 2 * var(--inline-space)));
+  inset-block-start: max(var(--block-space), env(safe-area-inset-top));
   inset-inline-start: 50%;
-  justify-content: center;
+  pointer-events: none;
   position: fixed;
-  transform: translate(-50%);
-  z-index: 6;
+  transform: translateX(-50%);
+  z-index: 20;
+}
+
+.flash--alert {
+  --flash-accent: var(--color-danger);
+
+  .flash__icon img {
+    filter: invert(100%);
+  }
 }
 
 .flash__inner {
-  animation: appear-then-fade 3s 300ms both;
-  aspect-ratio: 1;
-  background-color: var(--flash-background, var(--color-positive));
-  border-radius: 50%;
+  align-items: center;
+  background: var(--color-surface-overlay);
+  border: 1px solid var(--color-border);
+  border-inline-start: 0.3rem solid var(--flash-accent);
+  border-radius: var(--radius-large);
+  color: var(--color-text-primary);
   display: grid;
-  padding: var(--block-space);
+  gap: 0.75rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  padding: 0.75rem;
+  pointer-events: auto;
+
+  > .btn {
+    --btn-size: 2rem;
+    --btn-border-color: transparent;
+    --btn-background: transparent;
+  }
+}
+
+.flash__icon {
+  aspect-ratio: 1;
+  background: var(--flash-accent);
+  border-radius: var(--radius-round);
+  display: grid;
+  inline-size: 2rem;
   place-items: center;
 
   img {
-    grid-area: 1/1;
+    filter: var(--icon-filter-reversed);
+    inline-size: 1.1rem;
   }
+}
+
+.flash__message {
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 0;
+  overflow-wrap: anywhere;
 }

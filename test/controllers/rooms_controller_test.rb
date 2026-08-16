@@ -28,6 +28,20 @@ class RoomsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "inaccessible room redirects to a persistent descriptive alert" do
+    get room_url(rooms(:bender_and_kevin))
+
+    assert_redirected_to root_url
+    follow_redirect!
+    follow_redirect!
+
+    assert_response :success
+    assert_select ".flash.flash--alert[role='alert']" do
+      assert_select ".flash__message", text: "Room not found or inaccessible"
+      assert_select "button[aria-label='Dismiss notification'][data-action='element-removal#remove']"
+    end
+  end
+
   test "configured closed stream renders above chat with a narrow frame CSP and no credentials" do
     configure_streaming
     room = rooms(:designers)

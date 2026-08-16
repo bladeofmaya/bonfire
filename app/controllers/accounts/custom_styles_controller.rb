@@ -6,7 +6,7 @@ class Accounts::CustomStylesController < ApplicationController
 
   def update
     @account.update!(account_params)
-    redirect_to edit_account_custom_styles_url, notice: "✓"
+    redirect_to edit_account_custom_styles_url, notice: "Custom styles saved"
   end
 
   private
