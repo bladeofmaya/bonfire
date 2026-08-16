@@ -52,3 +52,5 @@ app/assets/builds/*
 
 # Ignore key files for decrypting credentials and more.
 /config/*.key
+
+TODO.md
