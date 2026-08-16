@@ -13,6 +13,7 @@ class Bonfire::DeploymentTest < ActiveSupport::TestCase
       RTMP_HOMEBREW_ISSUER
       RTMP_HOMEBREW_AUDIENCE
       RTMP_HOMEBREW_ALLOWED_PLAYER_ORIGINS
+      RTMP_HOMEBREW_EVENT_SECRET
     ].each do |key|
       assert_includes deployment, "    - #{key}\n"
     end
