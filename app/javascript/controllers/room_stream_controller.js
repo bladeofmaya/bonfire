@@ -68,11 +68,7 @@ export default class extends Controller {
   }
 
   visibilityChanged() {
-    if (document.hidden) {
-      clearTimeout(this.refreshTimer)
-      clearTimeout(this.reconnectTimer)
-      if (this.hasPlayerTarget) this.playerTarget.provider?.instance?.stopLoad?.()
-    } else if (this.ready && !this.stopped) {
+    if (!document.hidden && this.ready && !this.stopped) {
       this.reconnectAttempts = 0
       this.authorize()
     }
@@ -119,7 +115,7 @@ export default class extends Controller {
   }
 
   async authorize() {
-    if (!this.ready || this.stopped || document.hidden) return
+    if (!this.ready || this.stopped) return
     const sequence = ++this.authorizationSequence
     this.abortController?.abort()
     this.abortController = new AbortController()
