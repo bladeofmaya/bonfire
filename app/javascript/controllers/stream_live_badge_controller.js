@@ -5,12 +5,17 @@ export default class extends Controller {
 
   connect() {
     const delay = new Date(this.expiresAtValue).getTime() - Date.now()
-    if (delay <= 0) return this.element.remove()
+    if (delay <= 0) return this.markOffline()
 
-    this.timer = setTimeout(() => this.element.remove(), delay)
+    this.timer = setTimeout(() => this.markOffline(), delay)
   }
 
   disconnect() {
     clearTimeout(this.timer)
+  }
+
+  markOffline() {
+    this.element.textContent = "OFFLINE"
+    this.element.classList.add("channel-live-badge--offline")
   }
 }

@@ -82,13 +82,14 @@ class Rooms::SharedListItemComponentTest < ComponentTestCase
     assert_selector "[data-room-stream-live-badge][data-controller='stream-live-badge']", text: "LIVE"
   end
 
-  test "does not render the live badge for enabled but offline or stale streams" do
+  test "renders a muted offline badge for enabled but offline or stale streams" do
     room = rooms(:watercooler)
     room.assign_attributes stream_enabled: true, stream_session_id: "session-1", stream_last_seen_at: 1.minute.ago
 
     render_inline component(room)
 
-    assert_no_selector "[data-room-stream-live-badge]"
+    assert_selector "[data-room-stream-live-badge].channel-live-badge--offline", text: "OFFLINE"
+    assert_no_selector "[data-room-stream-live-badge][data-controller]"
   end
 
   private

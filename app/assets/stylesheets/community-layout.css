@@ -10,11 +10,6 @@
     overflow: visible;
     padding: 0;
   }
-
-  .sidebar-list-item--channel::before {
-    content: "#";
-    color: var(--color-text-muted);
-  }
 }
 
 /* Shared interaction contract for channel and direct-conversation entries. */
@@ -60,8 +55,10 @@
 }
 
 .channel-live-badge {
+  display: inline-flex;
+  align-items: center;
   flex: 0 0 auto;
-  padding: 0.12rem 0.35rem;
+  padding: 0.18em 0.45em;
   border-radius: 0.3rem;
   background: var(--color-negative);
   color: white;
@@ -69,6 +66,11 @@
   font-weight: 800;
   letter-spacing: 0.04em;
   line-height: 1;
+}
+
+.channel-live-badge--offline {
+  background: var(--color-surface-hover);
+  color: var(--color-text-disabled);
 }
 
 .sidebar-list-item--unread {

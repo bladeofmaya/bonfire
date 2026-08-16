@@ -26,5 +26,6 @@ class Rooms::SharedListItemComponent < ApplicationComponent
   end
 
   def reorderable? = @reorderable
-  def streaming? = room.stream_live?
+  def streaming? = room.stream_enabled?
+  def stream_live? = room.stream_live?
 end

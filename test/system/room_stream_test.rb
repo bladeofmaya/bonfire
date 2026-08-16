@@ -11,7 +11,7 @@ class RoomStreamingTest < ApplicationSystemTestCase
 
   test "player messages require the exact origin and source and expose every state" do
     assert_selector ".room-stream__status", text: "Connecting to stream…"
-    assert_no_selector "[data-room-id='#{@room.id}'] [data-room-stream-live-badge]"
+    assert_selector "[data-room-id='#{@room.id}'] [data-room-stream-live-badge]", text: "OFFLINE"
 
     dispatch_player_message(type: "player.state", state: "live", origin: "https://evil.example")
     assert_no_selector ".room-stream__status", text: "Stream is live", wait: 0.2
