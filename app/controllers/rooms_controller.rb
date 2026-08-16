@@ -6,7 +6,7 @@ class RoomsController < ApplicationController
     if @room&.stream_configured?
       if Streaming::Configuration.direct_player_enabled?
         policy.connect_src :self, @room.stream_player_origin
-        policy.media_src :self, "blob:", @room.stream_player_origin
+        policy.media_src :self, "blob:", :https, @room.stream_player_origin
       else
         policy.frame_src :self, @room.stream_player_origin
       end

@@ -19,6 +19,27 @@ class Messages::PresentationComponentTest < ComponentTestCase
     assert_selector "a[href='https://example.com']", text: "Example"
   end
 
+  test "renders a native video preview for a standalone HTTPS MP4 link" do
+    url = "https://video.example.com/media/portrait.MP4?token=abc"
+    message = message_with_body(url)
+
+    render_inline Messages::PresentationComponent.new(message: message)
+
+    assert_selector "a[href='#{url}'][target='_blank']", text: url
+    assert_selector "video.message__external-video[src='#{url}'][controls][playsinline][preload='metadata'][aria-label='Video preview']"
+  end
+
+  test "does not embed non-HTTPS or non-standalone MP4 links" do
+    [
+      "http://video.example.com/media/video.mp4",
+      "Watch https://video.example.com/media/video.mp4",
+      "https://video.example.com/media/video.webm"
+    ].each do |body|
+      render_inline Messages::PresentationComponent.new(message: message_with_body(body))
+      assert_no_selector "video.message__external-video"
+    end
+  end
+
   test "preserves sound controller and playback contracts" do
     message = message_with_body("/play bell")
 

@@ -57,7 +57,7 @@ module MessagesHelper
     when "sound"
       message_sound_presentation(message)
     else
-      auto_link h(ContentFilters::TextMessagePresentationFilters.apply(message.body.body)), html: { target: "_blank" }
+      message_text_presentation(message)
     end
   rescue Exception => e
     Sentry.capture_exception(e, extra: { message: message })
@@ -85,6 +85,36 @@ module MessagesHelper
 
     def message_attachment_presentation(message)
       Messages::AttachmentPresentation.new(message, context: self).render
+    end
+
+    def message_text_presentation(message)
+      content = auto_link h(ContentFilters::TextMessagePresentationFilters.apply(message.body.body)), html: { target: "_blank" }
+
+      if video_url = standalone_mp4_url(message)
+        safe_join [ content, external_video_preview(video_url) ]
+      else
+        content
+      end
+    end
+
+    def standalone_mp4_url(message)
+      text = message.body.to_plain_text.strip
+      uri = URI.parse(text)
+
+      text if uri.is_a?(URI::HTTPS) && uri.host.present? && uri.path.downcase.end_with?(".mp4")
+    rescue URI::InvalidURIError
+      nil
+    end
+
+    def external_video_preview(url)
+      tag.video controls: true,
+        preload: "metadata",
+        playsinline: true,
+        src: url,
+        class: "message__external-video",
+        aria: { label: "Video preview" } do
+          link_to "Open video in a new tab", url, target: "_blank", rel: "noreferrer"
+      end
     end
 
     def message_sound_presentation(message)

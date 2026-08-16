@@ -15,6 +15,7 @@ class RoomsControllerTest < ActionDispatch::IntegrationTest
     get room_url(room)
     assert_response :success
 
+    assert_select "head meta[name='referrer'][content='no-referrer']"
     assert_select "aside#channels turbo-frame#user_sidebar[src='#{user_sidebar_path}']"
     assert_select "aside#sidebar .member-sidebar[aria-label='Community members']" do
       assert_select ".member-sidebar__group"
@@ -76,7 +77,7 @@ class RoomsControllerTest < ActionDispatch::IntegrationTest
     assert_select "media-player[data-room-stream-target='player']"
     assert_select "iframe", count: 0
     assert_includes response.headers["Content-Security-Policy"], "connect-src 'self' https://stream.example.test"
-    assert_includes response.headers["Content-Security-Policy"], "media-src 'self' blob: https://stream.example.test"
+    assert_includes response.headers["Content-Security-Policy"], "media-src 'self' blob: https: https://stream.example.test"
     assert_no_match(/eyJ[a-zA-Z0-9_-]+\./, response.body)
   end
 
