@@ -36,6 +36,18 @@ class Messages::BoostComponentTest < ComponentTestCase
     assert_no_selector "[data-boost-delete-target='content'].txt-medium"
   end
 
+  test "renders a custom emote reaction with its shortcode alternative" do
+    emote = accounts(:signal).custom_emotes.new(shortcode: "mayapog")
+    attach_test_emote_image(emote)
+    emote.save!
+    boost = boosts(:first)
+    boost.update!(custom_emote: emote, content: ":mayapog:")
+
+    render_inline Messages::BoostComponent.new(boost: boost)
+
+    assert_selector "[data-boost-delete-target='content'][title=':mayapog:'] img.custom-emote[alt=':mayapog:']"
+  end
+
   test "adapter cache key changes when the boost or booster changes" do
     boost = boosts(:first)
     original_key = expanded_cache_key(boost)

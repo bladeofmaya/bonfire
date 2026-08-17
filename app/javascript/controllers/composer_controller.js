@@ -126,7 +126,8 @@ export default class extends Controller {
   }
 
   #validInput() {
-    return this.textTarget.textContent.trim().length > 0
+    return this.textTarget.textContent.trim().length > 0 ||
+      this.textTarget.querySelector("action-text-attachment, [data-trix-attachment]") !== null
   }
 
   async #submitFiles() {

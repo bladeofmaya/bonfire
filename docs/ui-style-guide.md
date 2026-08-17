@@ -127,7 +127,7 @@ row or dialog.
 Use `.avatar` and set `--avatar-size` at the owning component boundary. Current
 standard sizes:
 
-- Member-list avatar: `2.5rem` (40px at the default root size)
+- Member-list avatar: `2.25rem` (36px at the default root size)
 - Direct-message avatar: `1.5rem`, with grouped avatars contained inside the
   same `1.5rem` footprint
 - Compact inline avatar: define a documented smaller size locally

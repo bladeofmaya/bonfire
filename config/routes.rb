@@ -23,6 +23,7 @@ Rails.application.routes.draw do
       resource :invitation, only: :show
       resource :logo, only: %i[ show destroy ]
       resource :custom_styles, only: %i[ edit update ]
+      resources :custom_emotes, only: %i[ create update destroy ]
     end
   end
 
@@ -55,6 +56,7 @@ Rails.application.routes.draw do
   namespace :autocompletable do
     resources :users, only: :index
     resources :rooms, only: :index
+    resources :custom_emotes, only: :index
   end
 
   patch "room_positions", to: "rooms/positions#update", as: :room_positions

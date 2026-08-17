@@ -8,7 +8,7 @@ class Messages::BoostsController < ApplicationController
   end
 
   def create
-    @boost = @message.boosts.create!(boost_params)
+    @boost = @message.boosts.create!(normalized_boost_params)
 
     broadcast_create
     redirect_to message_boosts_url(@message)
@@ -27,7 +27,17 @@ class Messages::BoostsController < ApplicationController
     end
 
     def boost_params
-      params.require(:boost).permit(:content)
+      params.require(:boost).permit(:content, :custom_emote_id)
+    end
+
+    def normalized_boost_params
+      attributes = boost_params
+      if attributes[:custom_emote_id].present?
+        emote = Current.account.custom_emotes.active.find(attributes[:custom_emote_id])
+        attributes[:custom_emote_id] = emote.id
+        attributes[:content] = ":#{emote.shortcode}:"
+      end
+      attributes
     end
 
     def broadcast_create

@@ -1,1 +1,5 @@
-<%= render Messages::ActionMenuComponent.new(message: message, permalink_url: url) %>
+<%= render Messages::ActionMenuComponent.new(
+      message: message,
+      permalink_url: url,
+      custom_emotes: Current.account.active_custom_emotes
+    ) %>

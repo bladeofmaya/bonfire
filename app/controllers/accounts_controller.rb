@@ -5,6 +5,7 @@ class AccountsController < ApplicationController
   def edit
     users = account_users.ordered.without_bots
     @administrators, @members = users.partition(&:administrator?)
+    @custom_emotes = @account.active_custom_emotes if Current.user.administrator?
     set_page_and_extract_portion_from users, per_page: 500
   end
 

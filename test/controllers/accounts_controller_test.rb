@@ -9,12 +9,13 @@ class AccountsControllerTest < ActionDispatch::IntegrationTest
     get edit_account_url
     assert_response :ok
     assert_select "nav[role='tablist'][aria-label='Account settings']" do
-      assert_select "button[role='tab'][data-profile-tabs-name]", count: 3
+      assert_select "button[role='tab'][data-profile-tabs-name]", count: 4
       assert_select "button[aria-selected='true'][data-profile-tabs-name='general']", text: "General"
-      assert_select "[data-lucide]", count: 3
+      assert_select "[data-lucide]", minimum: 4
     end
     assert_select "#account-panel-general:not([hidden])"
     assert_select "#account-panel-members[hidden] turbo-frame#account_users"
+    assert_select "#account-panel-emotes[hidden] form[action='#{account_custom_emotes_path}']"
     assert_select "#account-panel-privacy[hidden] form.readme-editor" do
       assert_select "trix-editor#account_readme.input"
     end
@@ -50,6 +51,12 @@ class AccountsControllerTest < ActionDispatch::IntegrationTest
       assert name_position, "Member #{name} should appear in the response"
       assert name_position > divider_position, "Member #{name} should appear after the divider"
     end
+  end
+
+  test "edit can select the emotes tab after a form redirect" do
+    get edit_account_url(tab: "emotes")
+
+    assert_select "[data-profile-tabs-default-tab-value='emotes']"
   end
 
   test "update" do

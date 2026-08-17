@@ -297,6 +297,7 @@
   padding: 0.35rem;
   border-radius: var(--radius-medium);
   color: var(--color-text-secondary);
+  font-size: 0.9rem;
   text-decoration: none;
 
   &:hover {
@@ -305,7 +306,7 @@
   }
 }
 
-.member-sidebar__avatar { --avatar-size: 2.5rem; flex: 0 0 auto; }
+.member-sidebar__avatar { --avatar-size: 2.25rem; flex: 0 0 auto; }
 
 .member-sidebar__status {
   grid-area: 1 / 1;

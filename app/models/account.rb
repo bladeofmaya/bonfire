@@ -2,6 +2,7 @@ class Account < ApplicationRecord
   include Joinable
 
   has_rich_text :readme
+  has_many :custom_emotes, dependent: :destroy
 
   has_one_attached :logo do |attachable|
     attachable.variant :large, resize_to_limit: [ 512, 512 ], format: :png
@@ -31,6 +32,10 @@ class Account < ApplicationRecord
 
   def logo_variant(size)
     logo.variant(size).processed if logo.variable?
+  end
+
+  def active_custom_emotes
+    @active_custom_emotes ||= custom_emotes.active.with_attached_image.ordered.load
   end
 
   private

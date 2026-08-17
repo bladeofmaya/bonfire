@@ -1,9 +1,10 @@
 class Messages::ActionMenuComponent < ApplicationComponent
-  attr_reader :message, :permalink_url
+  attr_reader :message, :permalink_url, :custom_emotes
 
-  def initialize(message:, permalink_url:)
+  def initialize(message:, permalink_url:, custom_emotes: [])
     @message = message
     @permalink_url = permalink_url
+    @custom_emotes = custom_emotes
   end
 
   def attachment?

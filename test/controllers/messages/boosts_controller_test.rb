@@ -38,4 +38,16 @@ class Messages::BoostsControllerTest < ActionDispatch::IntegrationTest
     assert_rendered_turbo_stream_broadcast @message.room, :messages,
       action: "remove", target: boost
   end
+
+  test "creates a custom emote reaction from the active account catalog" do
+    emote = accounts(:signal).custom_emotes.new(shortcode: "mayapog")
+    attach_test_emote_image(emote, filename: "mayapog.png")
+    emote.save!
+
+    post message_boosts_url(@message), params: { boost: { custom_emote_id: emote.id, content: "tampered" } }
+
+    boost = Boost.last
+    assert_equal emote, boost.custom_emote
+    assert_equal ":mayapog:", boost.content
+  end
 end

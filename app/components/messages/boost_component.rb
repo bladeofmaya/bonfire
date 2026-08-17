@@ -14,6 +14,10 @@ class Messages::BoostComponent < ApplicationComponent
     boost.content.all_emoji?
   end
 
+  def custom_emote?
+    boost.custom_emote.present?
+  end
+
   def accessible_avatar_label
     "#{boost.booster.name} boosted #{boost.content}"
   end

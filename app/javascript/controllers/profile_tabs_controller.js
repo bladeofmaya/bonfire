@@ -54,7 +54,11 @@ export default class extends Controller {
         Settings: globalThis.lucide.Settings,
         ShieldCheck: globalThis.lucide.ShieldCheck,
         UsersRound: globalThis.lucide.UsersRound,
-        Radio: globalThis.lucide.Radio
+        Radio: globalThis.lucide.Radio,
+        SmilePlus: globalThis.lucide.SmilePlus,
+        Plus: globalThis.lucide.Plus,
+        Save: globalThis.lucide.Save,
+        Trash2: globalThis.lucide.Trash2
       },
       root: this.element
     })

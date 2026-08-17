@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_16_123000) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_16_180000) do
   create_table "accounts", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "custom_styles"
@@ -76,10 +76,22 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_16_123000) do
     t.integer "booster_id", null: false
     t.string "content", limit: 16, null: false
     t.datetime "created_at", null: false
+    t.integer "custom_emote_id"
     t.integer "message_id", null: false
     t.datetime "updated_at", null: false
     t.index ["booster_id"], name: "index_boosts_on_booster_id"
+    t.index ["custom_emote_id"], name: "index_boosts_on_custom_emote_id"
     t.index ["message_id"], name: "index_boosts_on_message_id"
+  end
+
+  create_table "custom_emotes", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "disabled_at"
+    t.string "shortcode", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "shortcode"], name: "index_custom_emotes_on_account_id_and_shortcode", unique: true
+    t.index ["account_id"], name: "index_custom_emotes_on_account_id"
   end
 
   create_table "memberships", force: :cascade do |t|
@@ -195,7 +207,9 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_16_123000) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "bans", "users"
+  add_foreign_key "boosts", "custom_emotes"
   add_foreign_key "boosts", "messages"
+  add_foreign_key "custom_emotes", "accounts"
   add_foreign_key "messages", "rooms"
   add_foreign_key "messages", "users", column: "creator_id"
   add_foreign_key "push_subscriptions", "users"

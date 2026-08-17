@@ -386,6 +386,7 @@ img.message__attachment {
   border-radius: calc(var(--arrow-size) / 2);
   display: none;
   inset: var(--btn-size) auto auto 50%;
+  min-inline-size: calc(6rem + var(--inline-space));
   padding: var(--inline-space-half);
   position: absolute;
   transform: translateX(-50%);

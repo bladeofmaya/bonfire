@@ -21,10 +21,13 @@
 <% end %>
 
 <section class="panel panel--wide profile-settings" style="view-transition-name: account-settings"
-    data-controller="profile-tabs" data-profile-tabs-default-tab-value="general">
+    data-controller="profile-tabs" data-profile-tabs-default-tab-value="<%= params[:tab] == "emotes" && Current.user.administrator? ? "emotes" : "general" %>">
   <nav class="profile-settings__tabs" role="tablist" aria-label="Account settings">
     <% tabs = [ [ "general", "settings", "General" ], [ "members", "users-round", "Members" ] ] %>
-    <% tabs << [ "privacy", "shield-check", "README" ] if Current.user.administrator? %>
+    <% if Current.user.administrator? %>
+      <% tabs << [ "emotes", "smile-plus", "Emotes" ] %>
+      <% tabs << [ "privacy", "shield-check", "README" ] %>
+    <% end %>
     <% tabs.each_with_index do |(name, icon, label), index| %>
       <button type="button" class="profile-settings__tab" id="account-tab-<%= name %>"
           role="tab" aria-controls="account-panel-<%= name %>" aria-selected="<%= index.zero? %>"
@@ -119,6 +122,59 @@
     </section>
 
     <% if Current.user.administrator? %>
+      <section class="profile-settings__panel" id="account-panel-emotes" role="tabpanel" hidden
+          aria-labelledby="account-tab-emotes" data-profile-tabs-target="panel" data-profile-tabs-name="emotes">
+        <header class="profile-settings__heading">
+          <h1>Custom emotes</h1>
+          <p class="txt-subtle">Add server emotes for message reactions and <code>:shortcode:</code> autocomplete.</p>
+        </header>
+
+        <%= form_with model: CustomEmote.new, url: account_custom_emotes_path,
+              class: "custom-emotes__form" do |form| %>
+          <label class="flex flex-column gap-half flex-item-grow">
+            <strong>Shortcode</strong>
+            <%= form.text_field :shortcode, class: "input", placeholder: "maya-smirk",
+                  required: true, pattern: "[A-Za-z0-9][A-Za-z0-9_-]{1,31}", autocomplete: "off" %>
+          </label>
+          <label class="flex flex-column gap-half flex-item-grow">
+            <strong>Image</strong>
+            <%= form.file_field :image, class: "input", required: true, accept: "image/png,image/gif,image/webp" %>
+          </label>
+          <%= form.button class: "btn btn--reversed", type: "submit" do %>
+            <i data-lucide="plus" aria-hidden="true"></i>
+            <span>Add emote</span>
+          <% end %>
+        <% end %>
+
+        <div class="custom-emotes__list">
+          <% @custom_emotes.each do |emote| %>
+            <article class="custom-emotes__item">
+              <%= form_with model: emote, url: account_custom_emote_path(emote),
+                    class: "custom-emotes__item-form" do |form| %>
+                <%= image_tag rails_blob_path(emote.image, only_path: true), class: "custom-emote custom-emote--preview", alt: "" %>
+                <%= form.text_field :shortcode, class: "input", required: true,
+                      pattern: "[A-Za-z0-9][A-Za-z0-9_-]{1,31}", aria: { label: "Shortcode" } %>
+                <div class="min-width">
+                  <%= form.file_field :image, class: "input txt-small", accept: "image/png,image/gif,image/webp",
+                        aria: { label: "Replace image for :#{emote.shortcode}:" } %>
+                </div>
+                <%= form.button class: "btn btn--icon", type: "submit", aria: { label: "Save :#{emote.shortcode}:" } do %>
+                  <i data-lucide="save" aria-hidden="true"></i>
+                <% end %>
+              <% end %>
+              <%= button_to account_custom_emote_path(emote), method: :delete,
+                    class: "btn btn--negative btn--icon", aria: { label: "Remove :#{emote.shortcode}:" },
+                    data: { turbo_confirm: "Remove :#{emote.shortcode}: from the emote picker? Existing uses will remain visible." } do %>
+                <i data-lucide="trash-2" aria-hidden="true"></i>
+              <% end %>
+            </article>
+          <% end %>
+          <% if @custom_emotes.empty? %>
+            <p class="txt-subtle">No custom emotes yet.</p>
+          <% end %>
+        </div>
+      </section>
+
       <section class="profile-settings__panel" id="account-panel-privacy" role="tabpanel" hidden
           aria-labelledby="account-tab-privacy" data-profile-tabs-target="panel" data-profile-tabs-name="privacy">
         <header class="profile-settings__heading">

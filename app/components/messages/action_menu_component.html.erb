@@ -8,6 +8,16 @@
 
     <div class="message__actions-menu border shadow" data-popup-target="menu">
       <div class="quick-boosts">
+        <% custom_emotes.each do |emote| %>
+          <%= helpers.form_with model: [ message, Boost.new ], data: { turbo_frame: helpers.dom_id(message, :boosting), action: "popup#close" } do |form| %>
+            <%= helpers.hidden_field_tag "boost[custom_emote_id]", emote.id %>
+            <%= form.button type: "submit", title: ":#{emote.shortcode}:", class: "btn message__action-btn" do %>
+              <%= helpers.image_tag helpers.rails_blob_path(emote.image, only_path: true),
+                    class: "custom-emote", alt: ":#{emote.shortcode}:" %>
+            <% end %>
+          <% end %>
+        <% end %>
+
         <% EmojiHelper::REACTIONS.each do |character, title| %>
           <%= helpers.form_with model: [ message, Boost.new ], data: { turbo_frame: helpers.dom_id(message, :boosting), action: "popup#close" } do |form| %>
             <%= helpers.hidden_field_tag "boost[content]", character %>

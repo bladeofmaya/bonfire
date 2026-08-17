@@ -1,6 +1,6 @@
 <%# Be sure to check/update messages/_template.html.erb when changing this file %>
 
-<% cache [ message, message.room.stream_configured? ] do %>
+<% cache [ message, message.room.stream_configured?, Current.account ] do %>
   <%= message_tag message do %>
     <h2 class="message__day-separator"><%= local_datetime_tag message.created_at, style: :date %></h2>
 

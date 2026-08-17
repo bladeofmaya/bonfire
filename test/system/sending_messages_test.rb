@@ -61,6 +61,27 @@ class SendingMessagesTest < ApplicationSystemTestCase
     assert_current_path room_path(rooms(:hq))
   end
 
+  test "sending a message containing only a custom emote" do
+    emote = accounts(:signal).custom_emotes.new(shortcode: "mayapog")
+    attach_test_emote_image(emote)
+    emote.save!
+    visit room_path(rooms(:designers))
+
+    editor = find("trix-editor[aria-label='Write a message']")
+    page.execute_script(<<~JS, editor, emote.attachable_sgid, rails_blob_path(emote.image, only_path: true))
+      const [ element, sgid, imageUrl ] = arguments
+      element.editor.insertAttachment(new Trix.Attachment({
+        content: `<img class="custom-emote" src="${imageUrl}" alt=":mayapog:">`,
+        contentType: "application/vnd.bonfire.emote",
+        sgid
+      }))
+    JS
+    assert_selector "trix-editor [data-trix-attachment]"
+    click_on "Send Message"
+
+    assert_selector ".message__body img.custom-emote[alt=':mayapog:']"
+  end
+
   test "deleting messages" do
     using_session("Kevin") do
       sign_in "kevin@37signals.com"

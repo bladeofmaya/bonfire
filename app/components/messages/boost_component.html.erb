@@ -11,9 +11,17 @@
     <% end %>
   </figure>
 
-  <%= helpers.tag.span boost.content, role: "button",
+  <%= helpers.tag.span role: "button",
         class: [ "txt-small", { "txt-medium": emoji? } ],
-        data: { action: "click->boost-delete#reveal keydown.enter->boost-delete#reveal:prevent", boost_delete_target: "content" } %>
+        title: (boost.content if custom_emote?),
+        data: { action: "click->boost-delete#reveal keydown.enter->boost-delete#reveal:prevent", boost_delete_target: "content" } do %>
+    <% if custom_emote? %>
+      <%= helpers.image_tag helpers.rails_blob_path(boost.custom_emote.image, only_path: true),
+            class: "custom-emote", alt: boost.content %>
+    <% else %>
+      <%= boost.content %>
+    <% end %>
+  <% end %>
 
   <%= helpers.button_to helpers.message_boost_path(boost.message, boost), method: :delete,
         data: { action: "boost-delete#perform", boost_delete_target: "button" },

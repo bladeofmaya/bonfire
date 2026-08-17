@@ -8,6 +8,7 @@ require "webmock/minitest"
 require "turbo/broadcastable/test_helper"
 require_relative "test_helpers/component_test_helper"
 require_relative "test_helpers/component_test_case"
+require_relative "test_helpers/custom_emote_test_helper"
 require_relative "test_helpers/visual_regression_helper"
 
 WebMock.enable!
@@ -20,7 +21,7 @@ class ActiveSupport::TestCase
   # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
   fixtures :all
 
-  include SessionTestHelper, MentionTestHelper, TurboTestHelper
+  include SessionTestHelper, MentionTestHelper, TurboTestHelper, CustomEmoteTestHelper
 
   def configure_streaming(previous_jwks: [])
     key = OpenSSL::PKey::EC.generate("prime256v1")

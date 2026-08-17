@@ -36,6 +36,19 @@ class Messages::ActionMenuComponentTest < ComponentTestCase
     assert_no_selector "button[aria-label='Reply']", visible: false
   end
 
+  test "adds custom emotes without replacing system emoji reactions" do
+    emote = accounts(:signal).custom_emotes.new(shortcode: "mayapog")
+    attach_test_emote_image(emote, filename: "mayapog.png")
+    emote.save!
+
+    render_inline Messages::ActionMenuComponent.new(message: @message, permalink_url: @permalink_url, custom_emotes: [ emote ])
+
+    assert_selector ".quick-boosts form", count: EmojiHelper::REACTIONS.size + 1, visible: false
+    assert_selector "input[name='boost[custom_emote_id]'][value='#{emote.id}']", visible: false
+    assert_selector "img.custom-emote[alt=':mayapog:']", visible: false
+    assert_equal "boost[custom_emote_id]", page.first(".quick-boosts form input", visible: false)[:name]
+  end
+
   test "keeps every action icon decorative" do
     render_inline component
 

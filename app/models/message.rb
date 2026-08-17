@@ -1,5 +1,5 @@
 class Message < ApplicationRecord
-  include Attachment, Broadcasts, Mentionee, Pagination, Searchable
+  include Attachment, Broadcasts, CustomEmotes, Mentionee, Pagination, Searchable
 
   belongs_to :room, touch: true
   belongs_to :creator, class_name: "User", default: -> { Current.user }
@@ -18,7 +18,7 @@ class Message < ApplicationRecord
     with_attached_attachment
       .includes(attachment_blob: :variant_records)
   }
-  scope :with_boosts, -> { includes(boosts: :booster) }
+  scope :with_boosts, -> { includes(boosts: [ :booster, { custom_emote: { image_attachment: :blob } } ]) }
 
   def plain_text_body
     body.to_plain_text.presence || attachment&.filename&.to_s || ""

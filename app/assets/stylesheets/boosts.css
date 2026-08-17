@@ -98,7 +98,19 @@
 /* Reactions */
 .quick-boosts {
   display: grid;
-  grid-template-columns: repeat(3, 2em);
+  grid-auto-rows: 2em;
+  grid-template-columns: repeat(3, minmax(0, 2em));
+  inline-size: 6rem;
+  max-block-size: 10rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+
+  form,
+  .message__action-btn {
+    inline-size: 2em;
+    min-inline-size: 0;
+  }
 }
 
 .boost-character {
