@@ -4,161 +4,184 @@
 
 # Bonfire
 
+Bonfire is a self-hosted community chat for conversations, announcements, and
+live streams. It gives a community one private installation, its own identity,
+and direct ownership of its conversations and uploads.
+
+Bonfire is based on [once-campfire](https://github.com/basecamp/once-campfire)
+by 37signals and is developed independently while retaining selected upstream
+fixes.
+
 > [!IMPORTANT]
-> Bonfire is in active development and is not feature complete yet. It is
-> already usable, but you should expect rough edges and changes along the way.
+> Bonfire is usable but remains under active development. Expect occasional
+> rough edges and changes between releases.
 
+![Bonfire community chat](app/assets/images/bonfire-preview.png)
 
+## Features
 
-Bonfire is a self-hosted, Discord-like chat for communities. It is a place for
-announcements, conversations, rich media, custom emotes, notifications, and
-updates from streams, videos, and community bots. It's based on [once-campfire](https://github.com/basecamp/once-campfire) by 37signals.
+### Conversations and community
 
-The idea is simple: instead of putting your community in the hands of a large
-platform, you run Bonfire on your own server. Streamers and other community
-builders can stay close to their people, keep conversations private, and decide
-for themselves how their space should work.
+- Open and private channels, direct conversations, search, replies, reactions,
+  file sharing, and rich-media previews
+- Clear unread and mention indicators, channel ordering, and notification
+  choices for each conversation
+- Your own name, logo, colors, light or dark theme, and custom community emotes
+- A welcoming signup page where members can read and accept your server rules
+- Straightforward tools for inviting people, managing members, and handling
+  unwanted behavior
+- Bot accounts for bringing updates and useful community tools into channels
 
-Our goal is to make that as easy as possible—including a one-click path from a
-fresh server to a running community. Every Bonfire belongs to the people who
-run it: you own the data, choose the rules, and shape the experience.
+### Notifications
 
-<img src="app/assets/images/bonfire-preview.png" alt="Bonfire Screenshot">
+- Browser notifications for messages, mentions, direct conversations, and
+  streams going live
+- Email choices for missed mentions and pings, daily summaries, and streams
+  going live—with one switch to turn all email off
+- Optional signup emails for administrators when somebody joins the community
+- Easy Postmark setup, with support for an existing SMTP mail provider too
 
+### Private streaming
 
-## What works today
+- A large stream player directly inside a channel, alongside chat, poster art,
+  schedules and descriptions, viewer lists, and clear LIVE/OFFLINE status
+- Private streams that follow the channel's membership, so the same people who
+  can enter the channel can watch its stream
+- Notifications when a stream goes live
+- Support today for connecting your own RTMP or secure RTMPS streaming server
+  through RTMP Homebrew
+- Twitch, YouTube, and Kick integrations are in the works
+- A re-streaming system for broadcasting to multiple destinations is also in
+  the works
 
-- Public and private rooms
-- Direct messages
-- File uploads with previews
-- Search
-- Web Push notifications and @mentions
-- Bot accounts and an API for posting messages
-- A responsive web app that can be installed on your phone or desktop
-- A self-contained setup that can run on a single server
+Bonfire controls access and the room experience; it does not ingest, proxy,
+record, or restream video. See the [streaming guide](docs/streaming.md) for the
+RTMP Homebrew contract and setup.
 
-## Where Bonfire is going
+### Self-hosting
 
-The roadmap is focused on the things that help an independent community feel
-at home:
+- One self-contained package designed to run on a single Linux server
+- Conversations, settings, and uploads kept together in one folder you control
+- Guided setup, updates, health checks, backups, and moves to a new server
+- An installable web app that works on desktop and mobile
 
-- **Clearer community spaces:** a data-protection notice during signup and
-  read-only rooms for announcements.
-- **Keeping people connected:** email notifications for missed mentions and
-  better ways to sort, pin, and organize channels.
-- **Better links and media:** useful YouTube previews and a built-in GIF picker
-  that respects the community's privacy choices.
-- **Streams, videos, and bots:** safe integrations that can announce when a
-  streamer goes live, a new video is published, or a community bot has news.
-- **A space with its own personality:** custom emotes with shortcodes,
-  autocomplete, and an easy picker for desktop and mobile.
-- **A dependable home:** better accessibility, backups, moderation safeguards,
-  rate limits, and tools that make problems easier to spot and fix.
+## Deploy on one server
 
-These features will arrive one piece at a time. Items on this list are plans,
-not promises that they are already part of the current release.
-
-## Running your own Bonfire
-
-Bonfire is made to live on one Linux server. The app, background work, caching,
-file serving, and HTTPS are packaged together, while your conversations and
-uploads stay in one persistent storage folder.
-
-### The guided setup
-
-The included setup command asks a few questions, creates the secrets Bonfire
-needs, checks the server, and shows you what it is about to do before making
-changes:
+Bonfire’s guided workflow expects a Linux server reachable over SSH, a domain
+pointing to it, and Docker on the local machine. Start with:
 
 ```sh
 bin/bonfire setup
 ```
 
-Once Bonfire is running, these commands let you check on it and publish a new
-version:
+The command creates private deployment configuration, generates installation
+secrets, checks the target, shows the planned changes, and deploys with Kamal.
+On first launch, Bonfire guides you through creating the installation’s first
+administrator.
+
+### Optional email delivery
+
+Postmark is the recommended email provider. Configure it before a deployment:
 
 ```sh
-bin/bonfire status
+bin/bonfire setup --configure-only
+bin/bonfire mailserver setup \
+  --provider postmark \
+  --from "Bonfire <notifications@example.com>"
+bin/bonfire mailserver status
 bin/bonfire deploy
-bin/bonfire console
-bin/bonfire kamal details
 ```
 
-`bin/bonfire kamal …` runs any Kamal subcommand with the private deployment
-configuration loaded. Kamal loads `.kamal/secrets` itself; Bonfire never
-evaluates, captures, or prints secret values. Commands that directly inspect
-secrets or execute arbitrary code are intentionally unavailable through this
-LLM-safe wrapper.
-
-To move an existing installation, lower the public hostname's DNS TTL first,
-then run the migration with the new SSH destination:
+After deployment, verify real delivery to the installation’s first active
+administrator:
 
 ```sh
-bin/bonfire migrate root@203.0.113.10 --dry-run
-bin/bonfire migrate root@203.0.113.10
+bin/bonfire mailserver test
 ```
 
-The command stops the old application before copying its database and uploads,
-deploys and checks the new server, then pauses for the DNS change. See the
-[server migration guide](docs/self-hosting.md#migrating-to-another-server) for
-the cutover and rollback details.
+Provider credentials are stored in `.kamal/secrets`, are never printed by the
+status command, and are not committed to Git. Generic SMTP is available with
+`--provider smtp`. See [email notifications](docs/email-notifications.md) for
+delivery policy, DNS authentication, and configuration details.
 
-You can see every available option with `bin/bonfire help`. The private setup
-files live under `.kamal/` and are not committed to Git. Keep a secure backup
-of the generated secrets.
+### Operations
 
-Private-room RTMP Homebrew playback configuration and its production smoke
-checklist are documented in [docs/streaming.md](docs/streaming.md).
+| Command | Purpose |
+| --- | --- |
+| `bin/bonfire status` | Inspect local configuration and deployment health |
+| `bin/bonfire deploy` | Deploy the current source and run pending migrations |
+| `bin/bonfire console` | Open the production Rails console |
+| `bin/bonfire kamal details` | Run an allowed Kamal operation with Bonfire’s configuration |
+| `bin/bonfire migrate USER@HOST --dry-run` | Check a server migration without changing either server |
+| `bin/bonfire migrate USER@HOST` | Move persistent storage and deployment to another server |
 
-### Using Docker yourself
+Run `bin/bonfire help` or `bin/bonfire mailserver help` for all supported
+options. Back up `.kamal/secrets` securely; changing the generated application
+or VAPID keys invalidates sessions or browser push subscriptions.
 
-If you already have your own way of running containers, you can use
-`ghcr.io/bladeofmaya/bonfire:latest` or build the image from this repository.
-The [self-hosting guide](docs/self-hosting.md) covers storage, HTTPS, backups,
-restores, and updates.
+The [self-hosting guide](docs/self-hosting.md) covers manual Docker operation,
+persistent storage, HTTPS, upgrades, backups, restores, and server migration.
+You can use `ghcr.io/bladeofmaya/bonfire:latest` with an existing container
+workflow or build the image yourself:
 
-> [!TIP]
-> The first time Bonfire starts, it walks you through creating an administrator
-> account. The administrator's email address is shown on the sign-in page so
-> community members know whom to ask for help.
+```sh
+docker build -t bonfire .
+```
 
-## Working on Bonfire locally
+## Develop locally
 
-Prepare the app with:
+Install the required Ruby version, gems, and development dependencies:
 
 ```sh
 bin/setup
 ```
 
-Then start it with:
+Start Bonfire and its local Redis container:
 
 ```sh
 bin/dev
 ```
 
-Open [http://bonfire.localhost:3021](http://bonfire.localhost:3021) and follow
-the first-run setup. You do not need to set up Postgres or MinIO; Bonfire uses
-SQLite and local file storage during development.
+Open [http://bonfire.localhost:3021](http://bonfire.localhost:3021) and complete
+the first-run setup. Development uses SQLite and local file storage, so no
+Postgres or object-storage service is required.
 
-To wipe your local data and start fresh:
+Reset local application data when you need a clean installation:
 
 ```sh
 bin/dev reset
 ```
 
-The [development guide](docs/development.md) has the rest, including testing
-notifications and running the test suite.
+Run the test and project check suites with:
+
+```sh
+bin/rails test
+bin/rails test:system
+bin/ci
+```
+
+See the [development guide](docs/development.md) for Web Push setup, RTMP
+Homebrew development, reset behavior, and test details.
+
+## Documentation
+
+- [Self-hosting and operations](docs/self-hosting.md)
+- [Email notifications](docs/email-notifications.md)
+- [Private room streaming](docs/streaming.md)
+- [Development](docs/development.md)
+- [UI style guide](docs/ui-style-guide.md)
+- [CSS architecture](docs/css-architecture.md)
+- [Component contracts](docs/component-contracts.md)
+- [Architecture decisions](docs/architecture/decisions/0001-hybrid-view-components.md)
 
 ## Contributing
 
-Bonfire is meant to grow around real communities. Bug fixes, thoughtful ideas,
-and improvements are welcome. Try to keep each change focused, tested, and easy
-for another person to understand or undo.
-
-Bonfire also keeps track of changes from the project it grew out of, so useful
-upstream fixes can continue to find their way here.
+Bug fixes, focused improvements, and thoughtful product ideas are welcome.
+Keep changes scoped, tested, and documented, and preserve Bonfire’s room
+privacy and server-side authorization boundaries. See
+[CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidance.
 
 ## Security
 
-Found something that could put a community at risk? Please follow the private
-reporting instructions in [SECURITY.md](SECURITY.md).
+Please report security issues privately by following
+[SECURITY.md](SECURITY.md).
