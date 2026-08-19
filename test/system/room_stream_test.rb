@@ -77,6 +77,23 @@ class RoomStreamingTest < ApplicationSystemTestCase
     assert_selector ".room-stream__info > .stream-viewers"
     assert_no_selector ".room-stream[style*='position: fixed']"
 
+    description_bottom, main_bottom, margin_bottom, viewport_width, viewport_height = page.evaluate_script <<~JS
+      (() => {
+        const description = document.querySelector(".stream-description")
+        const main = document.querySelector("#main-content")
+        const viewport = document.querySelector(".room-stream__viewport")
+        return [
+          description.getBoundingClientRect().bottom,
+          main.getBoundingClientRect().bottom,
+          parseFloat(getComputedStyle(description).marginBottom),
+          viewport.getBoundingClientRect().width,
+          viewport.getBoundingClientRect().height
+        ]
+      })()
+    JS
+    assert_in_delta main_bottom - margin_bottom, description_bottom, 1
+    assert_in_delta 16.0 / 9, viewport_width / viewport_height, 0.01
+
     page.current_window.resize_to(390, 844)
     assert_selector ".room-stream__viewport"
     assert_selector "footer .composer"

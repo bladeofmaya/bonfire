@@ -14,7 +14,7 @@ body.sidebar.stream-room { --sidebar-width: 0vw; }
   #main-content {
     display: grid;
     grid-template-columns: minmax(0, 1.9fr) minmax(20rem, 0.9fr);
-    grid-template-rows: minmax(0, 1fr) auto min-content;
+    grid-template-rows: auto minmax(0, 1fr) min-content;
     overflow: hidden;
   }
 
@@ -37,9 +37,9 @@ body.sidebar.stream-room { --sidebar-width: 0vw; }
 
   .stream-description {
     grid-column: 1;
-    grid-row: 2;
-    align-self: start;
-    max-block-size: 10rem;
+    grid-row: 2 / 4;
+    align-self: stretch;
+    min-block-size: 0;
     overflow-y: auto;
   }
 
@@ -134,7 +134,6 @@ body.sidebar.stream-room { --sidebar-width: 0vw; }
   background: var(--color-surface-secondary);
 }
 
-.stream-description__title { margin: 0 0 var(--space-block-half); }
 .stream-description__content > :first-child,
 .stream-description__empty { margin-block-start: 0; }
 .stream-description__content > :last-child,
