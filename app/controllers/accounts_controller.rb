@@ -5,7 +5,11 @@ class AccountsController < ApplicationController
   def edit
     users = account_users.ordered.without_bots
     @administrators, @members = users.partition(&:administrator?)
-    @custom_emotes = @account.active_custom_emotes if Current.user.administrator?
+    if Current.user.administrator?
+      @custom_emotes = @account.active_custom_emotes
+      @email_notification_users = User.active.without_bots.where(email_notifications_enabled: true).ordered.with_attached_avatar
+      @email_configuration_checks = email_configuration_checks
+    end
     set_page_and_extract_portion_from users, per_page: 500
   end
 
@@ -38,5 +42,14 @@ class AccountsController < ApplicationController
       else
         User.active
       end
+    end
+
+    def email_configuration_checks
+      [
+        [ "Canonical mail host", ENV["MAILER_HOST"].present? || ENV["TLS_DOMAIN"].present? ],
+        [ "SMTP server and port", ENV["SMTP_ADDRESS"].present? && ENV["SMTP_PORT"].present? ],
+        [ "SMTP credentials", ENV["SMTP_USERNAME"].present? && ENV["SMTP_PASSWORD"].present? ],
+        [ "Sender address", ENV["EMAIL_FROM"].present? ]
+      ]
     end
 end

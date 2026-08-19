@@ -532,6 +532,19 @@ before introducing a new UI class or variant.
   `test/channels/unread_rooms_channel_test.rb`, and
   `test/system/unread_rooms_test.rb`.
 
+Email notifications are a separate user-owned system under the Notifications
+profile tab. Preferences live on `User`; they must never be inferred from or
+write to room involvement/Web Push state. `EmailNotifications::MentionJob` and
+`DailySummaryJob` recheck global availability, active user status, preferences,
+membership and room access at delivery time. Delivery identity is
+persisted in `EmailNotificationDelivery`; preserve its unique message/period
+keys when changing retries. Resque Scheduler supplies the five-minute mention
+grace period and hourly local-time summary dispatch. Both multipart mail
+templates must retain canonical conversation links and the
+`user_profile_url(anchor: "notifications")` opt-out/settings link. SMTP is
+globally off unless explicitly configured as documented in
+`docs/email-notifications.md`.
+
 ### Turbo and DOM contracts
 
 Many UI identifiers are protocol surfaces shared by Rails, Turbo broadcasts,

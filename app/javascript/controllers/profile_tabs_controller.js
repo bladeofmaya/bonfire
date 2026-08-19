@@ -50,6 +50,7 @@ export default class extends Controller {
         UserRound: globalThis.lucide.UserRound,
         Palette: globalThis.lucide.Palette,
         MessagesSquare: globalThis.lucide.MessagesSquare,
+        Mail: globalThis.lucide.Mail,
         MonitorSmartphone: globalThis.lucide.MonitorSmartphone,
         Settings: globalThis.lucide.Settings,
         ShieldCheck: globalThis.lucide.ShieldCheck,

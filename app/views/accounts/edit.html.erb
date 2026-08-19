@@ -25,6 +25,7 @@
   <nav class="profile-settings__tabs" role="tablist" aria-label="Account settings">
     <% tabs = [ [ "general", "settings", "General" ], [ "members", "users-round", "Members" ] ] %>
     <% if Current.user.administrator? %>
+      <% tabs << [ "notifications", "mail", "Notifications" ] %>
       <% tabs << [ "emotes", "smile-plus", "Emotes" ] %>
       <% tabs << [ "privacy", "shield-check", "README" ] %>
     <% end %>
@@ -122,6 +123,79 @@
     </section>
 
     <% if Current.user.administrator? %>
+      <section class="profile-settings__panel" id="account-panel-notifications" role="tabpanel" hidden
+          aria-labelledby="account-tab-notifications" data-profile-tabs-target="panel" data-profile-tabs-name="notifications">
+        <header class="profile-settings__heading">
+          <h1>Notifications</h1>
+          <p class="txt-supporting">Review server email delivery and member adoption.</p>
+        </header>
+
+        <div class="email-notifications-admin flex flex-column gap">
+          <section class="settings-group fill-shade border-radius pad-inline-double pad-block">
+            <div class="flex align-center gap">
+              <div class="flex-item-grow">
+                <h2 class="margin-none txt-large">Mailer status</h2>
+                <p class="margin-none txt-small txt-primary">
+                  <span class="email-notifications-admin__indicator <%= "email-notifications-admin__indicator--enabled" if Rails.configuration.x.email_notifications.enabled %>" aria-hidden="true"></span>
+                  Email delivery is <strong><%= Rails.configuration.x.email_notifications.enabled ? "enabled" : "disabled" %></strong>.
+                </p>
+              </div>
+
+              <details class="context-menu position-relative"
+                  data-controller="popup"
+                  data-action="keydown.esc->popup#close toggle->popup#toggle click@document->popup#closeOnClickOutside"
+                  data-popup-orientation-top-class="popup-orientation-top">
+                <summary class="btn email-notifications-admin__users-trigger" aria-label="Show users with email notifications enabled">
+                  <span class="email-notifications-admin__indicator email-notifications-admin__indicator--enabled" aria-hidden="true"></span>
+                  <strong><%= @email_notification_users.size %></strong>
+                  <span><%= "user".pluralize(@email_notification_users.size) %> enabled</span>
+                </summary>
+                <div class="context-menu__menu email-notifications-admin__users-menu border shadow" data-popup-target="menu">
+                  <h2 class="email-notifications-admin__users-heading">Email notifications enabled — <%= @email_notification_users.size %></h2>
+                  <% if @email_notification_users.any? %>
+                    <ul class="email-notifications-admin__users-list">
+                      <% @email_notification_users.each do |user| %>
+                        <li>
+                          <%= link_to user_path(user), class: "context-menu__item", data: { action: "popup#close" } do %>
+                            <figure class="avatar email-notifications-admin__avatar">
+                              <%= image_tag fresh_user_avatar_path(user), size: 32, loading: :lazy, aria: { hidden: "true" } %>
+                            </figure>
+                            <span class="overflow-ellipsis"><%= user.name %></span>
+                          <% end %>
+                        </li>
+                      <% end %>
+                    </ul>
+                  <% else %>
+                    <p class="margin-none pad txt-subtle">No users have enabled email notifications.</p>
+                  <% end %>
+                </div>
+              </details>
+            </div>
+
+            <ul class="email-notifications-admin__checks">
+              <% @email_configuration_checks.each do |label, configured| %>
+                <li>
+                  <span aria-hidden="true"><%= configured ? "✓" : "—" %></span>
+                  <span><%= label %></span>
+                  <strong><%= configured ? "Configured" : "Not configured" %></strong>
+                </li>
+              <% end %>
+            </ul>
+          </section>
+
+          <section class="settings-group fill-shade border-radius pad-inline-double pad-block">
+            <h2 class="margin-none txt-large">Quick setup</h2>
+            <ol class="email-notifications-admin__guide txt-supporting">
+              <li>Choose an SMTP provider and verify the domain used by <code>EMAIL_FROM</code>.</li>
+              <li>Set <code>MAILER_HOST</code>, <code>SMTP_ADDRESS</code>, <code>SMTP_PORT</code>, <code>SMTP_USERNAME</code>, and <code>SMTP_PASSWORD</code>.</li>
+              <li>Set <code>EMAIL_NOTIFICATIONS_ENABLED=true</code> and restart Bonfire. Startup will reject an incomplete setup.</li>
+              <li>Publish SPF, enable DKIM signing, and add a DMARC policy before inviting users to opt in.</li>
+            </ol>
+            <p class="margin-none txt-small txt-supporting">SMTP credentials are never displayed here. See <code>docs/email-notifications.md</code> for deployment details.</p>
+          </section>
+        </div>
+      </section>
+
       <section class="profile-settings__panel" id="account-panel-emotes" role="tabpanel" hidden
           aria-labelledby="account-tab-emotes" data-profile-tabs-target="panel" data-profile-tabs-name="emotes">
         <header class="profile-settings__heading">

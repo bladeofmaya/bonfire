@@ -30,7 +30,7 @@ class ProfileLayoutTest < ApplicationSystemTestCase
     assert_selector "#profile-panel-profile:not([hidden])"
     assert_selector "#profile-panel-appearance[hidden]", visible: false
     assert_selector "i[data-lucide]", count: 0
-    assert_selector ".profile-settings__tab svg", count: 4
+    assert_selector ".profile-settings__tab svg", count: 5
 
     click_on "Devices"
 
@@ -48,6 +48,19 @@ class ProfileLayoutTest < ApplicationSystemTestCase
     assert_selector "[role='tab'][aria-selected='true']", text: "Appearance"
     assert_selector "#profile-panel-appearance:not([hidden])"
     assert_equal "Appearance", page.evaluate_script("document.activeElement.textContent.trim()")
+  end
+
+  test "disabled server email is explained and locks notification controls" do
+    visit user_profile_path
+    click_on "Notifications"
+
+    assert_selector ".profile-settings__heading .txt-negative", text: /currently disabled/
+    assert_selector "#profile-panel-notifications input[type='checkbox']:disabled", count: 3, visible: :all
+    assert_selector "#profile-panel-notifications select:disabled", count: 2
+    assert_selector "#profile-panel-notifications input[type='submit']:disabled", count: 1
+
+    description = find("#profile-panel-notifications .txt-supporting", match: :first)
+    assert_equal "rgb(192, 181, 166)", page.evaluate_script("getComputedStyle(arguments[0]).color", description)
   end
 
   private

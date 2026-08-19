@@ -1,0 +1,6 @@
+<%= @message.creator.name %> sent you a notification in <%= room_display_name(@room, for_user: @user) %>
+
+<%= truncate(@message.plain_text_body, length: 500) %>
+
+Open the conversation: <%= room_at_message_url(@room, @message) %>
+Change notification settings: <%= notification_settings_url %>

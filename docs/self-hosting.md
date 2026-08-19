@@ -152,6 +152,11 @@ docker run --publish 80:80 --env DISABLE_SSL=true ...
 To enable error reporting to Sentry in production, supply your DSN in the `SENTRY_DSN` environment variable.
 To disable Sentry initialization entirely, set `SKIP_TELEMETRY=true`.
 
+#### Email notifications (optional)
+
+Email is off by default. See [Email notifications](email-notifications.md) for
+SMTP variables, delivery behavior, DNS authentication, and scheduler details.
+
 ### Example
 
 Putting it all together, here's a complete `docker run` invocation:

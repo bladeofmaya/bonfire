@@ -1,0 +1,5 @@
+email_daily_summaries:
+  cron: "0 * * * *"
+  class: "EmailNotifications::DailySummarySchedule"
+  queue: email
+  description: "Queue daily summaries at each user's configured local hour"

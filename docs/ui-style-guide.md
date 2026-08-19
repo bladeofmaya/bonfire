@@ -68,8 +68,9 @@ Feature CSS should own spacing that is part of a stable component layout.
 - `--color-surface-active`: selected/current backdrop
 - `--color-border` and `--color-border-subtle`: structural separators
 - `--color-primary`: primary action and unread badge
-- `--color-text-primary`, `--color-text-secondary`, `--color-text-muted`:
-  text hierarchy
+- `--color-text-primary`, `--color-text-secondary`, `--color-text-supporting`,
+  `--color-text-muted`: text hierarchy. Use supporting text for explanatory
+  settings copy that must remain comfortably readable in dark mode.
 - `--color-danger` and `--color-success`: destructive and successful states
 - `--color-input-bg`, `--color-input-border`, `--color-input-focus-ring`:
   form controls

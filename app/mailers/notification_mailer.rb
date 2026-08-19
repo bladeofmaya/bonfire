@@ -1,0 +1,31 @@
+class NotificationMailer < ApplicationMailer
+  helper :rooms
+
+  def mention
+    @user = params[:user]
+    @message = params[:message]
+    @room = @message.room
+    mail to: @user.email_address, subject: "#{@message.creator.name} mentioned you in #{room_name(@room, @user)}"
+  end
+
+  def daily_summary
+    @user = params[:user]
+    @messages = params[:messages]
+    @period_on = params[:period_on]
+    @messages_by_room = @messages.group_by(&:room)
+    mail to: @user.email_address, subject: "Your Bonfire summary for #{@period_on.to_fs(:long)}"
+  end
+
+  helper_method :notification_settings_url
+
+  private
+    def notification_settings_url
+      user_profile_url(anchor: "notifications")
+    end
+
+    def room_name(room, user)
+      return room.name if room.name.present? || !room.direct?
+
+      room.users.where.not(id: user.id).pluck(:name).to_sentence.presence || user.name
+    end
+end

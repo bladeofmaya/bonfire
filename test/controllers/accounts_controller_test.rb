@@ -9,15 +9,54 @@ class AccountsControllerTest < ActionDispatch::IntegrationTest
     get edit_account_url
     assert_response :ok
     assert_select "nav[role='tablist'][aria-label='Account settings']" do
-      assert_select "button[role='tab'][data-profile-tabs-name]", count: 4
+      assert_select "button[role='tab'][data-profile-tabs-name]", count: 5
       assert_select "button[aria-selected='true'][data-profile-tabs-name='general']", text: "General"
       assert_select "[data-lucide]", minimum: 4
     end
     assert_select "#account-panel-general:not([hidden])"
     assert_select "#account-panel-members[hidden] turbo-frame#account_users"
+    assert_select "#account-panel-notifications[hidden]" do
+      assert_select ".profile-settings__heading .txt-supporting", text: /Review server email delivery/
+      assert_select ".email-notifications-admin__guide.txt-supporting"
+      assert_select ".email-notifications-admin__indicator:not(.email-notifications-admin__indicator--enabled)"
+      assert_select ".email-notifications-admin__users-trigger", text: "0 users enabled"
+      assert_select ".email-notifications-admin__checks li", count: 4
+      assert_select ".email-notifications-admin__guide", text: /EMAIL_NOTIFICATIONS_ENABLED=true/
+      assert_select "input", count: 0
+    end
     assert_select "#account-panel-emotes[hidden] form[action='#{account_custom_emotes_path}']"
     assert_select "#account-panel-privacy[hidden] form.readme-editor" do
       assert_select "trix-editor#account_readme.input"
+    end
+  end
+
+  test "notifications tab lists active non-bot users who opted in" do
+    users(:david, :jz).each { |user| user.update!(email_notifications_enabled: true) }
+
+    get edit_account_url
+
+    assert_select "#account-panel-notifications" do
+      assert_select ".email-notifications-admin__users-trigger", text: "2 users enabled"
+      assert_select ".email-notifications-admin__users-menu" do
+        assert_select "a[href='#{user_path(users(:david))}']", text: users(:david).name
+        assert_select "a[href='#{user_path(users(:jz))}']", text: users(:jz).name
+        assert_select "a[href='#{user_path(users(:bender))}']", count: 0
+      end
+    end
+  end
+
+  test "notifications tab reports enabled mail delivery" do
+    previous_enabled = Rails.configuration.x.email_notifications.enabled
+    Rails.configuration.x.email_notifications.enabled = true
+    begin
+      get edit_account_url
+    ensure
+      Rails.configuration.x.email_notifications.enabled = previous_enabled
+    end
+
+    assert_select "#account-panel-notifications" do
+      assert_select ".email-notifications-admin__indicator--enabled"
+      assert_select "p", text: /Email delivery is enabled/
     end
   end
 
@@ -107,5 +146,7 @@ class AccountsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :ok
     assert_select "#invite_url", count: 0
+    assert_select "button[data-profile-tabs-name='notifications']", count: 0
+    assert_select "#account-panel-notifications", count: 0
   end
 end

@@ -1,0 +1,11 @@
+Your Bonfire summary for <%= @period_on.to_fs(:long) %>
+
+<% @messages_by_room.each do |room, messages| %>
+<%= room_display_name(room, for_user: @user) %>
+<% messages.last(5).each do |message| %>
+- <%= message.creator.name %>: <%= truncate(message.plain_text_body, length: 240) %>
+<% end %>
+Open channel with <%= pluralize(messages.size, "new message") %>: <%= room_url(room) %>
+
+<% end %>
+Change notification settings: <%= notification_settings_url %>

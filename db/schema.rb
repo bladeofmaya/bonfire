@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.2].define(version: 2026_08_16_180000) do
+ActiveRecord::Schema[8.2].define(version: 2026_08_19_220000) do
   create_table "accounts", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "custom_styles"
@@ -92,6 +92,20 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_16_180000) do
     t.datetime "updated_at", null: false
     t.index ["account_id", "shortcode"], name: "index_custom_emotes_on_account_id_and_shortcode", unique: true
     t.index ["account_id"], name: "index_custom_emotes_on_account_id"
+  end
+
+  create_table "email_notification_deliveries", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "delivered_at"
+    t.string "kind", null: false
+    t.integer "message_id"
+    t.date "period_on"
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["message_id"], name: "index_email_notification_deliveries_on_message_id"
+    t.index ["user_id", "message_id", "kind"], name: "idx_email_deliveries_unique_message", unique: true, where: "message_id IS NOT NULL"
+    t.index ["user_id", "period_on", "kind"], name: "idx_email_deliveries_unique_period", unique: true, where: "period_on IS NOT NULL"
+    t.index ["user_id"], name: "index_email_notification_deliveries_on_user_id"
   end
 
   create_table "memberships", force: :cascade do |t|
@@ -183,6 +197,11 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_16_180000) do
     t.string "bot_token"
     t.datetime "created_at", null: false
     t.string "email_address"
+    t.boolean "email_daily_summary_enabled", default: false, null: false
+    t.integer "email_digest_hour", default: 9, null: false
+    t.boolean "email_mentions_enabled", default: true, null: false
+    t.boolean "email_notifications_enabled", default: false, null: false
+    t.string "email_time_zone", default: "UTC", null: false
     t.string "name", null: false
     t.string "password_digest"
     t.string "readme_digest"
@@ -210,6 +229,8 @@ ActiveRecord::Schema[8.2].define(version: 2026_08_16_180000) do
   add_foreign_key "boosts", "custom_emotes"
   add_foreign_key "boosts", "messages"
   add_foreign_key "custom_emotes", "accounts"
+  add_foreign_key "email_notification_deliveries", "messages"
+  add_foreign_key "email_notification_deliveries", "users"
   add_foreign_key "messages", "rooms"
   add_foreign_key "messages", "users", column: "creator_id"
   add_foreign_key "push_subscriptions", "users"

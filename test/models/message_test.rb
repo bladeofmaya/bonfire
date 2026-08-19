@@ -9,6 +9,22 @@ class MessageTest < ActiveSupport::TestCase
     end
   end
 
+  test "email mentions are only scheduled when delivery is globally enabled" do
+    previous_enabled = Rails.configuration.x.email_notifications.enabled
+
+    Rails.configuration.x.email_notifications.enabled = false
+    assert_no_enqueued_jobs only: EmailNotifications::MentionJob do
+      create_new_message_in rooms(:designers)
+    end
+
+    Rails.configuration.x.email_notifications.enabled = true
+    assert_enqueued_jobs 1, only: EmailNotifications::MentionJob do
+      create_new_message_in rooms(:david_and_jason)
+    end
+  ensure
+    Rails.configuration.x.email_notifications.enabled = previous_enabled
+  end
+
   test "all emoji" do
     assert Message.new(body: "😄🤘").plain_text_body.all_emoji?
     assert_not Message.new(body: "Haha! 😄🤘").plain_text_body.all_emoji?

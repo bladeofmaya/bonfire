@@ -12,7 +12,7 @@ class AccountSettingsLayoutTest < ApplicationSystemTestCase
     assert_selector "#account-panel-general:not([hidden])"
     assert_selector "#account-panel-members[hidden]", visible: false
     assert_selector "i[data-lucide]", count: 0
-    assert_selector ".profile-settings__tab svg", count: 3
+    assert_selector ".profile-settings__tab svg", count: 5
 
     click_on "Members"
 
@@ -20,6 +20,20 @@ class AccountSettingsLayoutTest < ApplicationSystemTestCase
     assert_selector "#account-panel-members:not([hidden])", text: "Share to invite more people"
     assert_selector "#account-panel-general[hidden]", visible: false
     assert_equal "members", URI.parse(current_url).fragment
+  end
+
+  test "shows mailer status, setup guide, and opted-in users" do
+    users(:jz).update!(email_notifications_enabled: true)
+    visit edit_account_path
+    click_on "Notifications"
+
+    assert_selector "#account-panel-notifications:not([hidden])", text: "Email delivery is disabled"
+    assert_text "EMAIL_NOTIFICATIONS_ENABLED=true"
+
+    find(".email-notifications-admin__users-trigger").click
+
+    assert_selector ".email-notifications-admin__users-menu", text: users(:jz).name
+    assert_selector ".email-notifications-admin__users-menu a[href='#{user_path(users(:jz))}']"
   end
 
   test "previews and publishes README" do

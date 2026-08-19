@@ -23,6 +23,7 @@
       [ "profile", "user-round", "Profile" ],
       [ "appearance", "palette", "Appearance" ],
       [ "conversations", "messages-square", "Conversations" ],
+      [ "notifications", "mail", "Notifications" ],
       [ "devices", "monitor-smartphone", "Devices" ]
     ].each_with_index do |(name, icon, label), index| %>
       <button type="button" class="profile-settings__tab"
@@ -140,6 +141,68 @@
           </menu>
         </div>
       </fieldset>
+    </section>
+
+    <section class="profile-settings__panel" id="profile-panel-notifications" role="tabpanel" hidden
+        aria-labelledby="profile-tab-notifications" data-profile-tabs-target="panel" data-profile-tabs-name="notifications">
+      <header class="profile-settings__heading">
+        <h1>Email notifications</h1>
+        <% unless Rails.configuration.x.email_notifications.enabled %>
+          <p class="txt-negative" role="status">Email delivery is currently disabled by this server's administrator.</p>
+        <% end %>
+        <p class="txt-supporting">Choose what Bonfire sends to <%= @user.email_address %>. These choices are separate from browser notifications.</p>
+      </header>
+
+      <%= profile_form_with @user, class: "profile-settings__fields flex flex-column gap" do |form| %>
+        <fieldset class="settings-group fill-shade border-radius pad-inline-double pad-block">
+          <legend class="settings-group__legend">Email delivery</legend>
+          <label class="flex align-center gap txt-align-start">
+            <span class="flex-item-grow"><strong>Enable email notifications</strong><br>
+              <span class="txt-small txt-supporting">The master switch for every email notification from Bonfire.</span>
+            </span>
+            <span class="switch">
+              <%= form.checkbox :email_notifications_enabled, class: "switch__input", disabled: !Rails.configuration.x.email_notifications.enabled %>
+              <span class="switch__btn round" aria-hidden="true"></span>
+            </span>
+          </label>
+        </fieldset>
+
+        <fieldset class="settings-group fill-shade border-radius pad-inline-double pad-block">
+          <legend class="settings-group__legend">Notification modes</legend>
+          <label class="flex align-center gap txt-align-start">
+            <span class="flex-item-grow"><strong>Mentions and pings</strong><br>
+              <span class="txt-small txt-supporting">Email me after five minutes when I am mentioned or receive a ping and remain offline.</span>
+            </span>
+            <span class="switch">
+              <%= form.checkbox :email_mentions_enabled, class: "switch__input", disabled: !Rails.configuration.x.email_notifications.enabled %>
+              <span class="switch__btn round" aria-hidden="true"></span>
+            </span>
+          </label>
+          <label class="flex align-center gap txt-align-start">
+            <span class="flex-item-grow"><strong>Daily summary</strong><br>
+              <span class="txt-small txt-supporting">Send one summary of unread activity from the previous day.</span>
+            </span>
+            <span class="switch">
+              <%= form.checkbox :email_daily_summary_enabled, class: "switch__input", disabled: !Rails.configuration.x.email_notifications.enabled %>
+              <span class="switch__btn round" aria-hidden="true"></span>
+            </span>
+          </label>
+        </fieldset>
+
+        <fieldset class="settings-group fill-shade border-radius pad-inline-double pad-block">
+          <legend class="settings-group__legend">Summary timing</legend>
+          <label class="flex align-center gap">
+            <span class="flex-item-grow">Delivery hour</span>
+            <%= form.select :email_digest_hour, (0..23).map { |hour| [ "%02d:00" % hour, hour ] }, {}, class: "input", disabled: !Rails.configuration.x.email_notifications.enabled %>
+          </label>
+          <label class="flex align-center gap">
+            <span class="flex-item-grow">Time zone</span>
+            <%= form.time_zone_select :email_time_zone, ActiveSupport::TimeZone.all, {}, class: "input", disabled: !Rails.configuration.x.email_notifications.enabled %>
+          </label>
+        </fieldset>
+
+        <%= form.submit "Save email settings", class: "btn btn--reversed", disabled: !Rails.configuration.x.email_notifications.enabled %>
+      <% end %>
     </section>
 
     <section class="profile-settings__panel" id="profile-panel-devices" role="tabpanel" hidden

@@ -13,6 +13,7 @@ class User < ApplicationRecord
 
   has_many :boosts, dependent: :destroy, foreign_key: :booster_id
   has_many :searches, dependent: :delete_all
+  has_many :email_notification_deliveries, dependent: :delete_all
 
   has_many :sessions, dependent: :destroy
   has_many :bans, dependent: :destroy
@@ -25,6 +26,12 @@ class User < ApplicationRecord
   validates :email_address, presence: true, unless: :bot?
   validates :password, presence: true, on: :create, unless: :bot?
   validates :password, length: { minimum: 12 }, allow_nil: true, unless: :bot?
+  validates :email_digest_hour, inclusion: { in: 0..23 }
+  validates :email_time_zone, inclusion: { in: ActiveSupport::TimeZone.all.map(&:name) }
+
+  def email_notifications_available?
+    Rails.configuration.x.email_notifications.enabled && active? && !bot? && email_address.present?
+  end
 
   after_create_commit :grant_membership_to_open_rooms
 

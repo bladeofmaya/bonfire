@@ -17,7 +17,14 @@ class Users::ProfilesController < ApplicationController
     end
 
     def user_params
-      params.require(:user).permit(:name, :avatar, :email_address, :password, :bio).compact
+      permitted = %i[ name avatar email_address password bio ]
+      if Rails.configuration.x.email_notifications.enabled
+        permitted.concat %i[
+          email_notifications_enabled email_mentions_enabled email_daily_summary_enabled
+          email_digest_hour email_time_zone
+        ]
+      end
+      params.require(:user).permit(*permitted).compact
     end
 
     def update_notice

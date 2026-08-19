@@ -11,10 +11,10 @@ class Users::ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "nav[role='tablist'][aria-label='Profile settings']" do
       assert_select "button[role='tab'][aria-selected='true'][data-profile-tabs-name='profile']", text: "Profile"
-      assert_select "button[role='tab'][data-profile-tabs-name]", count: 4
-      assert_select "[data-lucide]", count: 4
+      assert_select "button[role='tab'][data-profile-tabs-name]", count: 5
+      assert_select "[data-lucide]", count: 5
     end
-    assert_select "section[role='tabpanel'][data-profile-tabs-name]", count: 4
+    assert_select "section[role='tabpanel'][data-profile-tabs-name]", count: 5
     assert_select "#profile-panel-appearance[hidden] select[data-theme-target='select']" do
       assert_select "option[value='system']", "Use system setting"
       assert_select "option[value='light']", "Light"
@@ -24,6 +24,49 @@ class Users::ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_select "form[action='#{session_path}'] button.btn[type='submit'][aria-label='Log out'][data-action='sessions#logout:prevent']" do
       assert_select "img[aria-hidden='true'][src*='logout']"
     end
+  end
+
+  test "shows and updates email notification preferences" do
+    get user_profile_url
+
+    assert_select "#profile-panel-notifications[hidden]" do
+      assert_select ".profile-settings__heading .txt-negative[role='status']", text: /currently disabled/
+      assert_select ".profile-settings__heading .txt-supporting", text: /Choose what Bonfire sends/
+      assert_select ".txt-supporting", minimum: 4
+      assert_select "input[name='user[email_notifications_enabled]'][type='checkbox'][disabled]"
+      assert_select "input[name='user[email_mentions_enabled]'][type='checkbox'][checked][disabled]"
+      assert_select "input[name='user[email_daily_summary_enabled]'][type='checkbox'][disabled]"
+      assert_select "select[name='user[email_digest_hour]'][disabled]"
+      assert_select "select[name='user[email_time_zone]'][disabled]"
+      assert_select "input[type='submit'][disabled]"
+    end
+
+    previous_enabled = Rails.configuration.x.email_notifications.enabled
+    Rails.configuration.x.email_notifications.enabled = true
+    begin
+      put user_profile_url, params: { user: {
+        email_notifications_enabled: "1", email_mentions_enabled: "0", email_daily_summary_enabled: "1",
+        email_digest_hour: "18", email_time_zone: "Bern"
+      } }
+    ensure
+      Rails.configuration.x.email_notifications.enabled = previous_enabled
+    end
+
+    assert_redirected_to user_profile_url
+    user = users(:david).reload
+    assert user.email_notifications_enabled?
+    assert_not user.email_mentions_enabled?
+    assert user.email_daily_summary_enabled?
+    assert_equal 18, user.email_digest_hour
+    assert_equal "Bern", user.email_time_zone
+  end
+
+  test "email preferences cannot be changed while delivery is globally disabled" do
+    put user_profile_url, params: { user: { email_notifications_enabled: "1", email_daily_summary_enabled: "1" } }
+
+    user = users(:david).reload
+    assert_not user.email_notifications_enabled?
+    assert_not user.email_daily_summary_enabled?
   end
 
   test "conversation names truncate without displacing notification controls" do

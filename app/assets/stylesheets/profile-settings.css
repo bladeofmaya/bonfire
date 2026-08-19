@@ -144,6 +144,68 @@
   max-inline-size: none;
 }
 
+.email-notifications-admin__indicator {
+  display: inline-block;
+  inline-size: 0.65rem;
+  block-size: 0.65rem;
+  margin-inline-end: 0.3rem;
+  border-radius: var(--radius-round);
+  background: var(--color-danger);
+}
+
+.email-notifications-admin__indicator--enabled { background: var(--color-success); }
+
+.email-notifications-admin__users-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  list-style: none;
+
+  &::-webkit-details-marker { display: none; }
+}
+
+.email-notifications-admin__users-menu {
+  inset-inline: auto 0;
+  inline-size: min(20rem, calc(100vw - var(--space-inline-double)));
+}
+
+.email-notifications-admin__users-heading {
+  margin: 0;
+  padding: 0.5rem;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-small);
+}
+
+.email-notifications-admin__users-list {
+  display: grid;
+  gap: 0.15rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.email-notifications-admin__avatar { --avatar-size: 2rem; }
+
+.email-notifications-admin__checks {
+  display: grid;
+  gap: var(--space-block-half);
+  margin-block: var(--space-block);
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    grid-template-columns: 1rem minmax(0, 1fr) auto;
+    gap: var(--space-inline-half);
+  }
+}
+
+.email-notifications-admin__guide {
+  display: grid;
+  gap: var(--space-block-half);
+  padding-inline-start: var(--space-inline-double);
+}
+
 @media (max-width: 55rem) {
   .profile-settings {
     display: flex;

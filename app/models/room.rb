@@ -54,6 +54,7 @@ class Room < ApplicationRecord
   def receive(message)
     unread_memberships(message)
     push_later(message)
+    email_mentions_later(message)
   end
 
   def open?
@@ -159,5 +160,12 @@ class Room < ApplicationRecord
 
     def push_later(message)
       Room::PushMessageJob.perform_later(self, message)
+    end
+
+    def email_mentions_later(message)
+      return unless Rails.configuration.x.email_notifications.enabled
+      return unless direct? || message.mentionees.exists?
+
+      EmailNotifications::MentionJob.set(wait: EmailNotifications::MentionJob::OFFLINE_GRACE_PERIOD).perform_later(message)
     end
 end

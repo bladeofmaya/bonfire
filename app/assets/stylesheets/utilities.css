@@ -20,6 +20,7 @@
 .txt-align-end { text-align: end; }
 
 .txt-primary { color: var(--color-text); }
+.txt-supporting { color: var(--color-text-supporting); }
 .txt-reversed { color: var(--color-text-reversed); }
 .txt-negative { color: var(--color-negative); }
 .txt-subtle { color: var(--color-border-darker); }

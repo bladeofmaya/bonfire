@@ -1,0 +1,13 @@
+<div style="max-width: 640px; margin: 0 auto; font-family: system-ui, sans-serif; color: #27231d;">
+  <p style="font-size: 32px; margin: 0 0 20px;" aria-hidden="true">🔥</p>
+  <p style="margin: 0 0 8px; color: #756d60;"><%= @room.direct? ? "💬" : "#️⃣" %> <%= room_display_name(@room, for_user: @user) %></p>
+  <h1 style="margin: 0 0 20px; font-size: 24px;"><%= @message.creator.name %> sent you a notification</h1>
+  <blockquote style="margin: 0 0 24px; padding: 16px 20px; border-left: 4px solid #e4772f; background: #f6f1e9;">
+    <%= truncate(@message.plain_text_body, length: 500) %>
+  </blockquote>
+  <p><%= link_to "Open the conversation", room_at_message_url(@room, @message), style: "display: inline-block; padding: 12px 18px; border-radius: 8px; background: #27231d; color: white; text-decoration: none;" %></p>
+  <p style="margin-top: 32px; color: #756d60; font-size: 14px;">
+    You received this because mentions and pings are enabled.
+    <%= link_to "Change notification settings", notification_settings_url %>.
+  </p>
+</div>
