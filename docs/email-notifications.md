@@ -41,12 +41,16 @@ bin/bonfire setup --configure-only
 bin/bonfire mailserver setup --provider postmark --from "Bonfire <notifications@example.com>"
 bin/bonfire mailserver status
 bin/bonfire deploy
+bin/bonfire mailserver test
 ```
 
 The setup command prompts for the Postmark server API token without echoing it.
 It stores the token in `.kamal/secrets` and non-secret settings in
 `.kamal/deploy.env`; `status` reports only whether credentials exist. A token
 can instead be read from a private file with `--token-file PATH`.
+After the first deployment, `mailserver test` asks the deployed application to
+send a diagnostic email to the first active administrator. It does not expose
+the provider token or accept an arbitrary recipient.
 
 Create a Postmark server first and verify the From address or its domain.
 Bonfire uses Postmark's transactional `outbound` message stream by default;

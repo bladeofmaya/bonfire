@@ -13,4 +13,8 @@ class NotificationMailerPreview < ActionMailer::Preview
   def new_user_signup
     NotificationMailer.with(user: User.administrator.first, new_user: User.member.last).new_user_signup
   end
+
+  def delivery_test
+    NotificationMailer.with(user: User.administrator.first).delivery_test
+  end
 end

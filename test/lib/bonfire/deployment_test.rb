@@ -270,6 +270,36 @@ class Bonfire::DeploymentTest < ActiveSupport::TestCase
     refute_includes @output.string, "never-print-this-token"
   end
 
+  test "mailserver test invokes only the fixed deployed delivery task" do
+    configure
+    configure_secrets
+    File.open(File.join(@root, ".kamal/secrets"), "a") do |file|
+      file.puts "POSTMARK_SERVER_TOKEN=never-pass-this-to-the-process"
+    end
+    File.open(File.join(@root, ".kamal/deploy.env"), "a") do |file|
+      file.puts "EMAIL_NOTIFICATIONS_ENABLED=true"
+      file.puts "EMAIL_PROVIDER=postmark"
+      file.puts "EMAIL_FROM=notifications@example.com"
+      file.puts "MAILER_HOST=chat.example.com"
+    end
+
+    assert_equal 0, cli.run(%w[mailserver test])
+
+    command, environment = @runner.runs.sole
+    assert_equal [ "kamal", "app", "exec", "--reuse", "bin/rails bonfire:mailserver:test" ], command
+    refute_includes environment.values, "never-pass-this-to-the-process"
+    refute_includes @output.string, "never-pass-this-to-the-process"
+  end
+
+  test "mailserver test refuses an incomplete configuration" do
+    configure
+    configure_secrets
+
+    assert_equal 1, cli.run(%w[mailserver test])
+    assert_includes @error.string, "mailserver status"
+    assert_empty @runner.runs
+  end
+
   test "mailserver setup requires an existing deployment configuration" do
     assert_equal 1, cli.run(%w[mailserver setup --from notifications@example.com])
     assert_includes @error.string, "setup --configure-only"

@@ -426,9 +426,10 @@ module Bonfire
           case command
           when "setup" then mailserver_setup(arguments)
           when "status" then mailserver_status(arguments)
+          when "test" then mailserver_test(arguments)
           when "help", "--help", "-h" then mailserver_help
           else
-            raise Error, "Unknown mailserver command: #{command}. Use setup or status."
+            raise Error, "Unknown mailserver command: #{command}. Use setup, status, or test."
           end
         end
 
@@ -439,12 +440,14 @@ module Bonfire
             Commands:
               setup   Configure Postmark (recommended) or generic SMTP
               status  Report mail configuration without revealing credentials
+              test    Send a test email to the installation's first administrator
 
             Recommended setup:
               bin/bonfire setup --configure-only
               bin/bonfire mailserver setup --provider postmark --from "Bonfire <notifications@example.com>"
               bin/bonfire mailserver status
               bin/bonfire deploy
+              bin/bonfire mailserver test
           HELP
           0
         end
@@ -542,6 +545,37 @@ module Bonfire
           @output.puts "  Ready to deploy: #{ready ? 'yes' : 'no'}"
           @output.puts "  Sender verification: confirm this in #{provider == 'postmark' ? 'Postmark' : 'your provider'} before sending."
           ready ? 0 : 1
+        end
+
+        def mailserver_test(arguments)
+          parser = OptionParser.new do |option_parser|
+            option_parser.banner = "Usage: bin/bonfire mailserver test"
+            option_parser.on("-h", "--help", "Show this help") do
+              @output.puts option_parser
+              return 0
+            end
+          end
+          parser.parse!(arguments)
+          raise Error, "The test command does not accept arguments" if arguments.any?
+          ensure_mailserver_files!
+          raise Error, "Install required local tools: kamal" unless @runner.available?("kamal")
+
+          config = DEFAULTS.merge(@config_file.read)
+          secrets = @secrets_file.read
+          provider = config.fetch("EMAIL_PROVIDER", "postmark")
+          ready = config["EMAIL_NOTIFICATIONS_ENABLED"] == "true" &&
+            mailserver_checks(config, secrets, provider).all?(&:last)
+          raise Error, "Mail delivery is not ready. Run `bin/bonfire mailserver status` for details." unless ready
+
+          validate_configuration!(config)
+          @output.puts "Sending a test email through #{provider}..."
+          if @runner.run("kamal", "app", "exec", "--reuse", "bin/rails bonfire:mailserver:test", env: config)
+            @output.puts "The deployed application accepted the test delivery request."
+            0
+          else
+            @error.puts "Test email delivery failed. Check the output above and your provider activity log."
+            1
+          end
         end
 
         def mailserver_checks(config, secrets, provider)

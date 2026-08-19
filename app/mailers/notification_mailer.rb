@@ -22,6 +22,11 @@ class NotificationMailer < ApplicationMailer
     mail to: @user.email_address, subject: "#{@new_user.name} joined Bonfire"
   end
 
+  def delivery_test
+    @user = params[:user]
+    mail to: @user.email_address, subject: "Bonfire email delivery test"
+  end
+
   helper_method :notification_settings_url
 
   private
