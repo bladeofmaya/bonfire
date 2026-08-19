@@ -17,4 +17,8 @@ class NotificationMailerPreview < ActionMailer::Preview
   def delivery_test
     NotificationMailer.with(user: User.administrator.first).delivery_test
   end
+
+  def stream_live
+    NotificationMailer.with(user: User.active.member.first, room: Room.where(stream_enabled: true).first).stream_live
+  end
 end

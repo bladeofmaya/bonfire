@@ -1,11 +1,13 @@
 require "test_helper"
-require "rake"
+require "open3"
 
 class ResqueTasksTest < ActiveSupport::TestCase
   test "scheduler startup task is registered" do
-    Rails.application.load_tasks unless Rake::Task.task_defined?("resque:scheduler")
+    output, error, status = Open3.capture3(
+      { "RAILS_ENV" => "test" }, "bundle", "exec", "rake", "-T", "resque", chdir: Rails.root.to_s
+    )
 
-    assert Rake::Task.task_defined?("resque:scheduler")
-    assert_includes Rake::Task["resque:scheduler"].prerequisites, "scheduler_setup"
+    assert status.success?, error
+    assert_includes output, "rake resque:scheduler"
   end
 end

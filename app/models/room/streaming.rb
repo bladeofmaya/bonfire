@@ -58,6 +58,9 @@ module Room::Streaming
 
       update!(stream_notified_session_id: stream_session_id)
       Room::PushStreamLiveJob.perform_later(self, stream_session_id)
+      if Rails.configuration.x.email_notifications.enabled
+        EmailNotifications::StreamLiveJob.perform_later(self, stream_session_id)
+      end
     end
 
     def broadcast_stream_state

@@ -21,7 +21,7 @@ class Users::ProfilesController < ApplicationController
       if Rails.configuration.x.email_notifications.enabled
         permitted.concat %i[
           email_notifications_enabled email_mentions_enabled email_daily_summary_enabled
-          email_digest_hour email_time_zone
+          email_stream_live_enabled email_digest_hour email_time_zone
         ]
         permitted << :email_new_user_signup_enabled if @user.administrator?
       end

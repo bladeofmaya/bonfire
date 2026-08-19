@@ -27,6 +27,13 @@ class NotificationMailer < ApplicationMailer
     mail to: @user.email_address, subject: "Bonfire email delivery test"
   end
 
+  def stream_live
+    @user = params[:user]
+    @room = params[:room]
+    @stream_name = @room.stream_title.presence || @room.name
+    mail to: @user.email_address, subject: "#{@stream_name} is live now"
+  end
+
   helper_method :notification_settings_url
 
   private

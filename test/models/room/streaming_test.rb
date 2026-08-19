@@ -31,6 +31,18 @@ class Room::StreamingTest < ActiveSupport::TestCase
     end
   end
 
+  test "a started event also enqueues email fanout when email delivery is enabled" do
+    room = configured_room
+    previous_enabled = Rails.configuration.x.email_notifications.enabled
+    Rails.configuration.x.email_notifications.enabled = true
+
+    assert_enqueued_with(job: EmailNotifications::StreamLiveJob) do
+      room.apply_stream_event!(type: "stream.started", session_id: "email-session", occurred_at: Time.current)
+    end
+  ensure
+    Rails.configuration.x.email_notifications.enabled = previous_enabled
+  end
+
   private
     def configured_room
       configure_streaming

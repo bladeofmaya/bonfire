@@ -21,6 +21,8 @@ class Room < ApplicationRecord
 
   has_many :users, through: :memberships
   has_many :messages, dependent: :destroy
+  has_many :stream_email_notification_deliveries, class_name: "EmailNotificationDelivery",
+    dependent: :delete_all, inverse_of: :room
   has_one_attached :stream_poster
   has_rich_text :stream_description
 

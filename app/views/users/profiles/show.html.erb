@@ -187,6 +187,15 @@
               <span class="switch__btn round" aria-hidden="true"></span>
             </span>
           </label>
+          <label class="flex align-center gap txt-align-start">
+            <span class="flex-item-grow"><strong>Streams going live</strong><br>
+              <span class="txt-small txt-supporting">Email me when a stream in one of my visible channels goes live.</span>
+            </span>
+            <span class="switch">
+              <%= form.checkbox :email_stream_live_enabled, class: "switch__input", disabled: !Rails.configuration.x.email_notifications.enabled %>
+              <span class="switch__btn round" aria-hidden="true"></span>
+            </span>
+          </label>
           <% if @user.administrator? %>
             <label class="flex align-center gap txt-align-start">
               <span class="flex-item-grow"><strong>New user signups</strong> <span class="profile-settings__admin-label">Admin</span><br>

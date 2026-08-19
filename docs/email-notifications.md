@@ -26,6 +26,9 @@ delivery hour, and time zone under **Profile → Notifications**.
 - Administrators can opt in to an immediate email when a new user completes
   signup. This mode is hidden from members and always delivers to the
   administrator's registered account email address.
+- Members can opt in to an immediate email when a stream in one of their
+  visible channels goes live. Delivery is intentional even while the member is
+  actively connected to that channel.
 - Delivery rows have unique message/period keys. Jobs recheck those rows under
   a lock, making retries idempotent. Successful and empty deliveries emit the
   `email_notification.delivered` Active Support event with non-personal mode

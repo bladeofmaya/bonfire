@@ -36,6 +36,7 @@ class Users::ProfilesControllerTest < ActionDispatch::IntegrationTest
       assert_select "input[name='user[email_notifications_enabled]'][type='checkbox'][disabled]"
       assert_select "input[name='user[email_mentions_enabled]'][type='checkbox'][checked][disabled]"
       assert_select "input[name='user[email_daily_summary_enabled]'][type='checkbox'][disabled]"
+      assert_select "input[name='user[email_stream_live_enabled]'][type='checkbox'][disabled]"
       assert_select "input[name='user[email_new_user_signup_enabled]'][type='checkbox'][disabled]"
       assert_select "label", text: /New user signups Admin/ do
         assert_select ".profile-settings__admin-label", text: "Admin"
@@ -50,7 +51,8 @@ class Users::ProfilesControllerTest < ActionDispatch::IntegrationTest
     begin
       put user_profile_url, params: { user: {
         email_notifications_enabled: "1", email_mentions_enabled: "0", email_daily_summary_enabled: "1",
-        email_new_user_signup_enabled: "1", email_digest_hour: "18", email_time_zone: "Bern"
+        email_stream_live_enabled: "1", email_new_user_signup_enabled: "1",
+        email_digest_hour: "18", email_time_zone: "Bern"
       } }
     ensure
       Rails.configuration.x.email_notifications.enabled = previous_enabled
@@ -61,6 +63,7 @@ class Users::ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert user.email_notifications_enabled?
     assert_not user.email_mentions_enabled?
     assert user.email_daily_summary_enabled?
+    assert user.email_stream_live_enabled?
     assert user.email_new_user_signup_enabled?
     assert_equal 18, user.email_digest_hour
     assert_equal "Bern", user.email_time_zone
@@ -83,11 +86,14 @@ class Users::ProfilesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "email preferences cannot be changed while delivery is globally disabled" do
-    put user_profile_url, params: { user: { email_notifications_enabled: "1", email_daily_summary_enabled: "1" } }
+    put user_profile_url, params: { user: {
+      email_notifications_enabled: "1", email_daily_summary_enabled: "1", email_stream_live_enabled: "1"
+    } }
 
     user = users(:david).reload
     assert_not user.email_notifications_enabled?
     assert_not user.email_daily_summary_enabled?
+    assert_not user.email_stream_live_enabled?
   end
 
   test "conversation names truncate without displacing notification controls" do
