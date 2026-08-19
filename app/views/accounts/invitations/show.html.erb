@@ -1,9 +1,10 @@
 <%= turbo_frame_tag "account_invitation_dialog" do %>
-  <dialog class="dialog invitation-dialog shadow" data-controller="invite-dialog" data-invite-dialog-target="dialog">
+  <dialog class="dialog invitation-dialog shadow"
+      data-controller="dialog" data-dialog-target="dialog" data-action="close->dialog#clear">
     <%= button_tag type: "button",
           class: "btn btn--icon dialog__close",
           aria: { label: "Close invitation" },
-          data: { action: "invite-dialog#close" } do %>
+          data: { action: "dialog#close" } do %>
       <%= image_tag "remove.svg", size: 20, aria: { hidden: "true" }, class: "colorize--black" %>
     <% end %>
 

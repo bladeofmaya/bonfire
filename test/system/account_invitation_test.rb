@@ -13,6 +13,12 @@ class AccountInvitationTest < ApplicationSystemTestCase
 
     find("button[aria-label='Close invitation']").click
     assert_no_selector "dialog.invitation-dialog[open]"
+
+    click_on rooms(:designers).name
+
+    assert_current_path room_path(rooms(:designers))
+    assert_no_selector "dialog.invitation-dialog[open]"
+    assert_selector "turbo-frame#account_invitation_dialog:empty", visible: :all
   end
 
   test "member does not see invitation access" do

@@ -7,7 +7,9 @@ class Accounts::InvitationsControllerTest < ActionDispatch::IntegrationTest
     get account_invitation_url
 
     assert_response :success
-    assert_select "turbo-frame#account_invitation_dialog dialog.invitation-dialog[data-controller='invite-dialog']"
+    assert_select "turbo-frame#account_invitation_dialog" do
+      assert_select "dialog.invitation-dialog[data-controller='dialog'][data-action='close->dialog#clear']"
+    end
     assert_select "#invite_url[value='#{join_url(accounts(:signal).join_code)}']"
   end
 
