@@ -23,6 +23,7 @@ class Users::ProfilesController < ApplicationController
           email_notifications_enabled email_mentions_enabled email_daily_summary_enabled
           email_digest_hour email_time_zone
         ]
+        permitted << :email_new_user_signup_enabled if @user.administrator?
       end
       params.require(:user).permit(*permitted).compact
     end

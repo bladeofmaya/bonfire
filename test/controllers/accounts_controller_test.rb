@@ -21,7 +21,7 @@ class AccountsControllerTest < ActionDispatch::IntegrationTest
       assert_select ".email-notifications-admin__indicator:not(.email-notifications-admin__indicator--enabled)"
       assert_select ".email-notifications-admin__users-trigger", text: "0 users enabled"
       assert_select ".email-notifications-admin__checks li", count: 4
-      assert_select ".email-notifications-admin__guide", text: /EMAIL_NOTIFICATIONS_ENABLED=true/
+      assert_select ".email-notifications-admin__guide", text: /bin\/bonfire mailserver setup/
       assert_select "input", count: 0
     end
     assert_select "#account-panel-emotes[hidden] form[action='#{account_custom_emotes_path}']"

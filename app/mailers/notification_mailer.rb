@@ -16,6 +16,12 @@ class NotificationMailer < ApplicationMailer
     mail to: @user.email_address, subject: "Your Bonfire summary for #{@period_on.to_fs(:long)}"
   end
 
+  def new_user_signup
+    @user = params[:user]
+    @new_user = params[:new_user]
+    mail to: @user.email_address, subject: "#{@new_user.name} joined Bonfire"
+  end
+
   helper_method :notification_settings_url
 
   private

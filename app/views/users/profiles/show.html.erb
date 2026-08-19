@@ -187,6 +187,17 @@
               <span class="switch__btn round" aria-hidden="true"></span>
             </span>
           </label>
+          <% if @user.administrator? %>
+            <label class="flex align-center gap txt-align-start">
+              <span class="flex-item-grow"><strong>New user signups</strong> <span class="profile-settings__admin-label">Admin</span><br>
+                <span class="txt-small txt-supporting">Notify me when a new user has signed up.</span>
+              </span>
+              <span class="switch">
+                <%= form.checkbox :email_new_user_signup_enabled, class: "switch__input", disabled: !Rails.configuration.x.email_notifications.enabled %>
+                <span class="switch__btn round" aria-hidden="true"></span>
+              </span>
+            </label>
+          <% end %>
         </fieldset>
 
         <fieldset class="settings-group fill-shade border-radius pad-inline-double pad-block">

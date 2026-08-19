@@ -1,0 +1,10 @@
+<div style="max-width: 640px; margin: 0 auto; font-family: system-ui, sans-serif; color: #27231d;">
+  <p style="font-size: 32px; margin: 0 0 20px;" aria-hidden="true">🔥</p>
+  <h1 style="margin: 0 0 8px; font-size: 24px;"><%= @new_user.name %> joined Bonfire</h1>
+  <p style="margin: 0 0 24px; color: #756d60;"><%= @new_user.email_address %> has created an account.</p>
+  <p><%= link_to "View the new user", user_url(@new_user), style: "display: inline-block; padding: 12px 18px; border-radius: 8px; background: #27231d; color: white; text-decoration: none;" %></p>
+  <p style="margin-top: 32px; color: #756d60; font-size: 14px;">
+    You received this because new user signup notifications are enabled.
+    <%= link_to "Change notification settings", notification_settings_url %>.
+  </p>
+</div>

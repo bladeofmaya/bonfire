@@ -220,6 +220,61 @@ class Bonfire::DeploymentTest < ActiveSupport::TestCase
     assert_includes configuration, "DEPLOY_SERVER=203.0.113.10"
   end
 
+  test "mailserver setup stores Postmark configuration and token separately" do
+    configure
+    configure_secrets
+    File.open(File.join(@root, ".kamal/secrets"), "a") do |file|
+      file.puts "RTMP_HOMEBREW_PRIVATE_KEY=existing-rtmp-private-key"
+      file.puts "RTMP_HOMEBREW_EVENT_SECRET=existing-rtmp-event-secret"
+    end
+    token = "postmark-token-that-must-not-be-printed"
+
+    result = cli(input: StringIO.new("#{token}\n")).run(
+      %w[mailserver setup --provider postmark --from notifications@example.com]
+    )
+
+    assert_equal 0, result
+    configuration = File.read(File.join(@root, ".kamal/deploy.env"))
+    secrets = File.read(File.join(@root, ".kamal/secrets"))
+    assert_includes configuration, "EMAIL_NOTIFICATIONS_ENABLED=true"
+    assert_includes configuration, "EMAIL_PROVIDER=postmark"
+    assert_includes configuration, "EMAIL_FROM=notifications@example.com"
+    assert_includes configuration, "MAILER_HOST=chat.example.com"
+    assert_includes configuration, "POSTMARK_MESSAGE_STREAM=outbound"
+    assert_includes secrets, "POSTMARK_SERVER_TOKEN=#{token}"
+    assert_includes secrets, "RTMP_HOMEBREW_PRIVATE_KEY=existing-rtmp-private-key"
+    assert_includes secrets, "RTMP_HOMEBREW_EVENT_SECRET=existing-rtmp-event-secret"
+    refute_includes configuration, token
+    refute_includes @output.string, token
+    assert_equal 0o600, File.stat(File.join(@root, ".kamal/secrets")).mode & 0o777
+  end
+
+  test "mailserver status reports readiness without revealing the Postmark token" do
+    configure
+    File.write(File.join(@root, ".kamal/secrets"), <<~SECRETS)
+      SECRET_KEY_BASE=secret
+      VAPID_PRIVATE_KEY=private
+      VAPID_PUBLIC_KEY=public
+      POSTMARK_SERVER_TOKEN=never-print-this-token
+    SECRETS
+    File.open(File.join(@root, ".kamal/deploy.env"), "a") do |file|
+      file.puts "EMAIL_NOTIFICATIONS_ENABLED=true"
+      file.puts "EMAIL_PROVIDER=postmark"
+      file.puts "EMAIL_FROM=notifications@example.com"
+      file.puts "MAILER_HOST=chat.example.com"
+    end
+
+    assert_equal 0, cli.run(%w[mailserver status])
+    assert_includes @output.string, "Postmark server token: configured"
+    assert_includes @output.string, "Ready to deploy: yes"
+    refute_includes @output.string, "never-print-this-token"
+  end
+
+  test "mailserver setup requires an existing deployment configuration" do
+    assert_equal 1, cli.run(%w[mailserver setup --from notifications@example.com])
+    assert_includes @error.string, "setup --configure-only"
+  end
+
   test "migration dry run checks both servers without changing them" do
     configure
     configure_secrets
@@ -284,9 +339,9 @@ class Bonfire::DeploymentTest < ActiveSupport::TestCase
   end
 
   private
-    def cli
+    def cli(input: StringIO.new)
       Bonfire::Deployment::CLI.new(
-        root: @root, input: StringIO.new, output: @output, error: @error, runner: @runner
+        root: @root, input:, output: @output, error: @error, runner: @runner
       )
     end
 

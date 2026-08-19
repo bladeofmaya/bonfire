@@ -36,6 +36,10 @@ class Users::ProfilesControllerTest < ActionDispatch::IntegrationTest
       assert_select "input[name='user[email_notifications_enabled]'][type='checkbox'][disabled]"
       assert_select "input[name='user[email_mentions_enabled]'][type='checkbox'][checked][disabled]"
       assert_select "input[name='user[email_daily_summary_enabled]'][type='checkbox'][disabled]"
+      assert_select "input[name='user[email_new_user_signup_enabled]'][type='checkbox'][disabled]"
+      assert_select "label", text: /New user signups Admin/ do
+        assert_select ".profile-settings__admin-label", text: "Admin"
+      end
       assert_select "select[name='user[email_digest_hour]'][disabled]"
       assert_select "select[name='user[email_time_zone]'][disabled]"
       assert_select "input[type='submit'][disabled]"
@@ -46,7 +50,7 @@ class Users::ProfilesControllerTest < ActionDispatch::IntegrationTest
     begin
       put user_profile_url, params: { user: {
         email_notifications_enabled: "1", email_mentions_enabled: "0", email_daily_summary_enabled: "1",
-        email_digest_hour: "18", email_time_zone: "Bern"
+        email_new_user_signup_enabled: "1", email_digest_hour: "18", email_time_zone: "Bern"
       } }
     ensure
       Rails.configuration.x.email_notifications.enabled = previous_enabled
@@ -57,8 +61,25 @@ class Users::ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert user.email_notifications_enabled?
     assert_not user.email_mentions_enabled?
     assert user.email_daily_summary_enabled?
+    assert user.email_new_user_signup_enabled?
     assert_equal 18, user.email_digest_hour
     assert_equal "Bern", user.email_time_zone
+  end
+
+  test "members cannot see or update new user signup notifications" do
+    sign_in :jz
+    previous_enabled = Rails.configuration.x.email_notifications.enabled
+    Rails.configuration.x.email_notifications.enabled = true
+    begin
+      get user_profile_url
+      assert_select "input[name='user[email_new_user_signup_enabled]']", count: 0
+
+      put user_profile_url, params: { user: { email_new_user_signup_enabled: "1" } }
+    ensure
+      Rails.configuration.x.email_notifications.enabled = previous_enabled
+    end
+
+    assert_not users(:jz).reload.email_new_user_signup_enabled?
   end
 
   test "email preferences cannot be changed while delivery is globally disabled" do

@@ -18,6 +18,7 @@ gem "puma", "~> 7.2", ">= 7.2.1"
 gem "resque", "~> 2.7.0"
 gem "resque-pool", "~> 0.7.1"
 gem "resque-scheduler", "~> 4.10"
+gem "postmark-rails", "~> 0.22"
 
 # Assets
 gem "propshaft", github: "rails/propshaft"

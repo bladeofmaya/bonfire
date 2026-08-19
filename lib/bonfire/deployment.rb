@@ -1,5 +1,6 @@
 require "fileutils"
 require "json"
+require "io/console"
 require "open3"
 require "optparse"
 require "resolv"
@@ -22,10 +23,31 @@ module Bonfire
       KAMAL_IMAGE
       KAMAL_REGISTRY
       KAMAL_BUILDER_ARCH
+      EMAIL_NOTIFICATIONS_ENABLED
+      EMAIL_PROVIDER
+      EMAIL_FROM
+      MAILER_HOST
+      MAILER_PROTOCOL
+      POSTMARK_MESSAGE_STREAM
+      SMTP_ADDRESS
+      SMTP_PORT
+      SMTP_AUTHENTICATION
+      SMTP_STARTTLS
     ].freeze
 
     SECRET_KEYS = %w[SECRET_KEY_BASE VAPID_PRIVATE_KEY VAPID_PUBLIC_KEY].freeze
-    OPTIONAL_SECRET_KEYS = %w[RAILS_MASTER_KEY].freeze
+    OPTIONAL_SECRET_KEYS = %w[
+      RAILS_MASTER_KEY
+      POSTMARK_SERVER_TOKEN
+      SMTP_USERNAME
+      SMTP_PASSWORD
+      RTMP_HOMEBREW_PRIVATE_KEY
+      RTMP_HOMEBREW_KEY_ID
+      RTMP_HOMEBREW_ISSUER
+      RTMP_HOMEBREW_AUDIENCE
+      RTMP_HOMEBREW_ALLOWED_PLAYER_ORIGINS
+      RTMP_HOMEBREW_EVENT_SECRET
+    ].freeze
     SENSITIVE_KAMAL_ARGUMENTS = %w[config secrets console shell dbc].freeze
     SENSITIVE_KAMAL_SEQUENCES = [ %w[app exec], %w[accessory exec] ].freeze
 
@@ -36,7 +58,13 @@ module Bonfire
       "KAMAL_SERVICE" => "bonfire",
       "KAMAL_IMAGE" => "bonfire",
       "KAMAL_REGISTRY" => "localhost:5555",
-      "KAMAL_BUILDER_ARCH" => "amd64"
+      "KAMAL_BUILDER_ARCH" => "amd64",
+      "EMAIL_NOTIFICATIONS_ENABLED" => "false",
+      "EMAIL_PROVIDER" => "postmark",
+      "MAILER_PROTOCOL" => "https",
+      "POSTMARK_MESSAGE_STREAM" => "outbound",
+      "SMTP_AUTHENTICATION" => "plain",
+      "SMTP_STARTTLS" => "true"
     }.freeze
 
     class Error < StandardError; end
@@ -141,6 +169,7 @@ module Bonfire
         when "console" then console(arguments)
         when "kamal" then kamal(arguments)
         when "migrate" then migrate(arguments)
+        when "mailserver" then mailserver(arguments)
         else
           @error.puts "Unknown command: #{command}"
           @error.puts "Run bin/bonfire help for usage."
@@ -166,6 +195,7 @@ module Bonfire
               console  Open a Rails console on the production server
               kamal    Run a Kamal command with Bonfire's private environment
               migrate  Move an existing deployment to a new server
+              mailserver  Configure or inspect outbound email delivery
               help     Show this help
 
             Start a new installation with:
@@ -389,6 +419,190 @@ module Bonfire
           end
 
           perform_migration(state, config, target_config, options)
+        end
+
+        def mailserver(arguments)
+          command = arguments.shift || "help"
+          case command
+          when "setup" then mailserver_setup(arguments)
+          when "status" then mailserver_status(arguments)
+          when "help", "--help", "-h" then mailserver_help
+          else
+            raise Error, "Unknown mailserver command: #{command}. Use setup or status."
+          end
+        end
+
+        def mailserver_help
+          @output.puts <<~HELP
+            Usage: bin/bonfire mailserver COMMAND [options]
+
+            Commands:
+              setup   Configure Postmark (recommended) or generic SMTP
+              status  Report mail configuration without revealing credentials
+
+            Recommended setup:
+              bin/bonfire setup --configure-only
+              bin/bonfire mailserver setup --provider postmark --from "Bonfire <notifications@example.com>"
+              bin/bonfire mailserver status
+              bin/bonfire deploy
+          HELP
+          0
+        end
+
+        def mailserver_setup(arguments)
+          options = { "EMAIL_PROVIDER" => "postmark" }
+          token_file = password_file = nil
+          parser = OptionParser.new do |option_parser|
+            option_parser.banner = "Usage: bin/bonfire mailserver setup [options]"
+            option_parser.on("--provider NAME", %w[postmark smtp], "Provider: postmark (recommended) or smtp") { |value| options["EMAIL_PROVIDER"] = value }
+            option_parser.on("--from ADDRESS", "Verified sender, for example Bonfire <notifications@example.com>") { |value| options["EMAIL_FROM"] = value }
+            option_parser.on("--host HOST", "Canonical Bonfire host used in email links") { |value| options["MAILER_HOST"] = value }
+            option_parser.on("--token-file PATH", "Read the Postmark server token from a private file") { |value| token_file = value }
+            option_parser.on("--message-stream NAME", "Postmark message stream (default: outbound)") { |value| options["POSTMARK_MESSAGE_STREAM"] = value }
+            option_parser.on("--smtp-address HOST", "SMTP server") { |value| options["SMTP_ADDRESS"] = value }
+            option_parser.on("--smtp-port PORT", Integer, "SMTP port (default: 587)") { |value| options["SMTP_PORT"] = value.to_s }
+            option_parser.on("--smtp-username USER", "SMTP username") { |value| options["SMTP_USERNAME"] = value }
+            option_parser.on("--smtp-password-file PATH", "Read the SMTP password from a private file") { |value| password_file = value }
+            option_parser.on("-h", "--help", "Show this help") do
+              @output.puts option_parser
+              return 0
+            end
+          end
+          parser.parse!(arguments)
+          raise Error, "The setup command does not accept positional arguments" if arguments.any?
+          ensure_mailserver_files!
+
+          config = @config_file.read
+          secrets = @secrets_file.read
+          provider = options.fetch("EMAIL_PROVIDER")
+          sender = options["EMAIL_FROM"] || prompt("Verified sender address (for example Bonfire <notifications@example.com>)")
+          validate_sender!(sender)
+          host = options["MAILER_HOST"] || config["DEPLOY_HOST"] || prompt("Canonical Bonfire host")
+          validate_mailer_host!(host)
+
+          config.merge!(
+            "EMAIL_NOTIFICATIONS_ENABLED" => "true",
+            "EMAIL_PROVIDER" => provider,
+            "EMAIL_FROM" => sender,
+            "MAILER_HOST" => host,
+            "MAILER_PROTOCOL" => "https"
+          )
+
+          if provider == "postmark"
+            token = read_private_value(token_file, "Postmark server API token", existing: secrets["POSTMARK_SERVER_TOKEN"])
+            secrets["POSTMARK_SERVER_TOKEN"] = token
+            config["POSTMARK_MESSAGE_STREAM"] = options.fetch("POSTMARK_MESSAGE_STREAM", "outbound")
+            validate_message_stream!(config.fetch("POSTMARK_MESSAGE_STREAM"))
+            config.delete("SMTP_ADDRESS")
+            config.delete("SMTP_PORT")
+            @output.puts "Using Postmark's transactional #{config.fetch("POSTMARK_MESSAGE_STREAM").inspect} message stream."
+          else
+            config["SMTP_ADDRESS"] = options["SMTP_ADDRESS"] || prompt("SMTP server")
+            config["SMTP_PORT"] = options.fetch("SMTP_PORT", "587")
+            secrets["SMTP_USERNAME"] = options["SMTP_USERNAME"] || prompt("SMTP username", secrets["SMTP_USERNAME"])
+            secrets["SMTP_PASSWORD"] = read_private_value(password_file, "SMTP password", existing: secrets["SMTP_PASSWORD"])
+            config["SMTP_AUTHENTICATION"] ||= "plain"
+            config["SMTP_STARTTLS"] ||= "true"
+          end
+
+          @config_file.write(DEFAULTS.merge(config).slice(*CONFIG_KEYS))
+          @secrets_file.write(secrets)
+          @output.puts "Saved mail configuration. Credentials remain in #{SECRETS_PATH} with permissions 0600."
+          @output.puts "Verify the sender/domain in #{provider == 'postmark' ? 'Postmark' : 'your SMTP provider'}, then run `bin/bonfire mailserver status`."
+          0
+        end
+
+        def mailserver_status(arguments)
+          parser = OptionParser.new do |option_parser|
+            option_parser.banner = "Usage: bin/bonfire mailserver status"
+            option_parser.on("-h", "--help", "Show this help") do
+              @output.puts option_parser
+              return 0
+            end
+          end
+          parser.parse!(arguments)
+          raise Error, "The status command does not accept arguments" if arguments.any?
+          ensure_mailserver_files!
+
+          config = DEFAULTS.merge(@config_file.read)
+          secrets = @secrets_file.read
+          provider = config.fetch("EMAIL_PROVIDER", "postmark")
+          checks = mailserver_checks(config, secrets, provider)
+          @output.puts <<~STATUS
+
+            Bonfire mailserver
+              Enabled:  #{config["EMAIL_NOTIFICATIONS_ENABLED"] == "true" ? "yes" : "no"}
+              Provider: #{provider}
+              Sender:   #{config.fetch("EMAIL_FROM", "not configured")}
+              Mail host: #{config.fetch("MAILER_HOST", "not configured")}
+          STATUS
+          @output.puts "  Message stream: #{config.fetch("POSTMARK_MESSAGE_STREAM", "outbound")}" if provider == "postmark"
+          checks.each { |label, valid| @output.puts "  #{label}: #{valid ? 'configured' : 'missing'}" }
+          ready = config["EMAIL_NOTIFICATIONS_ENABLED"] == "true" && checks.all?(&:last)
+          @output.puts "  Ready to deploy: #{ready ? 'yes' : 'no'}"
+          @output.puts "  Sender verification: confirm this in #{provider == 'postmark' ? 'Postmark' : 'your provider'} before sending."
+          ready ? 0 : 1
+        end
+
+        def mailserver_checks(config, secrets, provider)
+          common = [
+            [ "Provider", %w[postmark smtp].include?(provider) ],
+            [ "Sender", config["EMAIL_FROM"].to_s.length.positive? ],
+            [ "Canonical host", config["MAILER_HOST"].to_s.length.positive? ]
+          ]
+          if provider == "postmark"
+            common + [ [ "Postmark server token", secrets["POSTMARK_SERVER_TOKEN"].to_s.length.positive? ] ]
+          else
+            common + [
+              [ "SMTP server", config["SMTP_ADDRESS"].to_s.length.positive? && config["SMTP_PORT"].to_s.length.positive? ],
+              [ "SMTP credentials", secrets["SMTP_USERNAME"].to_s.length.positive? && secrets["SMTP_PASSWORD"].to_s.length.positive? ]
+            ]
+          end
+        end
+
+        def ensure_mailserver_files!
+          raise Error, "No deployment configuration. Run `bin/bonfire setup --configure-only` first." unless @config_file.exist?
+          ensure_secrets_file!
+        end
+
+        def read_private_value(path, label, existing: nil)
+          if path
+            value = File.read(File.expand_path(path)).strip
+          elsif existing.to_s.length.positive?
+            value = existing
+            @output.puts "Keeping the existing #{label.downcase}."
+          else
+            value = secret_prompt(label)
+          end
+          raise Error, "#{label} cannot be empty" if value.empty?
+          value
+        rescue Errno::ENOENT, Errno::EACCES => error
+          raise Error, "Could not read #{label.downcase}: #{error.message}"
+        end
+
+        def secret_prompt(label)
+          @output.print "#{label}: "
+          answer = if @input.respond_to?(:noecho)
+            @input.noecho(&:gets).tap { @output.puts }
+          else
+            @input.gets
+          end
+          raise Error, "Input ended before setup was complete" unless answer
+          answer.strip
+        end
+
+        def validate_sender!(sender)
+          address = sender[/<([^>]+)>/, 1] || sender
+          raise Error, "EMAIL_FROM must contain a valid email address" unless address.match?(/\A[^\s@]+@[^\s@]+\.[^\s@]+\z/)
+          raise Error, "EMAIL_FROM cannot contain a newline" if sender.match?(/[\r\n]/)
+        end
+
+        def validate_mailer_host!(host)
+          raise Error, "MAILER_HOST must be a hostname" unless host.match?(/\A[A-Za-z0-9.-]+\z/)
+        end
+
+        def validate_message_stream!(stream)
+          raise Error, "Postmark message stream contains unsupported characters" unless stream.match?(/\A[A-Za-z0-9_-]+\z/)
         end
 
         def configured_values

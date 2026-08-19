@@ -186,12 +186,12 @@
           <section class="settings-group fill-shade border-radius pad-inline-double pad-block">
             <h2 class="margin-none txt-large">Quick setup</h2>
             <ol class="email-notifications-admin__guide txt-supporting">
-              <li>Choose an SMTP provider and verify the domain used by <code>EMAIL_FROM</code>.</li>
-              <li>Set <code>MAILER_HOST</code>, <code>SMTP_ADDRESS</code>, <code>SMTP_PORT</code>, <code>SMTP_USERNAME</code>, and <code>SMTP_PASSWORD</code>.</li>
-              <li>Set <code>EMAIL_NOTIFICATIONS_ENABLED=true</code> and restart Bonfire. Startup will reject an incomplete setup.</li>
-              <li>Publish SPF, enable DKIM signing, and add a DMARC policy before inviting users to opt in.</li>
+              <li>Create a Postmark server and verify the sender address or domain you will use.</li>
+              <li>Run <code>bin/bonfire mailserver setup --provider postmark --from "Bonfire &lt;notifications@example.com&gt;"</code>.</li>
+              <li>Run <code>bin/bonfire mailserver status</code>, then deploy. Startup rejects an incomplete setup.</li>
+              <li>Publish the DKIM and return-path DNS records Postmark provides, and add a DMARC policy.</li>
             </ol>
-            <p class="margin-none txt-small txt-supporting">SMTP credentials are never displayed here. See <code>docs/email-notifications.md</code> for deployment details.</p>
+            <p class="margin-none txt-small txt-supporting">Credentials are never displayed here. Generic SMTP remains available with <code>--provider smtp</code>. See <code>docs/email-notifications.md</code>.</p>
           </section>
         </div>
       </section>

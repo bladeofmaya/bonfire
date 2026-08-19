@@ -14,6 +14,8 @@ class User < ApplicationRecord
   has_many :boosts, dependent: :destroy, foreign_key: :booster_id
   has_many :searches, dependent: :delete_all
   has_many :email_notification_deliveries, dependent: :delete_all
+  has_many :signup_email_notification_deliveries, class_name: "EmailNotificationDelivery",
+    foreign_key: :subject_user_id, dependent: :delete_all, inverse_of: :subject_user
 
   has_many :sessions, dependent: :destroy
   has_many :bans, dependent: :destroy

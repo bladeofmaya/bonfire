@@ -18,6 +18,7 @@ class UsersController < ApplicationController
     else
       record_signup_rules_acceptance(account) if account.readme?
       if @user.save
+        EmailNotifications::NewUserSignupJob.perform_later(@user) if Rails.configuration.x.email_notifications.enabled
         start_new_session_for @user
         redirect_to root_url
       else

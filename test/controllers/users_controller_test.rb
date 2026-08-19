@@ -76,8 +76,16 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "create" do
-    assert_difference -> { User.count }, 1 do
-      post join_url(@join_code), params: { user: { name: "New Person", email_address: "new@37signals.com", password: "secret123456" } }
+    previous_enabled = Rails.configuration.x.email_notifications.enabled
+    Rails.configuration.x.email_notifications.enabled = true
+    begin
+      assert_enqueued_with(job: EmailNotifications::NewUserSignupJob) do
+        assert_difference -> { User.count }, 1 do
+          post join_url(@join_code), params: { user: { name: "New Person", email_address: "new@37signals.com", password: "secret123456" } }
+        end
+      end
+    ensure
+      Rails.configuration.x.email_notifications.enabled = previous_enabled
     end
 
     assert_redirected_to root_url

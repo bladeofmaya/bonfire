@@ -23,23 +23,49 @@ delivery hour, and time zone under **Profile → Notifications**.
   delivery time. Each channel shows its five newest qualifying messages and a
   link labeled with the full new-message count. A scheduler runs hourly and
   queues each user's summary at their selected local hour.
+- Administrators can opt in to an immediate email when a new user completes
+  signup. This mode is hidden from members and always delivers to the
+  administrator's registered account email address.
 - Delivery rows have unique message/period keys. Jobs recheck those rows under
   a lock, making retries idempotent. Successful and empty deliveries emit the
   `email_notification.delivered` Active Support event with non-personal mode
   metadata.
 
-### SMTP configuration
+### Postmark configuration
 
 Email is disabled unless `EMAIL_NOTIFICATIONS_ENABLED=true`. When enabled,
-production startup requires:
+Postmark is the recommended provider. Configure it before deploying:
+
+```sh
+bin/bonfire setup --configure-only
+bin/bonfire mailserver setup --provider postmark --from "Bonfire <notifications@example.com>"
+bin/bonfire mailserver status
+bin/bonfire deploy
+```
+
+The setup command prompts for the Postmark server API token without echoing it.
+It stores the token in `.kamal/secrets` and non-secret settings in
+`.kamal/deploy.env`; `status` reports only whether credentials exist. A token
+can instead be read from a private file with `--token-file PATH`.
+
+Create a Postmark server first and verify the From address or its domain.
+Bonfire uses Postmark's transactional `outbound` message stream by default;
+select another transactional stream with `--message-stream NAME`.
+
+Production startup requires:
 
 - `MAILER_HOST`: canonical public Bonfire hostname used in email links
-- `SMTP_ADDRESS` and `SMTP_PORT`: SMTP server and port
-- `SMTP_USERNAME` and `SMTP_PASSWORD`: SMTP credentials
+- `EMAIL_FROM`: a sender verified in Postmark
+- `POSTMARK_SERVER_TOKEN`: the server-scoped API token
 
-Optional variables are `EMAIL_FROM` (default `Bonfire
-<notifications@localhost>`), `MAILER_PROTOCOL` (default `https`),
-`SMTP_AUTHENTICATION` (default `plain`), and `SMTP_STARTTLS` (default `true`).
+Optional variables are `MAILER_PROTOCOL` (default `https`) and
+`POSTMARK_MESSAGE_STREAM` (default `outbound`).
+
+Generic SMTP remains supported with `bin/bonfire mailserver setup --provider
+smtp`. It requires `SMTP_ADDRESS`, `SMTP_PORT`, `SMTP_USERNAME`, and
+`SMTP_PASSWORD`; optional settings are `SMTP_AUTHENTICATION` (default `plain`)
+and `SMTP_STARTTLS` (default `true`).
+
 The bundled process supervisor runs Resque workers and Resque Scheduler; both
 must remain running for delayed mentions and summaries.
 
@@ -47,7 +73,7 @@ Before enabling production delivery, authorize the sending host in the
 domain's SPF record, configure DKIM signing with the SMTP provider, and publish
 a DMARC policy with aggregate reporting. Start with a monitoring policy, check
 alignment of the visible From domain with SPF or DKIM, and only then move to
-quarantine or reject. Never commit SMTP credentials.
+quarantine or reject. Never commit provider credentials.
 
 Mailer previews are available in development at `/rails/mailers`, including
 mention and daily-summary examples. Both HTML and plain-text versions contain

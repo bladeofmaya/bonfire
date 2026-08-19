@@ -20,9 +20,11 @@ env:
     RAILS_ENV: production
     DISABLE_SSL: true
     EMAIL_NOTIFICATIONS_ENABLED: <%= ENV.fetch("EMAIL_NOTIFICATIONS_ENABLED", "false") %>
+    EMAIL_PROVIDER: <%= ENV.fetch("EMAIL_PROVIDER", "postmark") %>
     EMAIL_FROM: <%= ENV.fetch("EMAIL_FROM", "Bonfire <notifications@localhost>") %>
     MAILER_HOST: <%= ENV.fetch("MAILER_HOST", ENV.fetch("DEPLOY_HOST")) %>
     MAILER_PROTOCOL: <%= ENV.fetch("MAILER_PROTOCOL", "https") %>
+    POSTMARK_MESSAGE_STREAM: <%= ENV.fetch("POSTMARK_MESSAGE_STREAM", "outbound") %>
     SMTP_ADDRESS: <%= ENV.fetch("SMTP_ADDRESS", "localhost") %>
     SMTP_PORT: <%= ENV.fetch("SMTP_PORT", "587") %>
     SMTP_AUTHENTICATION: <%= ENV.fetch("SMTP_AUTHENTICATION", "plain") %>
@@ -39,8 +41,12 @@ env:
     - RTMP_HOMEBREW_ALLOWED_PLAYER_ORIGINS
     - RTMP_HOMEBREW_EVENT_SECRET
 <% if ENV["EMAIL_NOTIFICATIONS_ENABLED"] == "true" %>
+<% if ENV.fetch("EMAIL_PROVIDER", "postmark") == "postmark" %>
+    - POSTMARK_SERVER_TOKEN
+<% else %>
     - SMTP_USERNAME
     - SMTP_PASSWORD
+<% end %>
 <% end %>
 
 ssh:

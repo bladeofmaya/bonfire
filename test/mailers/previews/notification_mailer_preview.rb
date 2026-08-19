@@ -9,4 +9,8 @@ class NotificationMailerPreview < ActionMailer::Preview
     messages = user.reachable_messages.includes(:room, :creator).where.not(creator: user).last(8)
     NotificationMailer.with(user:, messages:, period_on: Date.yesterday).daily_summary
   end
+
+  def new_user_signup
+    NotificationMailer.with(user: User.administrator.first, new_user: User.member.last).new_user_signup
+  end
 end

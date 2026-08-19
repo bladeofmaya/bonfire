@@ -144,6 +144,19 @@
   max-inline-size: none;
 }
 
+.profile-settings__admin-label {
+  display: inline-block;
+  margin-inline-start: 0.35rem;
+  padding: 0.15em 0.6em;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.4;
+  vertical-align: 0.1em;
+}
+
 .email-notifications-admin__indicator {
   display: inline-block;
   inline-size: 0.65rem;

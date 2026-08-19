@@ -1,7 +1,9 @@
 class EmailNotifications::DailySummaryJob < ApplicationJob
   queue_as :email
   retry_on Net::SMTPServerBusy, Net::SMTPUnknownError, IOError, SocketError, wait: :polynomially_longer, attempts: 5
+  retry_on Postmark::HttpServerError, Postmark::TimeoutError, wait: :polynomially_longer, attempts: 5
   discard_on Net::SMTPFatalError
+  discard_on Postmark::InvalidApiKeyError, Postmark::InvalidEmailRequestError, Postmark::InactiveRecipientError
 
   def perform(user, period_on)
     return unless user.email_notifications_available? && user.email_notifications_enabled? && user.email_daily_summary_enabled?

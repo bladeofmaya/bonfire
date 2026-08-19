@@ -45,11 +45,19 @@ class AccountsController < ApplicationController
     end
 
     def email_configuration_checks
-      [
+      provider = Rails.configuration.x.email_notifications.provider
+      checks = [
+        [ "Provider: #{provider == 'postmark' ? 'Postmark' : 'SMTP'}", %w[postmark smtp].include?(provider) ],
         [ "Canonical mail host", ENV["MAILER_HOST"].present? || ENV["TLS_DOMAIN"].present? ],
-        [ "SMTP server and port", ENV["SMTP_ADDRESS"].present? && ENV["SMTP_PORT"].present? ],
-        [ "SMTP credentials", ENV["SMTP_USERNAME"].present? && ENV["SMTP_PASSWORD"].present? ],
         [ "Sender address", ENV["EMAIL_FROM"].present? ]
       ]
+      checks + if provider == "postmark"
+        [ [ "Postmark server token", ENV["POSTMARK_SERVER_TOKEN"].present? ] ]
+      else
+        [
+          [ "SMTP server and port", ENV["SMTP_ADDRESS"].present? && ENV["SMTP_PORT"].present? ],
+          [ "SMTP credentials", ENV["SMTP_USERNAME"].present? && ENV["SMTP_PASSWORD"].present? ]
+        ]
+      end
     end
 end

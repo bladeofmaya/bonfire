@@ -155,7 +155,10 @@ To disable Sentry initialization entirely, set `SKIP_TELEMETRY=true`.
 #### Email notifications (optional)
 
 Email is off by default. See [Email notifications](email-notifications.md) for
-SMTP variables, delivery behavior, DNS authentication, and scheduler details.
+Postmark and SMTP setup, delivery behavior, DNS authentication, and scheduler
+details. Run `bin/bonfire mailserver setup` before deploying and
+`bin/bonfire mailserver status` to validate the stored configuration without
+printing credentials.
 
 ### Example
 
