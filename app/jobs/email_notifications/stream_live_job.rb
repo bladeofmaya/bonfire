@@ -1,4 +1,6 @@
 class EmailNotifications::StreamLiveJob < ApplicationJob
+  self.enqueue_after_transaction_commit = true
+
   queue_as :email
   retry_on Net::SMTPServerBusy, Net::SMTPUnknownError, IOError, SocketError, wait: :polynomially_longer, attempts: 5
   retry_on Postmark::HttpServerError, Postmark::TimeoutError, wait: :polynomially_longer, attempts: 5

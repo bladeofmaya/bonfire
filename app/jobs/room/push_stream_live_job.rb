@@ -1,4 +1,6 @@
 class Room::PushStreamLiveJob < ApplicationJob
+  self.enqueue_after_transaction_commit = true
+
   def perform(room, session_id)
     return unless room.stream_session_id == session_id && room.stream_live?
 
