@@ -134,6 +134,10 @@ body.sidebar.stream-room { --sidebar-width: 0vw; }
   background: var(--color-surface-secondary);
 }
 
+.stream-description__close,
+.room-stream__description-trigger,
+.stream-description--popover { display: none; }
+
 .stream-description__content > :first-child,
 .stream-description__empty { margin-block-start: 0; }
 .stream-description__content > :last-child,
@@ -455,7 +459,28 @@ media-fullscreen-button[data-fullscreen] [slot="exit"] { display: inline; }
 
   .stream-room .room-stream { max-block-size: none; }
   .stream-room .room-stream__viewport { max-block-size: none; }
-  .stream-room .stream-description { flex: none; }
+  .stream-room .stream-description--inline { display: none; }
+  .stream-room .stream-description--popover:popover-open {
+    display: block;
+    position: fixed;
+    inset: var(--space-block) var(--space-inline);
+    inline-size: auto;
+    max-inline-size: 42rem;
+    max-block-size: calc(100dvh - var(--space-block-double));
+    margin: auto;
+    overflow: auto;
+    border-color: var(--color-border);
+    background: var(--color-surface-overlay);
+  }
+  .stream-room .stream-description--popover::backdrop { background: rgb(0 0 0 / 0.65); }
+  .stream-description__close {
+    display: block;
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 1;
+    margin-inline-start: auto;
+  }
+  .room-stream__description-trigger { display: inline-flex; }
   .stream-room .messages {
     min-block-size: 45dvh;
     padding-block-start: var(--space-block);

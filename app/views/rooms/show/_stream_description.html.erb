@@ -1,7 +1,18 @@
-<section class="stream-description">
+<% description = capture do %>
   <% if room.stream_description.present? %>
     <div class="stream-description__content trix-content"><%= room.stream_description %></div>
   <% else %>
     <p class="stream-description__empty txt-subtle">Stream details and schedule will appear here.</p>
   <% end %>
+<% end %>
+
+<section class="stream-description stream-description--inline" aria-label="About this stream">
+  <%= description %>
+</section>
+
+<section id="<%= dom_id(room, :stream_description) %>" class="stream-description stream-description--popover shadow"
+    popover="auto" aria-label="About this stream">
+  <button type="button" class="stream-description__close btn" popovertarget="<%= dom_id(room, :stream_description) %>"
+      popovertargetaction="hide">Close</button>
+  <%= description %>
 </section>

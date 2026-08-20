@@ -54,7 +54,9 @@ class RoomsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "body.sidebar.stream-room"
     assert_select "main > section.room-stream"
-    assert_select "main > section.stream-description"
+    assert_select "main > section.stream-description--inline[aria-label='About this stream']"
+    assert_select "main > section.stream-description--popover[popover='auto'][aria-label='About this stream']"
+    assert_select "button.room-stream__description-trigger[popovertarget='#{dom_id(room, :stream_description)}']", text: "About"
     assert_select ".room-stream__info > .stream-viewers"
     assert_select "main > turbo-cable-stream-source[channel='RoomPresenceChannel']", count: 1
     assert_select "aside#sidebar .member-sidebar", count: 0
@@ -92,6 +94,7 @@ class RoomsControllerTest < ActionDispatch::IntegrationTest
     get room_url(room)
 
     assert_select ".stream-description .trix-content", text: /Every Friday at eight/
+    assert_select ".stream-description__close[popovertargetaction='hide']", text: "Close"
     assert_select "##{dom_id(room, :stream_viewers)} summary", text: /1 viewer/
     assert_select ".stream-viewers__popup a[href='#{user_path(users(:jz))}']", text: users(:jz).name
   end

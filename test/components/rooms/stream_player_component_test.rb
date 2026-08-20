@@ -20,6 +20,7 @@ class Rooms::StreamPlayerComponentTest < ComponentTestCase
                     "[allow='autoplay; fullscreen; picture-in-picture']" \
                     "[referrerpolicy='no-referrer']"
     assert_selector "[role='status'][aria-live='polite']", text: "Connecting to stream…"
+    assert_selector "button.room-stream__description-trigger[popovertarget='#{dom_id(@room, :stream_description)}']", text: "About"
     assert_no_match(/token|private.?key/i, rendered_content)
   end
 

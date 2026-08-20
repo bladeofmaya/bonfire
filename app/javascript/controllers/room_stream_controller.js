@@ -114,7 +114,7 @@ export default class extends Controller {
     }
   }
 
-  async authorize() {
+  async authorize({ resumeLoading = false } = {}) {
     if (!this.ready || this.stopped) return
     const sequence = ++this.authorizationSequence
     this.abortController?.abort()
@@ -134,7 +134,7 @@ export default class extends Controller {
       if (sequence !== this.authorizationSequence || this.stopped) return
       if (grant.player_origin !== this.playerOriginValue) return this.stopAuthorization()
 
-      if (this.directValue) this.authorizeDirectPlayer(grant)
+      if (this.directValue) this.authorizeDirectPlayer(grant, { resumeLoading })
       else this.authorizeEmbeddedPlayer(grant)
       this.scheduleRefresh(grant.expires_at)
     } catch (error) {
@@ -142,12 +142,12 @@ export default class extends Controller {
     }
   }
 
-  authorizeDirectPlayer(grant) {
+  authorizeDirectPlayer(grant, { resumeLoading = false } = {}) {
     this.token = grant.token
     if (!this.sourceLoaded) {
       this.sourceLoaded = true
       this.playerTarget.src = { src: this.mediaUrlValue, type: "application/vnd.apple.mpegurl" }
-    } else {
+    } else if (resumeLoading) {
       this.playerTarget.provider?.instance?.startLoad?.()
     }
   }
@@ -181,6 +181,12 @@ export default class extends Controller {
   }
 
   hlsError(event) {
+    if ([ 401, 403 ].includes(event.detail?.response?.code)) {
+      this.setState("reconnecting")
+      this.scheduleReconnect()
+      return
+    }
+
     if (!event.detail?.fatal) return
     this.setState(event.detail?.response?.code === 404 ? "offline" : "reconnecting")
     this.scheduleReconnect()
@@ -270,6 +276,6 @@ export default class extends Controller {
     clearTimeout(this.refreshTimer)
     clearTimeout(this.reconnectTimer)
     const delay = Math.min(1000 * (2 ** this.reconnectAttempts++), 30_000)
-    this.reconnectTimer = setTimeout(() => this.authorize(), delay)
+    this.reconnectTimer = setTimeout(() => this.authorize({ resumeLoading: true }), delay)
   }
 }

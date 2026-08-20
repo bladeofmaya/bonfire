@@ -96,6 +96,11 @@ class RoomStreamingTest < ApplicationSystemTestCase
 
     page.current_window.resize_to(390, 844)
     assert_selector ".room-stream__viewport"
+    assert_no_selector ".stream-description--inline"
+    click_button "About"
+    assert_selector ".stream-description--popover:popover-open", text: /Stream details and schedule/
+    click_button "Close"
+    assert_no_selector ".stream-description--popover"
     assert_selector "footer .composer"
   end
 

@@ -63,6 +63,8 @@
   <footer class="room-stream__info">
     <h2 id="room-stream-title-<%= room.id %>" class="room-stream__title txt-medium margin-none"><%= title %></h2>
     <p class="room-stream__status" role="status" aria-live="polite" data-room-stream-target="status">Connecting to stream…</p>
+    <button type="button" class="room-stream__description-trigger btn"
+        popovertarget="<%= helpers.dom_id(room, :stream_description) %>">About</button>
     <%= helpers.render "rooms/show/stream_viewers", room: room, viewers: viewers %>
   </footer>
 </section>
