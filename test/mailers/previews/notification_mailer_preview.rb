@@ -19,6 +19,22 @@ class NotificationMailerPreview < ActionMailer::Preview
   end
 
   def stream_live
-    NotificationMailer.with(user: User.active.member.first, room: Room.where(stream_enabled: true).first).stream_live
+    source = Room.where(stream_enabled: true).first || Room.first
+    room = source.dup
+    room.id = source.id
+    room.stream_enabled = true
+    room.stream_title = "Friday Night at the Bonfire"
+    room.stream_description = <<~HTML
+      <p>Join us for a relaxed community stream with conversation, games, and a few surprises.</p>
+      <h2>Tonight’s plan</h2>
+      <ul>
+        <li>Community updates</li>
+        <li>Live questions from chat</li>
+        <li>A first look at what we’re building next</li>
+      </ul>
+      <p>Bring a drink and <a href="https://example.com">invite a friend</a>.</p>
+    HTML
+
+    NotificationMailer.with(user: User.active.where.not(email_address: nil).first, room:).stream_live
   end
 end

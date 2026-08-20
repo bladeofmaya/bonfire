@@ -2,6 +2,11 @@
   <p style="font-size: 32px; margin: 0 0 20px;" aria-hidden="true">📺</p>
   <p style="margin: 0 0 8px; color: #756d60;">#️⃣ <%= @room.name %></p>
   <h1 style="margin: 0 0 20px; font-size: 24px;"><%= @stream_name %> is live now</h1>
+  <% if @room.stream_description.present? %>
+    <div style="margin: 0 0 24px; padding: 16px 18px; border: 1px solid #ded8ce; border-radius: 8px; background: #f7f4ef; line-height: 1.5;">
+      <%= @room.stream_description %>
+    </div>
+  <% end %>
   <p><%= link_to "Watch the stream", room_url(@room), style: "display: inline-block; padding: 12px 18px; border-radius: 8px; background: #27231d; color: white; text-decoration: none;" %></p>
   <p style="margin-top: 32px; color: #756d60; font-size: 14px;">
     You received this because stream-live emails are enabled.

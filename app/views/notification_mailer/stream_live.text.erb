@@ -1,4 +1,8 @@
 <%= @stream_name %> is live now in <%= @room.name %>
+<% if @room.stream_description.present? %>
+
+<%= @room.stream_description.to_plain_text.strip %>
+<% end %>
 
 Watch the stream: <%= room_url(@room) %>
 Change notification settings: <%= notification_settings_url %>
