@@ -143,6 +143,16 @@ body.sidebar.stream-room { --sidebar-width: 0vw; }
 .stream-description__content > :last-child,
 .stream-description__empty { margin-block-end: 0; }
 
+.stream-description__content,
+.stream-description__empty,
+.stream-description__content :is(p, ul, ol, li, blockquote, pre) {
+  font-size: 14px !important;
+}
+
+.stream-description__content :is(h1, h2, h3, h4, h5, h6) {
+  font-size: 15px !important;
+}
+
 .stream-viewers__trigger {
   display: flex;
   align-items: center;
@@ -219,7 +229,10 @@ body.sidebar.stream-room { --sidebar-width: 0vw; }
   padding-block: var(--space-block-half);
 }
 
-.room-stream__title { flex: 1; }
+.room-stream__title {
+  flex: 1;
+  font-size: 1.15rem;
+}
 .room-stream__status {
   margin: 0;
   color: var(--color-text-muted);
