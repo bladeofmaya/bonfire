@@ -28,6 +28,7 @@ class AccountsControllerTest < ActionDispatch::IntegrationTest
     assert_select "#account-panel-privacy[hidden] form.readme-editor" do
       assert_select "trix-editor#account_readme.input"
     end
+    assert_no_match(/Bonfire(?:&trade;|™) version/, response.body)
   end
 
   test "notifications tab lists active non-bot users who opted in" do

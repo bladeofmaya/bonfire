@@ -20,7 +20,27 @@ class ProfileLayoutTest < ApplicationSystemTestCase
 
     assert_operator width_of(link, :scrollWidth), :>, width_of(link, :clientWidth)
     assert_operator width_of(fieldset, :scrollWidth), :<=, width_of(fieldset, :clientWidth)
-    assert_equal "row", page.evaluate_script("getComputedStyle(arguments[0]).flexDirection", tabs)
+    assert_equal "grid", page.evaluate_script("getComputedStyle(arguments[0]).display", tabs)
+    assert_operator width_of(tabs, :scrollWidth), :<=, width_of(tabs, :clientWidth)
+  end
+
+  test "mobile settings remain vertically scrollable" do
+    page.current_window.resize_to(390, 700)
+    visit user_profile_path
+    click_on "Notifications"
+
+    scroll_height, client_height, horizontal_overflow = page.evaluate_script <<~JS
+      (() => {
+        const main = document.querySelector("#main-content")
+        return [main.scrollHeight, main.clientHeight, main.scrollWidth > main.clientWidth]
+      })()
+    JS
+
+    assert_operator scroll_height, :>, client_height
+    assert_not horizontal_overflow
+
+    page.execute_script("document.querySelector('#main-content').scrollTop = document.querySelector('#main-content').scrollHeight")
+    assert_operator page.evaluate_script("document.querySelector('#main-content').scrollTop"), :>, 0
   end
 
   test "profile settings switch accessible tabs without growing one long page" do

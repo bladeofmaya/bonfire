@@ -339,13 +339,18 @@
 }
 
 @media (max-width: 100ch) {
+  #channels .channel-list .directs {
+    padding-inline-start: 0;
+  }
+
   .channel-list .sidebar__toggle {
     inset-inline-start: calc(100% + var(--space-inline));
   }
 
   #channels.open .channel-list .sidebar__toggle {
-    inset-inline-start: calc(100% - var(--btn-size) - var(--space-inline));
+    inset-inline-start: calc(100% + var(--space-inline));
   }
+
 }
 .channel-order-item {
   display: flex;

@@ -26,6 +26,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   test "new" do
     get join_url(@join_code)
     assert_response :success
+    assert_no_match(/Bonfire(?:&trade;|™) version/, response.body)
   end
 
   test "signup renders configured sanitized README and acknowledgement" do

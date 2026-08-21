@@ -19,6 +19,7 @@
   .sidebar & {
     @media (max-width: 100ch) {
       padding-block: var(--block-space-half);
+      padding-inline-start: calc(var(--btn-size) + var(--space-inline) * 2);
 
       &::before {
         background: linear-gradient(180deg, var(--color-bg) 20%, transparent 100%);

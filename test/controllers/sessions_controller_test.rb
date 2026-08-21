@@ -7,6 +7,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   test "new" do
     get new_session_url
     assert_response :success
+    assert_no_match(/Bonfire(?:&trade;|™) version/, response.body)
   end
 
   test "new redirects to first run when no users exist" do

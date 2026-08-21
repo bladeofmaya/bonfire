@@ -22,6 +22,32 @@ class AccountSettingsLayoutTest < ApplicationSystemTestCase
     assert_equal "members", URI.parse(current_url).fragment
   end
 
+  test "mobile navigation fits without horizontal scrolling" do
+    page.current_window.resize_to(390, 700)
+    visit edit_account_path
+    click_on "README"
+
+    tabs = find(".profile-settings__tabs")
+    assert_equal "grid", page.evaluate_script("getComputedStyle(arguments[0]).display", tabs)
+    assert_operator page.evaluate_script("arguments[0].scrollWidth", tabs), :<=,
+      page.evaluate_script("arguments[0].clientWidth", tabs)
+    assert_operator page.evaluate_script("arguments[0].scrollHeight", tabs), :<=,
+      page.evaluate_script("arguments[0].clientHeight", tabs)
+    assert_selector ".profile-settings__tab svg", count: 5
+
+    tabs_bottom, last_tab_bottom, content_top = page.evaluate_script <<~JS
+      (() => {
+        const tabs = document.querySelector(".profile-settings__tabs").getBoundingClientRect()
+        const items = Array.from(document.querySelectorAll(".profile-settings__tab"))
+        const lowestItem = Math.max(...items.map(item => item.getBoundingClientRect().bottom))
+        const content = document.querySelector(".profile-settings__content").getBoundingClientRect()
+        return [tabs.bottom, lowestItem, content.top]
+      })()
+    JS
+    assert_operator last_tab_bottom, :<=, tabs_bottom
+    assert_operator content_top, :>=, tabs_bottom
+  end
+
   test "shows mailer status, setup guide, and opted-in users" do
     users(:jz).update!(email_notifications_enabled: true)
     visit edit_account_path
